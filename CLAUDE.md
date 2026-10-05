@@ -41,7 +41,7 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
 ## Estado actual (última versión: v5)
-- Archivo único `carta-digital-la-mar-de-gambas-v5.html` (HTML + CSS + JS, sin dependencias salvo Google Fonts: Oswald y DM Sans). Es lo que se publica como `index.html`.
+- Archivo único `carta-digital-la-mar-de-gambas-v5.html` (HTML + CSS + JS, sin dependencias salvo Google Fonts: Oswald y DM Sans). Se publica copiado como `carta/index.html` (ver "Estructura de la web").
 - Los datos del menú están dentro del HTML (`MENU = [...]` en la función `loadMenu`) y también en `menu-datos.json` (copia para editar con comodidad). 105 productos, 7 pestañas.
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto.
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
@@ -90,6 +90,14 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - **Evitar Cloudflare** (proxy, DNS con proxy, Pages, Workers) para lo que ve el cliente: LaLiga bloquea rangos de IP de Cloudflare en España los días de fútbol, justo cuando un bar tiene más gente. Probar la carta un día de partido y comprobar en hayahora.futbol.
 - Secretos: nunca subir al repositorio ni al HTML claves con permisos de administrador; solo credenciales públicas con permisos mínimos.
 
+## Estructura de la web (decidida el 5 oct)
+- **Raíz (`index.html`)** → web principal del local. Hoy es una portada provisional muy simple (nombre, azul marino y naranja, botón "Ver la carta" que lleva a `carta/`). Más adelante será la web completa del local.
+- **`carta/index.html`** → la carta digital, que se ve en `/carta/`. Es una copia de la última versión (`carta-digital-la-mar-de-gambas-vN.html`); al sacar una versión nueva, copiarla aquí como `carta/index.html`.
+- **Códigos QR de las mesas** → apuntan siempre a `/carta/` (no a la raíz). Más adelante llevarán el número de mesa: `/carta/?mesa=número`. Así se puede cambiar la portada sin reimprimir los QR.
+- **`fotos-cartas/`** → fotos de las cartas físicas (fuente de verdad de los precios).
+- **`versiones/`** → versiones antiguas de la carta.
+- El enlace de la portada a la carta es relativo (`carta/`), para que funcione igual en `carloswxht.github.io/la-mar-de-gambas/` y en el dominio propio.
+
 ## Estructura del HTML (para tocar sin romper)
 - `loadMenu()` carga el menú; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único).
 - `renderCategories()` agrupa las filas del mismo producto bajo un único nombre y pinta los subtítulos de sección.
@@ -98,8 +106,10 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - La barra inferior y el tique usan clases `.fixed-bottom`, `.dock`, `.panel`.
 
 ## Archivos de este repositorio
-- `carta-digital-la-mar-de-gambas-v5.html` → carta actual (copiar como `index.html` para publicar).
+- `index.html` → portada provisional del local (raíz).
+- `carta/index.html` → carta publicada en `/carta/` (copia de la v5).
+- `carta-digital-la-mar-de-gambas-v5.html` → carta actual, original con número de versión.
 - `menu-datos.json` → datos del menú.
 - `og-gambas5.jpg` → imagen para compartir por WhatsApp.
-- `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg` → fotos de las cartas físicas (moverlas a una carpeta `fotos-cartas/`). Son la fuente de verdad de los precios.
-- `versiones/` → versiones antiguas.
+- `fotos-cartas/` → `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg`, fotos de las cartas físicas. Son la fuente de verdad de los precios.
+- `versiones/` → versiones antiguas (de momento vacía).
