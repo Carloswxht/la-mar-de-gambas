@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14295E">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Barra LMDG">
+<title>Panel de barra · La Mar de Gambas</title>
+<link rel="stylesheet" href="../comun/estilos.css">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="vLogin" class="pantalla-login" hidden>
+  <div class="login-marca">
+    <div class="login-nombre">LA MAR DE GAMBAS</div>
+    <div class="login-sub">Panel de barra</div>
+  </div>
+  <form id="fLogin" class="login-caja" autocomplete="on" novalidate>
+    <label class="campo">
+      <span>Correo</span>
+      <input id="lEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+    </label>
+    <label class="campo">
+      <span>Contraseña</span>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+    </label>
+    <p id="lError" class="aviso-error" role="alert" hidden></p>
+    <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">ENTRAR</button>
+  </form>
+</section>
+
+<!-- ============ CAMBIAR CONTRASEÑA ============ -->
+<section id="vPass" class="pantalla-login" hidden>
+  <div class="login-marca">
+    <div class="login-nombre">LA MAR DE GAMBAS</div>
+    <div class="login-sub">Elige tu contraseña</div>
+  </div>
+  <form id="fPass" class="login-caja" novalidate>
+    <p class="login-texto">Es tu primera vez o te han dado una contraseña provisional. Elige una nueva que solo sepas tú (mínimo 8 caracteres).</p>
+    <label class="campo">
+      <span>Contraseña actual</span>
+      <input id="pActual" type="password" autocomplete="current-password" required>
+    </label>
+    <label class="campo">
+      <span>Contraseña nueva</span>
+      <input id="pNueva" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <label class="campo">
+      <span>Repite la nueva</span>
+      <input id="pRepite" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <p id="pError" class="aviso-error" role="alert" hidden></p>
+    <button class="btn btn-naranja btn-ancho" type="submit">GUARDAR Y ENTRAR</button>
+    <button id="pSalir" class="btn btn-claro btn-ancho" type="button">Salir</button>
+  </form>
+</section>
+
+<!-- ============ PANEL ============ -->
+<div id="vPanel" hidden>
+  <header class="cab">
+    <div class="cab-fila">
+      <div class="cab-marca">
+        <div class="cab-nombre">LA MAR DE GAMBAS</div>
+        <div class="cab-usuario" id="cUsuario"></div>
+      </div>
+      <div class="cab-pendientes" id="cPendientes" aria-live="polite">
+        <span class="cab-num" id="cPendNum">0</span>
+        <span class="cab-lab">pendientes</span>
+      </div>
+    </div>
+    <nav class="secciones" id="cSecciones"></nav>
+  </header>
+
+  <div id="avisoConexion" class="aviso-conexion" hidden>Sin conexión · reintentando…</div>
+  <button id="activarAvisos" class="aviso-activar" type="button">🔔 Toca aquí para activar el sonido y la vibración de los pedidos nuevos</button>
+
+  <!-- PEDIDOS -->
+  <main id="sPedidos" class="seccion">
+    <div class="filtros" id="filtros" role="tablist"></div>
+    <div id="listaPedidos" class="rejilla"></div>
+  </main>
+
+  <!-- CARTA (barra: agotados · admin: también precios) -->
+  <main id="sCarta" class="seccion" hidden>
+    <div class="barra-herr">
+      <input id="buscaProd" class="buscador" type="search" placeholder="Buscar producto…" autocomplete="off">
+      <button id="nuevoProd" class="btn btn-naranja" type="button" hidden>+ NUEVO</button>
+    </div>
+    <div id="listaProductos"></div>
+  </main>
+
+  <!-- USUARIOS (admin) -->
+  <main id="sUsuarios" class="seccion" hidden>
+    <div class="barra-herr">
+      <p class="herr-texto">Cada persona del local con su usuario.</p>
+      <button id="nuevoUsuario" class="btn btn-naranja" type="button">+ NUEVO</button>
+    </div>
+    <div id="listaUsuarios"></div>
+  </main>
+
+  <!-- MESAS (admin) -->
+  <main id="sMesas" class="seccion" hidden>
+    <div class="barra-herr">
+      <p class="herr-texto">El enlace de cada mesa es el que va en su código QR.</p>
+      <button id="nuevaMesa" class="btn btn-naranja" type="button">+ NUEVA</button>
+    </div>
+    <div id="listaMesas"></div>
+  </main>
+
+  <footer class="pie">
+    <button id="bSalir" class="btn btn-claro" type="button">Salir</button>
+  </footer>
+</div>
+
+<!-- Ventana para editar (producto, usuario, mesa) -->
+<div id="modal" class="modal" hidden>
+  <form id="modalForm" class="modal-caja" novalidate>
+    <h2 id="modalTitulo"></h2>
+    <div id="modalCampos"></div>
+    <p id="modalError" class="aviso-error" role="alert" hidden></p>
+    <div class="modal-botones">
+      <button type="button" class="btn btn-claro" id="modalCancelar">Cancelar</button>
+      <button type="submit" class="btn btn-naranja">GUARDAR</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="../comun/datos.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>
