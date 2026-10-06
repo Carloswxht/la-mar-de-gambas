@@ -170,7 +170,7 @@ body.destello .cab{ animation:destello .9s ease-in-out 3; }
 
 /* ---------------- CARTA / USUARIOS / MESAS ---------------- */
 .barra-herr{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
-.buscador{ flex:1; min-height:52px; border-radius:12px; border:0; padding:0 14px; }
+.buscador{ flex:1; min-height:52px; border-radius:12px; border:0; padding:0 14px; background:#fff; color:var(--navy); }
 .herr-texto{ flex:1; margin:0; color:rgba(255,255,255,.8); font-size:15px; }
 .grupo-tit{ color:#fff; font-family:var(--font-titulos); font-size:18px; letter-spacing:.12em; margin:18px 0 8px; text-transform:uppercase; }
 .fila{ background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px; }
