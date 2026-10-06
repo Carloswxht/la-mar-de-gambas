@@ -6,7 +6,7 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
 - Carlos solo tiene móvil, sin ordenador. Dar los pasos uno a uno y explicarlos para alguien que no programa.
 - Debe verse y funcionar igual en iPhone (Safari) y Android (Chrome). Avisar de cualquier cosa sensible a Safari.
-- Cada entrega con número de versión en el nombre: `carta-digital-la-mar-de-gambas-vN.html`. Las versiones anteriores se guardan en la carpeta `versiones/`.
+- Cada entrega con número de versión: etiqueta de git `carta-vN` y número visible en el pie (desde que la carta se separó en archivos). Las versiones antiguas de un solo archivo están en `versiones/`.
 - Si Carlos pide "opina" o "analicemos", dar solo opinión, sin ejecutar cambios.
 - No reproducir logos, personajes ni marcas de terceros tal cual. El nombre del local va en texto.
 - Probar en pantalla de móvil (390 px) con capturas antes de entregar.
@@ -20,7 +20,7 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 **Antes de publicar la carta (solo lectura)**
 - [ ] 2FA en GitHub, correo, dominio y cuentas de base de datos.
 - [ ] Alérgenos accesibles en la carta (obligatorio para locales de comida). Pedir la lista al local.
-- [ ] Fuentes de Google guardadas dentro del repositorio (no cargarlas desde Google) por RGPD.
+- [x] Fuentes de Google guardadas dentro del repositorio (no cargarlas desde Google) por RGPD. (Hecho en la Fase 1 del panel: `comun/fuentes/`.)
 - [ ] Aviso legal y política de privacidad sencillos enlazados en el pie.
 - [ ] Dominio a nombre del cliente. Acuerdo por escrito con el local (qué incluye, precio, quién paga dominio y base de datos, mantenimiento mensual).
 - [ ] Precios y platos aprobados por escrito por el local antes de publicar.
@@ -40,12 +40,15 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Si una clave se filtra: cambiarla de inmediato, no basta con borrarla del repositorio.
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
-## Estado actual (última versión: v5)
-- Archivo único `carta-digital-la-mar-de-gambas-v5.html` (HTML + CSS + JS, sin dependencias salvo Google Fonts: Oswald y DM Sans). Se publica copiado como `carta/index.html` (ver "Estructura de la web").
-- Los datos del menú están dentro del HTML (`MENU = [...]` en la función `loadMenu`) y también en `menu-datos.json` (copia para editar con comodidad). 105 productos, 7 pestañas.
-- Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto.
+## Estado actual (última versión: v5, separada en archivos)
+- Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
+- El original de un solo archivo está guardado en `versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
+- Los datos del menú están en **una sola copia**: `datos/menu-datos.json` (la carta lo lee al abrirse). 105 productos, 7 pestañas.
+- Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta (se añadirá con la v6).
+- Fuentes Oswald y DM Sans guardadas en `comun/fuentes/` (ya no se cargan desde Google: RGPD hecho).
+- Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
-- Los estilos de la v5 están en un bloque `THEME` al final del CSS (anulan los estilos heredados de la carta de El Recreo, que usaba tema dorado: ver `versiones/` v4 si se quiere comparar).
+- Los estilos de la carta están en `carta/carta.css`: un bloque `THEME` al final anula los estilos heredados de la carta de El Recreo (tema dorado).
 
 ## Pestañas (7)
 Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.
@@ -98,8 +101,8 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - **`versiones/`** → versiones antiguas de la carta.
 - El enlace de la portada a la carta es relativo (`carta/`), para que funcione igual en `carloswxht.github.io/la-mar-de-gambas/` y en el dominio propio.
 
-## Estructura del HTML (para tocar sin romper)
-- `loadMenu()` carga el menú; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único).
+## Estructura de la carta (para tocar sin romper)
+- `loadMenu()` (en `carta/carta.js`) carga el menú desde `datos/menu-datos.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único).
 - `renderCategories()` agrupa las filas del mismo producto bajo un único nombre y pinta los subtítulos de sección.
 - `buildLine()` pinta cada fila y su control +/−; el tique se calcula con `cartLines()`.
 - Cabecera fija: el `padding-top` del body se ajusta por JS (no tocar).
@@ -107,9 +110,25 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 
 ## Archivos de este repositorio
 - `index.html` → portada provisional del local (raíz).
-- `carta/index.html` → carta publicada en `/carta/` (copia de la v5).
-- `carta-digital-la-mar-de-gambas-v5.html` → carta actual, original con número de versión.
-- `menu-datos.json` → datos del menú.
+- `carta/index.html`, `carta/carta.css`, `carta/carta.js` → la carta, publicada en `/carta/`.
+- `comun/estilos.css` → colores y fuentes comunes de carta y panel. `comun/fuentes/` → Oswald y DM Sans (woff2, licencia OFL).
+- `comun/datos.js` → **único** bloque de acceso a la base de datos y login (direcciones de Neon, `getAuthToken`, `apiGet`, `apiPost`, `apiPatch`, `apiDelete`; login del personal en la Fase 3). Para migrar a Supabase se cambia solo este archivo.
+- `datos/menu-datos.json` → datos del menú (única copia).
+- `datos/esquema.sql` → tablas de la base. `datos/datos-iniciales.sql` → pestañas, productos y mesas de ejemplo (se genera desde `menu-datos.json`). Más adelante `datos/seguridad.sql`.
+- `panel/` → panel de barra (Fase 4, aún no existe).
 - `og-gambas5.jpg` → imagen para compartir por WhatsApp.
 - `fotos-cartas/` → `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg`, fotos de las cartas físicas. Son la fuente de verdad de los precios.
-- `versiones/` → versiones antiguas (de momento vacía).
+- `versiones/` → versiones antiguas: `carta-digital-la-mar-de-gambas-v5.html`.
+
+## Panel de barra (en curso, rama `panel`)
+Ojo: `panel` es el nombre de la **rama** (copia de trabajo de todo el proyecto); la pantalla del camarero/barra/admin irá en la **carpeta** `panel/`.
+Plan por fases; Carlos aprueba cada fase antes de pasar a la siguiente y un pull request por fase.
+- **Fase 0 (hecha, 6 oct):** plan explicado. Decisiones de Carlos: rama `panel`; un PR por fase; mesas de ejemplo sencillas (mesas 1–10) hasta tener las reales; un usuario por persona; login con correo + contraseña; límites anti-spam propuestos (1 pedido cada 20 s y 10/hora por móvil, 6 pedidos cada 10 min por mesa, 30 líneas y 20 unidades por línea); la carta leerá precios de la base con la copia local de reserva; se activa con los precios de las cartas físicas mientras el local no los aprueba; pedidos se guardan 30 días y notas 24 h (revisar con el cliente al pasar a producción); tablet en la barra aún por decidir. Código secreto por mesa en el QR: **sí** (decidido el 6 oct). Los QR serán `/carta/?mesa=N&c=CÓDIGO`; la base solo acepta pedidos si el código coincide con el de la mesa. Si se cambia el código de una mesa, hay que reimprimir su QR.
+- **Fase 1 (hecha, 6 oct):** carpetas `carta/`, `comun/`, `datos/`; fuentes locales; dirección de la base de El Recreo quitada de la carta y cambiada por la nueva. Etiqueta `carta-v5-estable` creada en `main` (si no está en GitHub, ver nota en el PR de la Fase 1).
+- **Base de datos nueva (creada el 6 oct):** proyecto Neon `la-mar-de-gambas` (id `snowy-moon-50249964`, rama `main` = `br-restless-cell-b1qoubo5`, base `neondb`), región **AWS Frankfurt** (`aws-eu-central-1`), Postgres 17, en la misma cuenta de Neon de Carlos pero separado de El Recreo. Neon Auth activado (Better Auth) con dominio de confianza `https://carloswxht.github.io`; Data API activada **sin permisos por defecto**. Direcciones en `comun/datos.js`. Comprobado: sus IPs son de AWS, no de Cloudflare.
+- **Fase 2 (hecha, 6 oct):** tablas creadas con `datos/esquema.sql` (categories, products, mesas, orders, order_items, staff) y cargadas con `datos/datos-iniciales.sql` (7 pestañas, 105 productos —comprobado que coinciden exactamente con `menu-datos.json`— y mesas 1–10 de ejemplo con su código secreto generado por la base, que no está en el repositorio). Todas las tablas con RLS activada y **sin ningún permiso para la web** (comprobado: `anonymous` y `authenticated` no pueden leer ni escribir nada). La carta todavía no lee de la base.
+  - Pedidos: estados `enviado` → `recibido` → `servido`; cada línea copia nombre, tamaño y precio del momento; `device_key` es un número al azar del móvil (no es dato personal).
+  - Plan gratis de Neon: 100 CU-horas al mes por proyecto ≈ 400 h de base despierta a 0,25 CU. Con el panel consultando cada 4 s la base no se duerme mientras el bar está abierto: unas 12 h/día caben justas; si abre más, pasar a plan de pago antes de producción.
+  - Desde el contenedor de Claude Code no se puede llamar a la Data API ni a Neon Auth (el proxy lo bloquea); las pruebas de permisos se hacen por SQL (`set local role anonymous`) y las de la web desde el móvil de Carlos.
+- **Siguiente: Fase 3** (login y seguridad: `datos/seguridad.sql` con permisos por rol, funciones para crear/editar pedido con límites anti-spam y código de mesa, usuarios reales). Luego Fase 4 (panel) y Fase 5 (activar en la carta con lista de pruebas).
+- Al añadir el dominio propio: añadirlo también como dominio de confianza en Neon Auth.
