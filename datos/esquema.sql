@@ -87,6 +87,7 @@ create table orders (
 create index orders_status_idx on orders (status, created_at);
 create index orders_mesa_idx   on orders (mesa_id, created_at);
 create index orders_device_idx on orders (device_key, created_at);
+create index orders_created_idx on orders (created_at);
 
 -- ---------------- LÍNEAS DE CADA PEDIDO ----------------
 -- Se copian nombre, tamaño y precio en el momento del pedido, para que
@@ -103,17 +104,24 @@ create table order_items (
 );
 create index order_items_order_idx on order_items (order_id);
 
--- ---------------- PERSONAL (roles) ----------------
--- Une cada usuario del login (Neon Auth) con su rol. Un usuario sin fila
--- aquí, o con active = false, no puede hacer nada en el panel.
+-- ---------------- PERSONAL (usuarios y roles) ----------------
+-- Camareros, barra y administradores. La contraseña se guarda cifrada
+-- (bcrypt, nunca en claro). Un usuario con active = false no puede entrar.
+-- El login es propio de la base (no usa cookies), para que funcione
+-- igual en iPhone (Safari) y Android: ver datos/seguridad.sql.
 create table staff (
-  user_id     text primary key,                 -- id del usuario en Neon Auth
-  name        text not null,
-  email       text not null,
-  role        text not null check (role in ('camarero','barra','admin')),
-  active      boolean not null default true,
-  created_at  timestamptz not null default now()
+  id                    integer generated always as identity primary key,
+  email                 text not null,
+  name                  text not null,
+  role                  text not null check (role in ('camarero','barra','admin')),
+  active                boolean not null default true,
+  password_hash         text not null,
+  must_change_password  boolean not null default true,  -- contraseña provisional
+  failed_attempts       integer not null default 0,      -- intentos fallidos seguidos
+  locked_until          timestamptz,                     -- bloqueo tras 5 fallos
+  created_at            timestamptz not null default now()
 );
+create unique index staff_email_idx on staff (lower(email));
 
 -- ---------------- SEGURIDAD BÁSICA (hasta la Fase 3) ----------------
 -- Seguridad por fila activada en todas las tablas y ningún permiso para
