@@ -119,12 +119,10 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
   margin:-14px -16px 12px; padding:10px 16px; border-radius:11px 11px 0 0;
   background:var(--fondo-2); border-bottom:1px solid var(--linea);
 }
-/* Tarjeta siempre blanca; solo la franja de "Pedido N" lleva el color del estado */
+/* Todas las tarjetas iguales: blancas, franja "Pedido N" gris claro y borde gris.
+   El color solo va en el botón principal (rosa = Aceptar pedido, azul = Marcar
+   como servido), para que el panel canse menos y se vea más profesional. */
 .tarjeta{ background:#fff; border:1px solid var(--linea); border-radius:12px; padding:14px 16px 16px; box-shadow:0 1px 3px rgba(20,41,94,.06); overflow:hidden; }
-.tarjeta.nuevo{ border:1.5px solid var(--rosa); }
-.tarjeta.nuevo .pedido-num{ background:var(--rosa-claro); border-bottom-color:var(--rosa-borde); }
-.tarjeta.prep{ border:1px solid var(--prep-borde); }
-.tarjeta.prep .pedido-num{ background:var(--prep-fondo); border-bottom-color:var(--prep-borde); }
 .t-arriba{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--linea); }
 .t-mesa{ font-family:var(--font-titulos); font-size:20px; font-weight:600; letter-spacing:.06em; color:var(--navy); line-height:1.1; }
 .t-hora{ font-size:12px; color:var(--suave); white-space:nowrap; }
