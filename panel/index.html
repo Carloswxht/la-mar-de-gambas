@@ -72,7 +72,8 @@
       <div class="stat"><div class="num" id="nServidos">0</div><div class="lbl">SERVIDOS</div></div>
       <div class="stat"><div class="num" id="nTotalHoy">0,00€</div><div class="lbl">TOTAL HOY</div></div>
     </div>
-    <div class="titulo-seccion">PEDIDOS PENDIENTES</div>
+    <button class="btn btn-naranja btn-ancho" id="nuevoPedido" type="button">+ Nuevo pedido</button>
+    <div class="titulo-seccion separado">PEDIDOS PENDIENTES</div>
     <div id="listaPendientes"></div>
     <div class="titulo-seccion separado">SERVIDOS</div>
     <div id="listaServidos"></div>
@@ -138,6 +139,24 @@
     </div>
   </nav>
 </div>
+
+<!-- NUEVO PEDIDO DEL CAMARERO: la misma carta que ve el cliente -->
+<section id="vNuevo" class="nv-pantalla" hidden aria-label="Nuevo pedido">
+  <header class="nv-cab">
+    <button class="nv-cerrar" id="nvCerrar" type="button" aria-label="Cancelar el pedido">✕</button>
+    <div class="nv-local">LA MAR DE GAMBAS</div>
+    <div class="nv-mesa" id="nvMesa">NUEVO PEDIDO</div>
+    <nav class="nv-pestanas" id="nvPestanas"></nav>
+  </header>
+  <div class="nv-cuerpo">
+    <input id="nvBusca" class="buscador" type="search" placeholder="Buscar producto…" autocomplete="off">
+    <div id="nvLista"></div>
+  </div>
+  <div class="nv-dock">
+    <div class="nv-resumen"><span id="nvUds">Sin productos</span><span class="nv-total" id="nvTotal">0,00€</span></div>
+    <button class="btn btn-naranja" id="nvEnviar" type="button" disabled>Enviar pedido</button>
+  </div>
+</section>
 
 <!-- Ventana para editar (producto, usuario, mesa) -->
 <div id="modal" class="modal" hidden>

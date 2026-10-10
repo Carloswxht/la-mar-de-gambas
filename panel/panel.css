@@ -261,3 +261,57 @@ button.prod-nombre{ background:none; border:0; padding:0; text-align:left; curso
   box-shadow:0 8px 20px rgba(20,41,94,.3); max-width:calc(100% - 32px); text-align:center;
 }
 .toast.error{ background:var(--rojo); }
+
+/* ---------------- ENLACES DE LA TARJETA ---------------- */
+.t-enlaces{ display:flex; gap:4px; margin-top:4px; }
+.t-enlaces .btn-modificar{ flex:1; margin-top:0; }
+
+/* ---------------- ELEGIR MESA ---------------- */
+.rejilla-mesas{ display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:8px; }
+.rejilla-mesas .btn{ min-height:56px; font-family:var(--font-titulos); font-weight:600; font-size:17px; letter-spacing:.04em; }
+.rejilla-mesas .btn:disabled{ border-color:var(--linea); color:var(--puntos); }
+
+/* ---------------- NUEVO PEDIDO: la carta del cliente dentro del panel ----------------
+   Mismo aspecto que carta/: cabecera azul marino con el nombre del local,
+   pestañas con raya naranja, botón + naranja redondo y barra de abajo azul. */
+html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
+.nv-pantalla{ position:fixed; inset:0; z-index:95; background:#fff; display:flex; flex-direction:column; }
+.nv-cab{ flex:none; background:var(--navy); color:#fff; text-align:center; padding:14px 16px 0; padding-top:max(14px, env(safe-area-inset-top)); position:relative; }
+.nv-cerrar{ position:absolute; left:8px; top:max(8px, env(safe-area-inset-top)); width:48px; height:48px; border:0; background:none; color:#fff; font-size:22px; cursor:pointer; }
+.nv-local{ font-family:var(--font-titulos); font-weight:700; font-size:24px; letter-spacing:.07em; line-height:1.1; }
+.nv-mesa{ font-family:var(--font-titulos); color:var(--orange); font-size:12px; font-weight:500; letter-spacing:.2em; margin-top:6px; }
+.nv-pestanas{ display:flex; gap:2px; overflow-x:auto; margin:10px -16px 0; padding:0 8px; scrollbar-width:none; }
+.nv-pestanas::-webkit-scrollbar{ display:none; }
+.nv-pestanas button{
+  flex:none; min-height:48px; padding:0 12px; background:none; border:0; border-bottom:3px solid transparent; cursor:pointer;
+  color:rgba(255,255,255,.68); font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+}
+.nv-pestanas button[aria-selected="true"]{ color:#fff; border-bottom-color:var(--orange); }
+.nv-cuerpo{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 16px 20px; max-width:760px; width:100%; margin:0 auto; }
+.nv-cat{ font-family:var(--font-titulos); font-size:15px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--navy); margin:18px 0 2px; }
+.nv-sec{ font-family:var(--font-titulos); font-size:19px; font-weight:600; letter-spacing:.05em; color:var(--navy); margin:18px 0 4px; padding-bottom:6px; border-bottom:3px solid var(--orange); display:inline-block; }
+.nv-prod{ padding:10px 0; border-bottom:1px solid var(--linea); }
+.nv-fila{ display:flex; align-items:center; gap:10px; min-height:52px; }
+.nv-fila + .nv-fila{ margin-top:4px; }
+.nv-info{ flex:1; min-width:0; }
+.nv-nombre{ font-weight:700; font-size:16px; color:var(--texto); }
+.nv-desc{ font-size:13px; color:var(--suave); }
+.nv-tam{ font-weight:600; font-size:14.5px; color:var(--texto); }
+.nv-precio{ font-weight:700; font-size:15px; color:var(--navy); margin-top:2px; }
+.nv-mas{ flex:none; width:48px; height:48px; border-radius:50%; border:0; background:var(--orange); color:#fff; font-size:26px; font-weight:700; line-height:1; cursor:pointer; box-shadow:0 2px 6px rgba(240,138,62,.35); }
+.nv-mas:active{ background:var(--orange-d); }
+.nv-fila .paso button{ border-color:var(--orange); color:var(--orange-d); }
+.nv-fila .paso button:disabled{ border-color:var(--linea); color:var(--linea); }
+.nv-fila.agotado .nv-nombre, .nv-fila.agotado .nv-tam, .nv-fila.agotado .nv-precio{ color:var(--puntos); }
+.nv-agotado{ flex:none; font-size:12px; font-weight:700; color:var(--suave); border:1px solid var(--linea); border-radius:8px; padding:6px 10px; }
+.nv-nota{ width:100%; margin:6px 0 2px; min-height:44px; padding:8px 12px; border:1px solid var(--linea); border-radius:8px; font-size:16px; background:#fff; color:var(--texto); }
+.nv-nota:focus{ outline:none; border-color:var(--orange); }
+.nv-dock{
+  flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--navy); color:#fff; padding:12px 16px; padding-bottom:max(12px, env(safe-area-inset-bottom));
+}
+.nv-resumen{ display:flex; flex-direction:column; min-width:0; }
+.nv-resumen span:first-child{ font-size:12px; color:rgba(255,255,255,.75); }
+.nv-total{ font-family:var(--font-titulos); font-size:25px; font-weight:600; }
+.nv-dock .btn{ min-width:160px; text-transform:uppercase; letter-spacing:.06em; }
+.nv-dock .btn:disabled{ background:rgba(255,255,255,.18); color:rgba(255,255,255,.6); opacity:1; }

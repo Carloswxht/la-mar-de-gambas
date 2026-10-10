@@ -103,6 +103,7 @@ function entrarConSesion(s){
 
 function volverAlLogin(mensaje){
   clearInterval(estado.temporizador);
+  cerrarNuevo();
   cerrarMenu();
   estado.sesion = null; estado.pedidos = []; estado.vistos = null; estado.cambios = {};
   $('lPass').value = '';
@@ -305,7 +306,9 @@ function tarjeta(p){
       <span class="marca">✓ Servido${p.servido ? ' ' + hora(p.servido) : ''}${p.servido_por ? ' · ' + esc(p.servido_por) : ''}</span>
       <button class="btn btn-peq" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Deshacer</button></div>`;
   }
-  pie += `<button class="btn-modificar" type="button" data-modificar="${p.id}" ${ocupado}>✎ Modificar pedido</button>`;
+  pie += `<div class="t-enlaces">
+      <button class="btn-modificar" type="button" data-modificar="${p.id}" ${ocupado}>✎ Modificar pedido</button>
+      <button class="btn-modificar" type="button" data-nuevo-mesa="${p.mesa}">+ Nuevo pedido</button></div>`;
 
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
@@ -324,6 +327,8 @@ function tarjeta(p){
 async function alTocarPedido(ev){
   const m = ev.target.closest('button[data-modificar]');
   if(m && !m.disabled){ abrirModificar(estado.pedidos.find(x => x.id === Number(m.dataset.modificar))); return; }
+  const n = ev.target.closest('button[data-nuevo-mesa]');
+  if(n){ const p = estado.pedidos.find(x => x.mesa === Number(n.dataset.nuevoMesa)); abrirNuevo(Number(n.dataset.nuevoMesa), p ? p.mesa_nombre : null); return; }
   const b = ev.target.closest('button[data-accion]');
   if(!b || b.disabled) return;
   const id = Number(b.dataset.id), accion = b.dataset.accion;
@@ -557,21 +562,13 @@ function editarProducto(p){
 
 /* =====================================================================
    MODIFICAR UN PEDIDO (camarero, barra y admin; en cualquier estado)
-   Quitar un producto lo deja a 0 (se ve en gris en la tarjeta); los
-   productos nuevos se añaden al precio de la carta y no pueden estar agotados.
+   Solo quitar o cambiar cantidades: quitar deja la línea a 0 (se ve en gris
+   en la tarjeta). Para añadir cosas se hace un pedido nuevo para la mesa.
    ===================================================================== */
-async function abrirModificar(p){
+function abrirModificar(p){
   if(!p) return;
-  if(!estado.menuCarta){
-    try { estado.menuCarta = await datosCarta.menu(); }
-    catch(e) { return tratarError(e); }
-  }
   const cant = {};                       // id de línea -> cantidad nueva
   (p.lineas || []).forEach(l => { cant[l.id] = l.cantidad; });
-  const nuevas = [];                     // { producto, nombre, precio, cantidad, nota }
-  let cantNueva = 1;
-  const productos = {};
-  estado.menuCarta.forEach(c => (c.items || []).forEach(it => { productos[it.dbId] = it; }));
 
   const pintar = () => {
     const filas = (p.lineas || []).map(l => `
@@ -583,65 +580,190 @@ async function abrirModificar(p){
           <button type="button" data-mas="${l.id}" aria-label="Añadir uno" ${cant[l.id] >= 20 ? 'disabled' : ''}>+</button>
         </div>
       </div>`).join('');
-    const filasNuevas = nuevas.map((n, i) => `
-      <div class="mod-fila nueva">
-        <div class="mod-nombre">${esc(n.nombre)}<small>${n.cantidad} × ${euros(n.precio)}${n.nota ? ' · ' + esc(n.nota) : ''}</small></div>
-        <button type="button" class="btn btn-peq" data-quitar-nueva="${i}">Quitar</button>
-      </div>`).join('');
-    const opciones = estado.menuCarta.map(c => `<optgroup label="${esc(c.name)}">${(c.items || []).map(it =>
-      `<option value="${it.dbId}" ${it.agotado ? 'disabled' : ''}>${esc(it.n)} · ${euros(it.p)}${it.agotado ? ' (agotado)' : ''}</option>`).join('')}</optgroup>`).join('');
-    const total = (p.lineas || []).reduce((s, l) => s + l.precio * cant[l.id], 0) + nuevas.reduce((s, n) => s + n.precio * n.cantidad, 0);
+    const total = (p.lineas || []).reduce((s, l) => s + l.precio * cant[l.id], 0);
     $('modalCampos').innerHTML = `
-      <p class="texto-suave">${esc(p.mesa_nombre || 'Mesa ' + p.mesa)} · usa − para quitar productos (quedan a 0 y en gris) y añade los que pida la mesa.</p>
-      <div class="mod-lista">${filas}${filasNuevas}</div>
-      <div class="titulo-seccion" style="margin:6px 0 0">AÑADIR PRODUCTO</div>
-      <label class="campo"><span>Producto</span><select id="modProd"><option value="">Elige un producto…</option>${opciones}</select></label>
-      <div class="mod-fila">
-        <div class="mod-nombre">Cantidad</div>
-        <div class="paso">
-          <button type="button" data-menos-nueva aria-label="Uno menos" ${cantNueva <= 1 ? 'disabled' : ''}>−</button>
-          <span>${cantNueva}</span>
-          <button type="button" data-mas-nueva aria-label="Uno más" ${cantNueva >= 20 ? 'disabled' : ''}>+</button>
-        </div>
-      </div>
-      <label class="campo"><span>Nota (opcional)</span><input id="modNota" maxlength="140" autocomplete="off" placeholder="Ej.: sin sal"></label>
-      <button type="button" class="btn btn-borde btn-ancho" data-anadir>+ Añadir al pedido</button>
+      <p class="texto-suave">${esc(p.mesa_nombre || 'Mesa ' + p.mesa)} · toca − para quitar un producto (queda a 0 y en gris). Para pedir algo más, usa «+ Nuevo pedido».</p>
+      <div class="mod-lista">${filas}</div>
       <div class="t-total"><span>TOTAL NUEVO</span><span>${euros(total)}</span></div>`;
   };
 
   estado.alTocarModal = (ev) => {
     const t = ev.target.closest('button');
     if(!t) return;
-    const prodSel = $('modProd') ? $('modProd').value : '', nota = $('modNota') ? $('modNota').value : '';
     if(t.dataset.menos) cant[t.dataset.menos] = Math.max(0, cant[t.dataset.menos] - 1);
     else if(t.dataset.mas) cant[t.dataset.mas] = Math.min(20, cant[t.dataset.mas] + 1);
-    else if(t.hasAttribute('data-menos-nueva')) cantNueva = Math.max(1, cantNueva - 1);
-    else if(t.hasAttribute('data-mas-nueva')) cantNueva = Math.min(20, cantNueva + 1);
-    else if(t.dataset.quitarNueva !== undefined) nuevas.splice(Number(t.dataset.quitarNueva), 1);
-    else if(t.hasAttribute('data-anadir')){
-      const it = productos[prodSel];
-      if(!it){ $('modalError').textContent = 'Elige un producto para añadir.'; $('modalError').hidden = false; return; }
-      nuevas.push({ producto: it.dbId, nombre: it.n, precio: Number(it.p), cantidad: cantNueva, nota: nota.trim() });
-      cantNueva = 1;
-      $('modalError').hidden = true;
-      pintar();
-      return;
-    } else return;
+    else return;
     pintar();
-    if($('modProd')) $('modProd').value = prodSel;
-    if($('modNota')) $('modNota').value = nota;
   };
 
   abrirModalLibre('Modificar pedido ' + p.id, pintar, async () => {
     const lineas = (p.lineas || []).filter(l => cant[l.id] !== l.cantidad).map(l => ({ id: l.id, cantidad: cant[l.id] }));
-    if(!lineas.length && !nuevas.length) return;
-    const r = await datosPanel.modificar(p.id, { lineas, nuevas: nuevas.map(n => ({ producto: n.producto, cantidad: n.cantidad, nota: n.nota })) });
+    if(!lineas.length) return;
+    const r = await datosPanel.modificar(p.id, { lineas });
     const i = estado.pedidos.findIndex(x => x.id === p.id);
     if(i >= 0 && r) estado.pedidos[i] = r;
     pintarPedidos();
     toast('Pedido ' + p.id + ' modificado');
   });
 }
+
+/* =====================================================================
+   NUEVO PEDIDO DEL CAMARERO
+   Desde una tarjeta (la mesa ya va puesta) o desde «+ Nuevo pedido» de la
+   pantalla principal (primero se elige la mesa). Se abre la carta, igual que
+   la del cliente, y el pedido entra ya «en preparación».
+   ===================================================================== */
+const nuevo = { mesa: null, mesaNombre: '', cant: {}, notas: {}, pestana: null, enviando: false };
+
+async function cargarCartaPanel(){
+  if(!estado.menuCarta) estado.menuCarta = await datosCarta.menu();
+  return estado.menuCarta;
+}
+
+// Elegir la mesa (pantalla principal).
+async function elegirMesa(){
+  let mesas;
+  try { mesas = await datosPanel.mesasPanel(); }
+  catch(e) { return tratarError(e); }
+  abrirModalLibre('¿Para qué mesa?', () => {
+    $('modalCampos').innerHTML = `<div class="rejilla-mesas">${(mesas || []).map(m =>
+      `<button type="button" class="btn btn-borde" data-elegir-mesa="${m.id}" data-nombre="${esc(m.nombre)}" ${m.activa ? '' : 'disabled'}>${esc(m.nombre)}</button>`).join('')}</div>`;
+  }, null);
+  $('modalForm').querySelector('[type=submit]').hidden = true;
+  estado.alTocarModal = (ev) => {
+    const b = ev.target.closest('[data-elegir-mesa]');
+    if(!b) return;
+    cerrarModal();
+    abrirNuevo(Number(b.dataset.elegirMesa), b.dataset.nombre);
+  };
+}
+$('nuevoPedido').addEventListener('click', elegirMesa);
+
+async function abrirNuevo(mesa, mesaNombre){
+  try { await cargarCartaPanel(); }
+  catch(e) { return tratarError(e); }
+  Object.assign(nuevo, { mesa, mesaNombre: mesaNombre || ('Mesa ' + mesa), cant: {}, notas: {}, enviando: false });
+  nuevo.pestana = (estado.menuCarta[0] || {}).id;
+  $('nvMesa').textContent = nuevo.mesaNombre.toUpperCase() + ' · NUEVO PEDIDO';
+  $('nvBusca').value = '';
+  $('nvPestanas').innerHTML = estado.menuCarta.map(c => `<button type="button" data-pestana="${esc(c.id)}">${esc(c.name)}</button>`).join('');
+  $('vNuevo').hidden = false;
+  document.documentElement.classList.add('sin-scroll');
+  pintarNuevo();
+}
+
+function cerrarNuevo(){
+  $('vNuevo').hidden = true;
+  document.documentElement.classList.remove('sin-scroll');
+}
+
+// Pinta la carta: una pestaña cada vez (o todo lo que coincida con la búsqueda).
+function pintarNuevo(){
+  const q = $('nvBusca').value.trim().toLowerCase();
+  $('nvPestanas').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(!q && b.dataset.pestana === nuevo.pestana)));
+  const cats = q ? estado.menuCarta : estado.menuCarta.filter(c => c.id === nuevo.pestana);
+  let html = '';
+  cats.forEach(c => {
+    const items = (c.items || []).filter(it => !q || (it.n || '').toLowerCase().includes(q) || (it.d || '').toLowerCase().includes(q));
+    if(!items.length) return;
+    if(q) html += `<div class="nv-cat">${esc(c.name)}</div>`;
+    let seccion = null;
+    for(let i = 0; i < items.length; i++){
+      const it = items[i];
+      if(!q && c.multi && it.sec && it.sec !== seccion){ seccion = it.sec; html += `<div class="nv-sec">${esc(seccion)}</div>`; }
+      // Mismo producto en varios tamaños (Tapa/Plato, Copa/Botella): un nombre y una fila por tamaño.
+      if(it.size && !it.only){
+        const grupo = [it];
+        while(i + 1 < items.length && items[i + 1].dn === it.dn && items[i + 1].size && !items[i + 1].only) grupo.push(items[++i]);
+        const comun = grupo.every(x => x.d === grupo[0].d) && grupo[0].d;
+        html += `<div class="nv-prod"><div class="nv-nombre">${esc(it.dn || it.n)}</div>${comun ? `<div class="nv-desc">${esc(comun)}</div>` : ''}
+          ${grupo.map(x => filaNuevo(x, x.size + (!comun && x.d ? ' · ' + x.d : ''))).join('')}</div>`;
+      } else {
+        html += `<div class="nv-prod">${filaNuevo(it, null)}</div>`;
+      }
+    }
+  });
+  $('nvLista').innerHTML = html || '<div class="vacio">No hay productos que coincidan.</div>';
+  pintarDockNuevo();
+}
+
+function filaNuevo(it, etiqueta){
+  const id = it.dbId, n = nuevo.cant[id] || 0;
+  const control = it.agotado ? '<span class="nv-agotado">Agotado</span>'
+    : n === 0 ? `<button type="button" class="nv-mas" data-nv-mas="${id}" aria-label="Añadir ${esc(it.n)}">+</button>`
+    : `<div class="paso"><button type="button" data-nv-menos="${id}" aria-label="Uno menos">−</button><span>${n}</span><button type="button" data-nv-mas="${id}" aria-label="Uno más" ${n >= 20 ? 'disabled' : ''}>+</button></div>`;
+  return `<div class="nv-fila ${it.agotado ? 'agotado' : ''}">
+      <div class="nv-info">
+        ${etiqueta === null ? `<div class="nv-nombre">${esc(it.dn || it.n)}</div>${it.d ? `<div class="nv-desc">${esc(it.d)}</div>` : ''}` : `<div class="nv-tam">${esc(etiqueta)}</div>`}
+        <div class="nv-precio">${euros(it.p)}</div>
+      </div>
+      ${control}
+    </div>
+    ${n > 0 ? `<input class="nv-nota" data-nv-nota="${id}" maxlength="140" placeholder="nota (opcional)" value="${esc(nuevo.notas[id] || '')}" autocomplete="off">` : ''}`;
+}
+
+function lineasNuevo(){
+  const precios = {};
+  estado.menuCarta.forEach(c => (c.items || []).forEach(it => { precios[it.dbId] = it; }));
+  return Object.keys(nuevo.cant).filter(id => nuevo.cant[id] > 0).map(id => ({
+    producto: Number(id), cantidad: nuevo.cant[id], nota: (nuevo.notas[id] || '').trim(), precio: Number(precios[id].p) }));
+}
+
+function pintarDockNuevo(){
+  const ls = lineasNuevo();
+  const uds = ls.reduce((s, l) => s + l.cantidad, 0);
+  $('nvUds').textContent = uds ? uds + (uds === 1 ? ' producto' : ' productos') : 'Sin productos';
+  $('nvTotal').textContent = euros(ls.reduce((s, l) => s + l.precio * l.cantidad, 0));
+  $('nvEnviar').disabled = !uds || nuevo.enviando;
+}
+
+$('nvPestanas').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-pestana]');
+  if(!b) return;
+  nuevo.pestana = b.dataset.pestana; $('nvBusca').value = '';
+  pintarNuevo();
+  document.querySelector('.nv-cuerpo').scrollTop = 0;
+});
+$('nvBusca').addEventListener('input', pintarNuevo);
+$('nvLista').addEventListener('click', (ev) => {
+  const mas = ev.target.closest('[data-nv-mas]'), menos = ev.target.closest('[data-nv-menos]');
+  if(mas) nuevo.cant[mas.dataset.nvMas] = Math.min(20, (nuevo.cant[mas.dataset.nvMas] || 0) + 1);
+  else if(menos) nuevo.cant[menos.dataset.nvMenos] = Math.max(0, (nuevo.cant[menos.dataset.nvMenos] || 0) - 1);
+  else return;
+  pintarNuevo();
+});
+$('nvLista').addEventListener('input', (ev) => {
+  const n = ev.target.closest('[data-nv-nota]');
+  if(n) nuevo.notas[n.dataset.nvNota] = n.value;
+});
+$('nvCerrar').addEventListener('click', () => {
+  if(lineasNuevo().length && !confirmarCierre()) return;
+  cerrarNuevo();
+});
+// Segundo toque en ✕ para descartar un pedido a medias (sin ventanas del navegador).
+let avisoCierre = 0;
+function confirmarCierre(){
+  if(Date.now() - avisoCierre < 4000) return true;
+  avisoCierre = Date.now();
+  toast('Toca ✕ otra vez para descartar este pedido');
+  return false;
+}
+$('nvEnviar').addEventListener('click', async () => {
+  const ls = lineasNuevo();
+  if(!ls.length || nuevo.enviando) return;
+  nuevo.enviando = true; $('nvEnviar').textContent = 'Enviando…'; pintarDockNuevo();
+  try {
+    const p = await datosPanel.crearPedido(nuevo.mesa, ls.map(l => ({ producto: l.producto, cantidad: l.cantidad, nota: l.nota })));
+    if(p){ estado.pedidos.push(p); if(estado.vistos) estado.vistos.add(p.id); }
+    cerrarNuevo();
+    if(estado.vista !== 'pedidos') irA('pedidos'); else pintarPedidos();
+    toast(nuevo.mesaNombre + ': pedido enviado');
+  } catch(e) {
+    tratarError(e);
+  } finally {
+    nuevo.enviando = false; $('nvEnviar').textContent = 'Enviar pedido'; pintarDockNuevo();
+  }
+});
 
 /* =====================================================================
    RESUMEN DEL DÍA (con los pedidos de hoy que ya tiene el panel)
@@ -785,6 +907,7 @@ function editarUsuario(u){
 let alGuardar = null;
 function abrirModal(titulo, campos, guardar){
   estado.alTocarModal = null;
+  $('modalForm').querySelector('[type=submit]').hidden = false;
   $('modalTitulo').textContent = titulo;
   $('modalError').hidden = true;
   $('modalCampos').innerHTML = campos.map(c => {
@@ -803,6 +926,7 @@ function abrirModal(titulo, campos, guardar){
 }
 // Ventana con contenido propio (p. ej. modificar un pedido).
 function abrirModalLibre(titulo, pintar, guardar){
+  $('modalForm').querySelector('[type=submit]').hidden = !guardar;
   $('modalTitulo').textContent = titulo;
   $('modalError').hidden = true;
   pintar();

@@ -259,9 +259,14 @@ const datosPanel = {
   pedidos: (desde) => rpcPersonal('panel_pedidos', desde ? { p_desde: desde } : {}),
   // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
-  // cambios: { lineas: [{ id, cantidad }], nuevas: [{ producto, cantidad, nota }] }
-  // (una línea a 0 queda en el pedido, en gris y a cero euros)
+  // cambios: { lineas: [{ id, cantidad }] } (una línea a 0 queda en el pedido,
+  // en gris y a cero euros). La base admite también "nuevas", pero el panel
+  // añade productos con un pedido nuevo (crearPedido).
   modificar: (pedidoId, cambios) => rpcPersonal('panel_modificar_pedido', { p_pedido: pedidoId, p_cambios: cambios }),
+  // Pedido nuevo tomado por el camarero (entra ya "en preparación").
+  // lineas: [{ producto, cantidad, nota }]
+  crearPedido: (mesa, lineas) => rpcPersonal('panel_crear_pedido', { p_mesa: Number(mesa), p_lineas: lineas }),
+  mesasPanel: () => rpcPersonal('panel_mesas'),
   productos: () => rpcPersonal('panel_productos'),
   disponible: (productoId, disponible) => rpcPersonal('panel_disponible', { p_producto: productoId, p_disponible: !!disponible }),
   // Solo admin:

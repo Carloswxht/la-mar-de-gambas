@@ -12,7 +12,8 @@
 --       con el código secreto de la mesa, editarlo mientras siga
 --       "enviado" y no hayan pasado 3 minutos, y ver solo sus pedidos.
 --     - Camarero: ver pedidos, marcar En preparación / Servido / Deshacer
---       y modificar pedidos (quitar productos a 0 o añadir nuevos).
+--       modificar pedidos (quitar productos a 0) y crear pedidos nuevos
+--       para una mesa (entran ya "en preparación").
 --     - Barra: lo del camarero + marcar productos agotados.
 --     - Admin: todo lo anterior + precios, productos, mesas y usuarios.
 -- * El precio lo pone siempre la base, nunca el móvil del cliente.
@@ -464,6 +465,42 @@ begin
   return privado.pedido_json(o.id);
 end $$;
 
+-- Crear un pedido desde el panel (camarero, barra y admin) para una mesa.
+-- No necesita el código del QR ni tiene límite anti-spam. Entra directamente
+-- "en preparación": lo ha tomado el propio camarero. Precio de la base y
+-- sin agotados (lo comprueba privado.guardar_lineas).
+create function public.panel_crear_pedido(p_token text, p_mesa integer, p_lineas jsonb)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff; v_id bigint; v_total numeric;
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  perform 1 from mesas where id = p_mesa;
+  if not found then
+    raise exception 'MESA_NO_VALIDA';
+  end if;
+  insert into orders (mesa_id, round_number, device_key, status, received_at, received_by)
+  values (p_mesa, 1, gen_random_uuid(), 'en_preparacion', now(), s.name)
+  returning id into v_id;
+  v_total := privado.guardar_lineas(v_id, p_lineas);
+  update orders set total = v_total where id = v_id;
+  return privado.pedido_json(v_id);
+end $$;
+
+-- Mesas para elegir al crear un pedido desde el panel (sin códigos del QR).
+create function public.panel_mesas(p_token text)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+begin
+  perform privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  return (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', name, 'activa', active) order by id), '[]'::jsonb)
+            from mesas);
+end $$;
+
 -- Modificar un pedido desde el panel (camarero, barra y admin), en
 -- cualquier estado, también servido (p. ej. la mesa ya no quiere algo).
 -- p_cambios = {"lineas": [{"id": 12, "cantidad": 0}, ...],
@@ -752,6 +789,8 @@ grant execute on function
   public.panel_pedidos(text, timestamptz),
   public.panel_marcar(text, bigint, text),
   public.panel_modificar_pedido(text, bigint, jsonb),
+  public.panel_crear_pedido(text, integer, jsonb),
+  public.panel_mesas(text),
   public.panel_productos(text),
   public.panel_disponible(text, integer, boolean),
   public.admin_guardar_producto(text, jsonb),
