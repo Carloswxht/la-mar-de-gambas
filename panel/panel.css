@@ -262,6 +262,16 @@ button.prod-nombre{ background:none; border:0; padding:0; text-align:left; curso
 }
 .toast.error{ background:var(--rojo); }
 
+/* ---------------- "+" DISCRETO PARA UN PEDIDO NUEVO ---------------- */
+.titulo-fila{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.titulo-fila .titulo-seccion{ margin-bottom:0; }
+.boton-mas{
+  flex:none; width:48px; height:48px; margin-right:-6px; border:0; background:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--navy);
+}
+.boton-mas svg{ box-sizing:content-box; padding:8px; border:1.5px solid var(--navy); border-radius:50%; }
+.boton-mas:active svg{ background:var(--fondo-2); }
+
 /* ---------------- ENLACES DE LA TARJETA ---------------- */
 .t-enlaces{ display:flex; gap:4px; margin-top:4px; }
 .t-enlaces .btn-modificar{ flex:1; margin-top:0; }

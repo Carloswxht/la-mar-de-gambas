@@ -72,8 +72,12 @@
       <div class="stat"><div class="num" id="nServidos">0</div><div class="lbl">SERVIDOS</div></div>
       <div class="stat"><div class="num" id="nTotalHoy">0,00€</div><div class="lbl">TOTAL HOY</div></div>
     </div>
-    <button class="btn btn-naranja btn-ancho" id="nuevoPedido" type="button">+ Nuevo pedido</button>
-    <div class="titulo-seccion separado">PEDIDOS PENDIENTES</div>
+    <div class="titulo-fila">
+      <div class="titulo-seccion">PEDIDOS PENDIENTES</div>
+      <button class="boton-mas" id="nuevoPedido" type="button" aria-label="Nuevo pedido" title="Nuevo pedido">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
     <div id="listaPendientes"></div>
     <div class="titulo-seccion separado">SERVIDOS</div>
     <div id="listaServidos"></div>
