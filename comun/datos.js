@@ -147,6 +147,7 @@ function textoError(codigo){
     SIN_PERMISO: 'Tu usuario no tiene permiso para esto.',
     PASSWORD_CORTA: 'La contraseña debe tener al menos 8 caracteres.',
     CAMBIO_NO_VALIDO: 'Ese cambio de estado no es posible.',
+    LINEA_NO_VALIDA: 'Esa línea ya no está en el pedido. Recarga e inténtalo otra vez.',
     FALTAN_DATOS: 'Faltan datos obligatorios.',
     ROL_NO_VALIDO: 'Rol no válido.',
     USUARIO_NO_VALIDO: 'No se encuentra el usuario.',
@@ -256,8 +257,16 @@ async function rpcPersonal(nombre, params){
 /* ---------------- PANEL (camarero, barra y admin) ---------------- */
 const datosPanel = {
   pedidos: (desde) => rpcPersonal('panel_pedidos', desde ? { p_desde: desde } : {}),
-  // estado: 'recibido' | 'servido' | 'enviado' (deshacer)
+  // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
+  // cambios: { lineas: [{ id, cantidad }] } (una línea a 0 queda en el pedido,
+  // en gris y a cero euros). La base admite también "nuevas", pero el panel
+  // añade productos con un pedido nuevo (crearPedido).
+  modificar: (pedidoId, cambios) => rpcPersonal('panel_modificar_pedido', { p_pedido: pedidoId, p_cambios: cambios }),
+  // Pedido nuevo tomado por el camarero (entra como NUEVO, igual que los del cliente).
+  // lineas: [{ producto, cantidad, nota }]
+  crearPedido: (mesa, lineas) => rpcPersonal('panel_crear_pedido', { p_mesa: Number(mesa), p_lineas: lineas }),
+  mesasPanel: () => rpcPersonal('panel_mesas'),
   productos: () => rpcPersonal('panel_productos'),
   disponible: (productoId, disponible) => rpcPersonal('panel_disponible', { p_producto: productoId, p_disponible: !!disponible }),
   // Solo admin:
