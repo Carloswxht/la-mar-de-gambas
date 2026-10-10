@@ -611,7 +611,7 @@ function abrirModificar(p){
    NUEVO PEDIDO DEL CAMARERO
    Desde una tarjeta (la mesa ya va puesta) o desde «+ Nuevo pedido» de la
    pantalla principal (primero se elige la mesa). Se abre la carta, igual que
-   la del cliente, y el pedido entra ya «en preparación».
+   la del cliente, y el pedido entra como NUEVO, igual que los del cliente.
    ===================================================================== */
 const nuevo = { mesa: null, mesaNombre: '', cant: {}, notas: {}, pestana: null, enviando: false };
 

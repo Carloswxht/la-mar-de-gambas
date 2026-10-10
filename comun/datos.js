@@ -263,7 +263,7 @@ const datosPanel = {
   // en gris y a cero euros). La base admite también "nuevas", pero el panel
   // añade productos con un pedido nuevo (crearPedido).
   modificar: (pedidoId, cambios) => rpcPersonal('panel_modificar_pedido', { p_pedido: pedidoId, p_cambios: cambios }),
-  // Pedido nuevo tomado por el camarero (entra ya "en preparación").
+  // Pedido nuevo tomado por el camarero (entra como NUEVO, igual que los del cliente).
   // lineas: [{ producto, cantidad, nota }]
   crearPedido: (mesa, lineas) => rpcPersonal('panel_crear_pedido', { p_mesa: Number(mesa), p_lineas: lineas }),
   mesasPanel: () => rpcPersonal('panel_mesas'),

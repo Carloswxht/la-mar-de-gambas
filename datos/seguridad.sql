@@ -13,7 +13,7 @@
 --       "enviado" y no hayan pasado 3 minutos, y ver solo sus pedidos.
 --     - Camarero: ver pedidos, marcar En preparación / Servido / Deshacer
 --       modificar pedidos (quitar productos a 0) y crear pedidos nuevos
---       para una mesa (entran ya "en preparación").
+--       para una mesa (entran como NUEVOS, igual que los del cliente).
 --     - Barra: lo del camarero + marcar productos agotados.
 --     - Admin: todo lo anterior + precios, productos, mesas y usuarios.
 -- * El precio lo pone siempre la base, nunca el móvil del cliente.
@@ -466,9 +466,10 @@ begin
 end $$;
 
 -- Crear un pedido desde el panel (camarero, barra y admin) para una mesa.
--- No necesita el código del QR ni tiene límite anti-spam. Entra directamente
--- "en preparación": lo ha tomado el propio camarero. Precio de la base y
--- sin agotados (lo comprueba privado.guardar_lineas).
+-- No necesita el código del QR ni tiene límite anti-spam. Entra como NUEVO,
+-- igual que los pedidos de los clientes (la barra lo acepta, o pasa solo a
+-- preparación a los 3 minutos). Precio de la base y sin agotados (lo
+-- comprueba privado.guardar_lineas).
 create function public.panel_crear_pedido(p_token text, p_mesa integer, p_lineas jsonb)
 returns jsonb
 language plpgsql security definer
@@ -481,8 +482,8 @@ begin
   if not found then
     raise exception 'MESA_NO_VALIDA';
   end if;
-  insert into orders (mesa_id, round_number, device_key, status, received_at, received_by)
-  values (p_mesa, 1, gen_random_uuid(), 'en_preparacion', now(), s.name)
+  insert into orders (mesa_id, round_number, device_key)
+  values (p_mesa, 1, gen_random_uuid())
   returning id into v_id;
   v_total := privado.guardar_lineas(v_id, p_lineas);
   update orders set total = v_total where id = v_id;
