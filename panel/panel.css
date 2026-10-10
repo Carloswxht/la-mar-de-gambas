@@ -140,7 +140,8 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 .linea .nombre{ min-width:0; overflow-wrap:anywhere; }
 .linea .puntos{ flex:1; min-width:12px; border-bottom:1px dotted var(--puntos); margin:0 4px; transform:translateY(-4px); }
 .linea .precio{ flex:none; white-space:nowrap; }
-.nota{ margin:0 0 4px 26px; font-size:13px; font-weight:700; color:var(--rojo); background:rgba(176,52,42,.08); padding:4px 8px; border-radius:6px; overflow-wrap:anywhere; }
+.nota{ margin:0 0 4px 26px; font-size:13px; font-weight:700; color:var(--texto); background:none; padding:2px 0; overflow-wrap:anywhere; }
+.nota .aviso{ color:var(--rojo); }
 .t-total{ display:flex; justify-content:space-between; font-size:15px; font-weight:700; color:var(--navy); margin-top:8px; padding-top:8px; border-top:1px solid var(--linea); }
 .t-botones{ display:flex; gap:8px; margin-top:12px; }
 .t-botones .btn{ flex:1; }

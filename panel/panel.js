@@ -286,7 +286,7 @@ function tarjeta(p){
   // Una línea a 0 la ha quitado el personal: se ve en gris clarito y a cero.
   const lineas = (p.lineas || []).map(l => `
     <div class="linea ${l.cantidad === 0 ? 'cero' : ''}"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.precio * l.cantidad)}</span></div>
-    ${l.nota && l.cantidad > 0 ? `<div class="nota">⚠ ${esc(l.nota)}</div>` : ''}`).join('');
+    ${l.nota && l.cantidad > 0 ? `<div class="nota"><span class="aviso">⚠</span> ${esc(l.nota)}</div>` : ''}`).join('');
 
   // Sin etiquetas: el estado se ve por el color de la tarjeta y por el botón
   // principal (Aceptar pedido / Marcar como servido).
