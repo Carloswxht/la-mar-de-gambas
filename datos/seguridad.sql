@@ -11,7 +11,8 @@
 --     - Cliente de la mesa (sin login): ver la carta, crear SU pedido
 --       con el código secreto de la mesa, editarlo mientras siga
 --       "enviado" y no hayan pasado 3 minutos, y ver solo sus pedidos.
---     - Camarero: ver pedidos y marcar En preparación / Servido / Deshacer.
+--     - Camarero: ver pedidos, marcar En preparación / Servido / Deshacer
+--       y modificar pedidos (quitar productos a 0 o añadir nuevos).
 --     - Barra: lo del camarero + marcar productos agotados.
 --     - Admin: todo lo anterior + precios, productos, mesas y usuarios.
 -- * El precio lo pone siempre la base, nunca el móvil del cliente.
@@ -463,6 +464,79 @@ begin
   return privado.pedido_json(o.id);
 end $$;
 
+-- Modificar un pedido desde el panel (camarero, barra y admin), en
+-- cualquier estado, también servido (p. ej. la mesa ya no quiere algo).
+-- p_cambios = {"lineas": [{"id": 12, "cantidad": 0}, ...],
+--              "nuevas": [{"producto": 35, "cantidad": 1, "nota": ""}, ...]}
+-- Una línea a 0 no se borra: queda en el pedido en gris y a cero euros.
+-- Los productos nuevos van al precio de la base y no pueden estar agotados.
+create function public.panel_modificar_pedido(p_token text, p_pedido bigint, p_cambios jsonb)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare
+  s staff; o orders; l jsonb; p products; v_cant int; v_nota text;
+  d jsonb := coalesce(p_cambios, '{}'::jsonb);
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  select * into o from orders where id = p_pedido for update;
+  if not found then
+    raise exception 'PEDIDO_NO_ENCONTRADO';
+  end if;
+
+  -- Cambiar cantidades de líneas que ya están en el pedido.
+  for l in select * from jsonb_array_elements(coalesce(d->'lineas', '[]'::jsonb)) loop
+    begin
+      v_cant := (l->>'cantidad')::int;
+    exception when others then
+      raise exception 'CANTIDAD_NO_VALIDA';
+    end;
+    if v_cant is null or v_cant < 0 or v_cant > 20 then
+      raise exception 'CANTIDAD_NO_VALIDA';
+    end if;
+    update order_items set quantity = v_cant
+     where id = (case when (l->>'id') ~ '^[0-9]{1,18}$' then (l->>'id')::bigint end)
+       and order_id = o.id;
+    if not found then
+      raise exception 'LINEA_NO_VALIDA';
+    end if;
+  end loop;
+
+  -- Añadir productos nuevos.
+  for l in select * from jsonb_array_elements(coalesce(d->'nuevas', '[]'::jsonb)) loop
+    begin
+      v_cant := (l->>'cantidad')::int;
+    exception when others then
+      raise exception 'CANTIDAD_NO_VALIDA';
+    end;
+    if v_cant is null or v_cant < 1 or v_cant > 20 then
+      raise exception 'CANTIDAD_NO_VALIDA';
+    end if;
+    select * into p from products
+     where id = (case when (l->>'producto') ~ '^[0-9]{1,9}$' then (l->>'producto')::int end)
+       and visible;
+    if not found then
+      raise exception 'PRODUCTO_NO_VALIDO';
+    end if;
+    if not p.available then
+      raise exception 'AGOTADO:%', coalesce(p.name, '');
+    end if;
+    v_nota := left(btrim(regexp_replace(coalesce(l->>'nota', ''), '[[:cntrl:]]', ' ', 'g')), 140);
+    insert into order_items (order_id, product_id, product_name, size, unit_price, quantity, note)
+    values (o.id, p.id, p.name, p.size, p.price, v_cant, v_nota);
+  end loop;
+
+  if (select count(*) from order_items where order_id = o.id) > 40 then
+    raise exception 'DEMASIADAS_LINEAS';
+  end if;
+
+  update orders
+     set total = (select coalesce(sum(unit_price * quantity), 0) from order_items where order_id = o.id)
+   where id = o.id;
+  return privado.pedido_json(o.id);
+end $$;
+
 -- Lista completa de productos (con los ocultos) para barra y admin.
 create function public.panel_productos(p_token text)
 returns jsonb
@@ -677,6 +751,7 @@ grant execute on function
   public.personal_cambiar_password(text, text, text),
   public.panel_pedidos(text, timestamptz),
   public.panel_marcar(text, bigint, text),
+  public.panel_modificar_pedido(text, bigint, jsonb),
   public.panel_productos(text),
   public.panel_disponible(text, integer, boolean),
   public.admin_guardar_producto(text, jsonb),

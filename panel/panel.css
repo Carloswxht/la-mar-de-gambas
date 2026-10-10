@@ -148,6 +148,27 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 .t-servido{ display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
 .t-servido .marca{ font-size:13px; color:var(--suave); font-weight:700; }
 
+/* Línea quitada por el personal: gris clarito y a cero */
+.linea.cero, .linea.cero .cant{ color:#B8C0D2; }
+.linea.cero .puntos{ border-bottom-color:#E3E7EF; }
+.btn-modificar{
+  display:block; width:100%; min-height:48px; margin-top:8px; background:none; border:0; cursor:pointer;
+  color:var(--suave); font-weight:700; font-size:13.5px; text-decoration:underline; text-underline-offset:3px;
+}
+.btn-modificar:disabled{ opacity:.5; }
+
+/* Ventana "Modificar pedido" */
+.mod-lista{ border-top:1px solid var(--linea); }
+.mod-fila{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--linea); }
+.mod-fila.cero .mod-nombre{ color:#B8C0D2; }
+.mod-fila.nueva .mod-nombre{ color:var(--azul); }
+.mod-nombre{ flex:1; min-width:0; font-weight:700; font-size:14px; color:var(--texto); overflow-wrap:anywhere; }
+.mod-nombre small{ display:block; font-weight:400; font-size:12px; color:var(--suave); }
+.paso{ flex:none; display:flex; align-items:center; gap:4px; }
+.paso button{ width:48px; height:48px; border-radius:10px; border:1.5px solid var(--navy); background:#fff; color:var(--navy); font-size:22px; font-weight:700; cursor:pointer; }
+.paso button:disabled{ border-color:var(--linea); color:var(--linea); }
+.paso span{ min-width:30px; text-align:center; font-family:var(--font-titulos); font-size:20px; font-weight:600; color:var(--navy); }
+
 /* ---------------- LISTA DE PRECIOS ---------------- */
 .cat-titulo{ font-family:var(--font-titulos); font-size:15px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; margin:24px 0 4px; color:var(--navy); }
 .prod{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--linea); }

@@ -35,6 +35,8 @@ const estado = {
   cambios: {},             // precios cambiados sin guardar: id -> precio
   usuarios: [],
   mesas: [],
+  menuCarta: null,         // carta (para añadir productos al modificar)
+  alTocarModal: null,
   temporizador: null,
   sonidoActivo: false,
   ultimaCarga: null,
@@ -281,9 +283,10 @@ function tarjeta(p){
   const min = minutosDesde(p.creado);
   const ocupado = estado.ocupado.has(p.id) ? 'disabled' : '';
 
+  // Una línea a 0 la ha quitado el personal: se ve en gris clarito y a cero.
   const lineas = (p.lineas || []).map(l => `
-    <div class="linea"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.precio * l.cantidad)}</span></div>
-    ${l.nota ? `<div class="nota">⚠ ${esc(l.nota)}</div>` : ''}`).join('');
+    <div class="linea ${l.cantidad === 0 ? 'cero' : ''}"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.precio * l.cantidad)}</span></div>
+    ${l.nota && l.cantidad > 0 ? `<div class="nota">⚠ ${esc(l.nota)}</div>` : ''}`).join('');
 
   // Sin etiquetas: el estado se ve por el color de la tarjeta y por el botón
   // principal (Aceptar pedido / Marcar como servido).
@@ -302,6 +305,7 @@ function tarjeta(p){
       <span class="marca">✓ Servido${p.servido ? ' ' + hora(p.servido) : ''}${p.servido_por ? ' · ' + esc(p.servido_por) : ''}</span>
       <button class="btn btn-peq" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Deshacer</button></div>`;
   }
+  pie += `<button class="btn-modificar" type="button" data-modificar="${p.id}" ${ocupado}>✎ Modificar pedido</button>`;
 
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
@@ -318,6 +322,8 @@ function tarjeta(p){
 
 // Un único escuchador para los botones de todas las tarjetas.
 async function alTocarPedido(ev){
+  const m = ev.target.closest('button[data-modificar]');
+  if(m && !m.disabled){ abrirModificar(estado.pedidos.find(x => x.id === Number(m.dataset.modificar))); return; }
   const b = ev.target.closest('button[data-accion]');
   if(!b || b.disabled) return;
   const id = Number(b.dataset.id), accion = b.dataset.accion;
@@ -550,6 +556,94 @@ function editarProducto(p){
 }
 
 /* =====================================================================
+   MODIFICAR UN PEDIDO (camarero, barra y admin; en cualquier estado)
+   Quitar un producto lo deja a 0 (se ve en gris en la tarjeta); los
+   productos nuevos se añaden al precio de la carta y no pueden estar agotados.
+   ===================================================================== */
+async function abrirModificar(p){
+  if(!p) return;
+  if(!estado.menuCarta){
+    try { estado.menuCarta = await datosCarta.menu(); }
+    catch(e) { return tratarError(e); }
+  }
+  const cant = {};                       // id de línea -> cantidad nueva
+  (p.lineas || []).forEach(l => { cant[l.id] = l.cantidad; });
+  const nuevas = [];                     // { producto, nombre, precio, cantidad, nota }
+  let cantNueva = 1;
+  const productos = {};
+  estado.menuCarta.forEach(c => (c.items || []).forEach(it => { productos[it.dbId] = it; }));
+
+  const pintar = () => {
+    const filas = (p.lineas || []).map(l => `
+      <div class="mod-fila ${cant[l.id] === 0 ? 'cero' : ''}">
+        <div class="mod-nombre">${esc(l.nombre)}<small>${euros(l.precio)} / ud.</small></div>
+        <div class="paso">
+          <button type="button" data-menos="${l.id}" aria-label="Quitar uno" ${cant[l.id] <= 0 ? 'disabled' : ''}>−</button>
+          <span>${cant[l.id]}</span>
+          <button type="button" data-mas="${l.id}" aria-label="Añadir uno" ${cant[l.id] >= 20 ? 'disabled' : ''}>+</button>
+        </div>
+      </div>`).join('');
+    const filasNuevas = nuevas.map((n, i) => `
+      <div class="mod-fila nueva">
+        <div class="mod-nombre">${esc(n.nombre)}<small>${n.cantidad} × ${euros(n.precio)}${n.nota ? ' · ' + esc(n.nota) : ''}</small></div>
+        <button type="button" class="btn btn-peq" data-quitar-nueva="${i}">Quitar</button>
+      </div>`).join('');
+    const opciones = estado.menuCarta.map(c => `<optgroup label="${esc(c.name)}">${(c.items || []).map(it =>
+      `<option value="${it.dbId}" ${it.agotado ? 'disabled' : ''}>${esc(it.n)} · ${euros(it.p)}${it.agotado ? ' (agotado)' : ''}</option>`).join('')}</optgroup>`).join('');
+    const total = (p.lineas || []).reduce((s, l) => s + l.precio * cant[l.id], 0) + nuevas.reduce((s, n) => s + n.precio * n.cantidad, 0);
+    $('modalCampos').innerHTML = `
+      <p class="texto-suave">${esc(p.mesa_nombre || 'Mesa ' + p.mesa)} · usa − para quitar productos (quedan a 0 y en gris) y añade los que pida la mesa.</p>
+      <div class="mod-lista">${filas}${filasNuevas}</div>
+      <div class="titulo-seccion" style="margin:6px 0 0">AÑADIR PRODUCTO</div>
+      <label class="campo"><span>Producto</span><select id="modProd"><option value="">Elige un producto…</option>${opciones}</select></label>
+      <div class="mod-fila">
+        <div class="mod-nombre">Cantidad</div>
+        <div class="paso">
+          <button type="button" data-menos-nueva aria-label="Uno menos" ${cantNueva <= 1 ? 'disabled' : ''}>−</button>
+          <span>${cantNueva}</span>
+          <button type="button" data-mas-nueva aria-label="Uno más" ${cantNueva >= 20 ? 'disabled' : ''}>+</button>
+        </div>
+      </div>
+      <label class="campo"><span>Nota (opcional)</span><input id="modNota" maxlength="140" autocomplete="off" placeholder="Ej.: sin sal"></label>
+      <button type="button" class="btn btn-borde btn-ancho" data-anadir>+ Añadir al pedido</button>
+      <div class="t-total"><span>TOTAL NUEVO</span><span>${euros(total)}</span></div>`;
+  };
+
+  estado.alTocarModal = (ev) => {
+    const t = ev.target.closest('button');
+    if(!t) return;
+    const prodSel = $('modProd') ? $('modProd').value : '', nota = $('modNota') ? $('modNota').value : '';
+    if(t.dataset.menos) cant[t.dataset.menos] = Math.max(0, cant[t.dataset.menos] - 1);
+    else if(t.dataset.mas) cant[t.dataset.mas] = Math.min(20, cant[t.dataset.mas] + 1);
+    else if(t.hasAttribute('data-menos-nueva')) cantNueva = Math.max(1, cantNueva - 1);
+    else if(t.hasAttribute('data-mas-nueva')) cantNueva = Math.min(20, cantNueva + 1);
+    else if(t.dataset.quitarNueva !== undefined) nuevas.splice(Number(t.dataset.quitarNueva), 1);
+    else if(t.hasAttribute('data-anadir')){
+      const it = productos[prodSel];
+      if(!it){ $('modalError').textContent = 'Elige un producto para añadir.'; $('modalError').hidden = false; return; }
+      nuevas.push({ producto: it.dbId, nombre: it.n, precio: Number(it.p), cantidad: cantNueva, nota: nota.trim() });
+      cantNueva = 1;
+      $('modalError').hidden = true;
+      pintar();
+      return;
+    } else return;
+    pintar();
+    if($('modProd')) $('modProd').value = prodSel;
+    if($('modNota')) $('modNota').value = nota;
+  };
+
+  abrirModalLibre('Modificar pedido ' + p.id, pintar, async () => {
+    const lineas = (p.lineas || []).filter(l => cant[l.id] !== l.cantidad).map(l => ({ id: l.id, cantidad: cant[l.id] }));
+    if(!lineas.length && !nuevas.length) return;
+    const r = await datosPanel.modificar(p.id, { lineas, nuevas: nuevas.map(n => ({ producto: n.producto, cantidad: n.cantidad, nota: n.nota })) });
+    const i = estado.pedidos.findIndex(x => x.id === p.id);
+    if(i >= 0 && r) estado.pedidos[i] = r;
+    pintarPedidos();
+    toast('Pedido ' + p.id + ' modificado');
+  });
+}
+
+/* =====================================================================
    RESUMEN DEL DÍA (con los pedidos de hoy que ya tiene el panel)
    ===================================================================== */
 function pintarResumen(){
@@ -559,6 +653,7 @@ function pintarResumen(){
   hoy.forEach(p => {
     total += Number(p.total || 0);
     (p.lineas || []).forEach(l => {
+      if(!l.cantidad) return;   // quitado por el personal
       unidades += l.cantidad;
       const a = porArticulo[l.nombre] = porArticulo[l.nombre] || { cant: 0, importe: 0 };
       a.cant += l.cantidad; a.importe += l.cantidad * Number(l.precio);
@@ -689,6 +784,7 @@ function editarUsuario(u){
    ===================================================================== */
 let alGuardar = null;
 function abrirModal(titulo, campos, guardar){
+  estado.alTocarModal = null;
   $('modalTitulo').textContent = titulo;
   $('modalError').hidden = true;
   $('modalCampos').innerHTML = campos.map(c => {
@@ -705,7 +801,16 @@ function abrirModal(titulo, campos, guardar){
   };
   $('modal').hidden = false;
 }
-function cerrarModal(){ $('modal').hidden = true; alGuardar = null; }
+// Ventana con contenido propio (p. ej. modificar un pedido).
+function abrirModalLibre(titulo, pintar, guardar){
+  $('modalTitulo').textContent = titulo;
+  $('modalError').hidden = true;
+  pintar();
+  alGuardar = guardar;
+  $('modal').hidden = false;
+}
+$('modalCampos').addEventListener('click', (ev) => { if(estado.alTocarModal) estado.alTocarModal(ev); });
+function cerrarModal(){ $('modal').hidden = true; alGuardar = null; estado.alTocarModal = null; }
 $('modalCancelar').addEventListener('click', cerrarModal);
 $('modal').addEventListener('click', (ev) => { if(ev.target === $('modal')) cerrarModal(); });
 $('modalForm').addEventListener('submit', async (ev) => {

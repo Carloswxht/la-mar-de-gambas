@@ -102,7 +102,7 @@ create table order_items (
   product_name  text not null,
   size          text,
   unit_price    numeric(7,2) not null check (unit_price >= 0),
-  quantity      integer not null check (quantity between 1 and 20),
+  quantity      integer not null check (quantity between 0 and 20), -- 0 = quitado por el personal (se ve en gris)
   note          text not null default '' check (char_length(note) <= 140)
 );
 create index order_items_order_idx on order_items (order_id);

@@ -147,6 +147,7 @@ function textoError(codigo){
     SIN_PERMISO: 'Tu usuario no tiene permiso para esto.',
     PASSWORD_CORTA: 'La contraseña debe tener al menos 8 caracteres.',
     CAMBIO_NO_VALIDO: 'Ese cambio de estado no es posible.',
+    LINEA_NO_VALIDA: 'Esa línea ya no está en el pedido. Recarga e inténtalo otra vez.',
     FALTAN_DATOS: 'Faltan datos obligatorios.',
     ROL_NO_VALIDO: 'Rol no válido.',
     USUARIO_NO_VALIDO: 'No se encuentra el usuario.',
@@ -258,6 +259,9 @@ const datosPanel = {
   pedidos: (desde) => rpcPersonal('panel_pedidos', desde ? { p_desde: desde } : {}),
   // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
+  // cambios: { lineas: [{ id, cantidad }], nuevas: [{ producto, cantidad, nota }] }
+  // (una línea a 0 queda en el pedido, en gris y a cero euros)
+  modificar: (pedidoId, cambios) => rpcPersonal('panel_modificar_pedido', { p_pedido: pedidoId, p_cambios: cambios }),
   productos: () => rpcPersonal('panel_productos'),
   disponible: (productoId, disponible) => rpcPersonal('panel_disponible', { p_producto: productoId, p_disponible: !!disponible }),
   // Solo admin:
