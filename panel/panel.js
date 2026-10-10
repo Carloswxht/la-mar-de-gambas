@@ -287,10 +287,8 @@ function tarjeta(p){
 
   let etiquetas = '';
   // El estado se ve por el color de la tarjeta y por el botón principal
-  // (Aceptar pedido / Marcar como servido): sin etiqueta NUEVO ni EN PREPARACIÓN.
-  if(p.estado === 'en_preparacion' && p.auto){
-    etiquetas = '<span class="etq etq-auto" title="Pasó solo a preparación porque nadie lo aceptó en 3 minutos">SIN ACEPTAR · AUTOMÁTICO</span>';
-  }
+  // (Aceptar pedido / Marcar como servido): sin etiquetas de estado. Tampoco
+  // se marca si pasó solo a preparación: da igual quién lo aceptara.
   if(p.modificado && !servido) etiquetas += `<span class="etq etq-mod">MODIFICADO ${hora(p.modificado)}</span>`;
 
   let pie = '';
