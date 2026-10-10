@@ -256,7 +256,7 @@ async function rpcPersonal(nombre, params){
 /* ---------------- PANEL (camarero, barra y admin) ---------------- */
 const datosPanel = {
   pedidos: (desde) => rpcPersonal('panel_pedidos', desde ? { p_desde: desde } : {}),
-  // estado: 'recibido' | 'servido' | 'enviado' (deshacer)
+  // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
   productos: () => rpcPersonal('panel_productos'),
   disponible: (productoId, disponible) => rpcPersonal('panel_disponible', { p_producto: productoId, p_disponible: !!disponible }),

@@ -67,20 +67,23 @@ create table mesas (
 );
 
 -- ---------------- PEDIDOS ----------------
--- Estados: enviado (lo manda el cliente) → recibido (camarero/barra lo ve)
--- → servido. "Deshacer" vuelve un paso atrás.
+-- Estados: enviado (NUEVO: lo manda el cliente) → en_preparacion (lo acepta
+-- el personal, o solo a los 3 minutos si nadie lo acepta) → servido.
+-- "Deshacer" vuelve un paso atrás.
 create table orders (
   id            bigint generated always as identity primary key,
   mesa_id       integer not null references mesas(id),
   round_number  integer not null default 1,     -- "Pedido 1, 2…" de ese móvil
   status        text not null default 'enviado'
-                check (status in ('enviado','recibido','servido')),
+                check (status in ('enviado','en_preparacion','servido')),
   total         numeric(8,2) not null default 0 check (total >= 0),
   device_key    uuid not null,                  -- número al azar del móvil (no es dato personal)
   created_at    timestamptz not null default now(),
   modified_at   timestamptz,                    -- última edición del cliente
-  received_at   timestamptz,
-  received_by   text,
+  nuevo_desde   timestamptz not null default now(), -- desde cuándo está NUEVO (cuenta 3 min)
+  auto_aceptado boolean not null default false,  -- pasó solo a preparación (nadie lo aceptó)
+  received_at   timestamptz,                    -- cuándo pasó a "en preparación"
+  received_by   text,                           -- quién lo aceptó
   served_at     timestamptz,
   served_by     text
 );

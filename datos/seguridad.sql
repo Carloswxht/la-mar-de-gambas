@@ -11,7 +11,7 @@
 --     - Cliente de la mesa (sin login): ver la carta, crear SU pedido
 --       con el código secreto de la mesa, editarlo mientras siga
 --       "enviado" y no hayan pasado 3 minutos, y ver solo sus pedidos.
---     - Camarero: ver pedidos y marcar Recibido / Servido / Deshacer.
+--     - Camarero: ver pedidos y marcar En preparación / Servido / Deshacer.
 --     - Barra: lo del camarero + marcar productos agotados.
 --     - Admin: todo lo anterior + precios, productos, mesas y usuarios.
 -- * El precio lo pone siempre la base, nunca el móvil del cliente.
@@ -102,8 +102,9 @@ as $$
     'total', o.total,
     'creado', o.created_at,
     'modificado', o.modified_at,
-    'recibido', o.received_at,
-    'recibido_por', o.received_by,
+    'en_preparacion', o.received_at,
+    'aceptado_por', o.received_by,
+    'auto', o.auto_aceptado,
     'servido', o.served_at,
     'servido_por', o.served_by,
     'editable_seg', case when o.status = 'enviado'
@@ -162,6 +163,18 @@ begin
   end loop;
   return v_total;
 end $$;
+
+-- Pedidos NUEVOS que llevan 3 minutos sin que nadie los acepte pasan solos
+-- a "en preparación" (con la marca auto_aceptado).
+create function privado.auto_aceptar()
+returns void
+language sql security definer
+set search_path = public, privado, pg_temp
+as $$
+  update orders
+     set status = 'en_preparacion', auto_aceptado = true, received_at = now(), received_by = null
+   where status = 'enviado' and nuevo_desde < now() - interval '3 minutes';
+$$;
 
 -- Limpieza: pedidos de más de 30 días fuera; notas de más de 24 h vacías;
 -- sesiones caducadas fuera.
@@ -293,14 +306,16 @@ end $$;
 -- Los pedidos de este móvil en las últimas 12 horas (para el tique).
 create function public.mis_pedidos(p_dispositivo uuid)
 returns jsonb
-language sql stable security definer
+language plpgsql security definer
 set search_path = public, privado, pg_temp
 as $$
-  select coalesce(jsonb_agg(privado.pedido_json(o.id) order by o.created_at), '[]'::jsonb)
-    from orders o
-   where o.device_key = p_dispositivo
-     and o.created_at > now() - interval '12 hours'
-$$;
+begin
+  perform privado.auto_aceptar();
+  return (select coalesce(jsonb_agg(privado.pedido_json(o.id) order by o.created_at), '[]'::jsonb)
+            from orders o
+           where o.device_key = p_dispositivo
+             and o.created_at > now() - interval '12 hours');
+end $$;
 
 -- =====================================================================
 -- LOGIN DEL PERSONAL
@@ -393,20 +408,27 @@ end $$;
 -- VENTANILLAS DEL PANEL (camarero, barra y admin)
 -- =====================================================================
 
--- Pedidos de las últimas 12 horas (o desde una hora dada).
+-- Pedidos del día (desde las 00:00 de Madrid, o las últimas 12 horas si
+-- eso es más; o desde una hora dada). Antes, pasa solos a "en preparación"
+-- los nuevos que llevan 3 minutos sin aceptar.
 create function public.panel_pedidos(p_token text, p_desde timestamptz default null)
 returns jsonb
 language plpgsql security definer
 set search_path = public, privado, pg_temp
 as $$
+declare v_desde timestamptz;
 begin
   perform privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  perform privado.auto_aceptar();
+  v_desde := least(date_trunc('day', now() at time zone 'Europe/Madrid') at time zone 'Europe/Madrid',
+                   now() - interval '12 hours');
   return (select coalesce(jsonb_agg(privado.pedido_json(o.id) order by o.created_at), '[]'::jsonb)
             from orders o
-           where o.created_at > greatest(coalesce(p_desde, '-infinity'), now() - interval '12 hours'));
+           where o.created_at > greatest(coalesce(p_desde, '-infinity'), v_desde));
 end $$;
 
--- Cambiar el estado: Recibido, Servido o Deshacer (un paso atrás).
+-- Cambiar el estado: Aceptar (en preparación), Servido o Deshacer (un paso
+-- atrás). Si se deshace a NUEVO, vuelve a contar 3 minutos.
 create function public.panel_marcar(p_token text, p_pedido bigint, p_estado text)
 returns jsonb
 language plpgsql security definer
@@ -422,18 +444,19 @@ begin
   if p_estado = o.status then
     return privado.pedido_json(o.id);
   end if;
-  if (o.status, p_estado) in (('enviado','recibido'), ('enviado','servido')) then
-    update orders set status = p_estado,
+  if (o.status, p_estado) in (('enviado','en_preparacion'), ('enviado','servido')) then
+    update orders set status = p_estado, auto_aceptado = false,
            received_at = coalesce(received_at, now()), received_by = coalesce(received_by, s.name),
            served_at = case when p_estado = 'servido' then now() end,
            served_by = case when p_estado = 'servido' then s.name end
      where id = o.id;
-  elsif (o.status, p_estado) = ('recibido','servido') then
+  elsif (o.status, p_estado) = ('en_preparacion','servido') then
     update orders set status = 'servido', served_at = now(), served_by = s.name where id = o.id;
-  elsif (o.status, p_estado) = ('servido','recibido') then
-    update orders set status = 'recibido', served_at = null, served_by = null where id = o.id;
-  elsif (o.status, p_estado) = ('recibido','enviado') then
-    update orders set status = 'enviado', received_at = null, received_by = null where id = o.id;
+  elsif (o.status, p_estado) = ('servido','en_preparacion') then
+    update orders set status = 'en_preparacion', served_at = null, served_by = null where id = o.id;
+  elsif (o.status, p_estado) = ('en_preparacion','enviado') then
+    update orders set status = 'enviado', auto_aceptado = false, nuevo_desde = now(),
+           received_at = null, received_by = null where id = o.id;
   else
     raise exception 'CAMBIO_NO_VALIDO';
   end if;
