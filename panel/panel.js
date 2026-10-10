@@ -310,8 +310,8 @@ function tarjeta(p){
 
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
-    <div class="pedido-num">Pedido ${esc(p.id)}</div>
     <div class="tarjeta ${clase}">
+      <div class="pedido-num">Pedido ${esc(p.id)}</div>
       <div class="t-arriba"><span class="t-mesa">${esc(p.mesa_nombre || ('Mesa ' + p.mesa))}</span><span class="t-hora">${hora(p.creado)}</span></div>
       ${servido ? '' : `<div class="t-estado"><span class="t-etiquetas">${etiquetas}</span><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
       ${lineas}
