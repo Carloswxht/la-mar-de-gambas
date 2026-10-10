@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gambas Panel">
+<title>La Mar de Gambas · Panel</title>
+<link rel="stylesheet" href="../comun/estilos.css">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<!-- Cabecera (igual en todas las pantallas) -->
+<header class="cab">
+  <div class="cab-local">La Mar de Gambas</div>
+  <div class="cab-vista" id="cVista">PANEL</div>
+  <div class="cab-vivo" id="cVivo" hidden><span class="punto"></span><span id="cVivoTxt">conectando…</span></div>
+</header>
+
+<!-- ============ LOGIN ============ -->
+<section id="vLogin" class="vista-caja" hidden>
+  <form id="fLogin" class="caja-form" autocomplete="on" novalidate>
+    <div class="titulo-seccion">ENTRAR</div>
+    <label class="campo">
+      <span>Correo</span>
+      <input id="lEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+    </label>
+    <label class="campo">
+      <span>Contraseña</span>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+    </label>
+    <p id="lError" class="aviso-error" role="alert" hidden></p>
+    <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">Entrar</button>
+    <p class="texto-suave pie-login">Acceso reservado al personal de La Mar de Gambas.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
+  </form>
+</section>
+
+<!-- ============ CAMBIAR CONTRASEÑA ============ -->
+<section id="vPass" class="vista-caja" hidden>
+  <form id="fPass" class="caja-form" novalidate>
+    <div class="titulo-seccion">ELIGE TU CONTRASEÑA</div>
+    <p class="texto-suave">Es tu primera vez o te han dado una contraseña provisional. Elige una nueva que solo sepas tú (mínimo 8 caracteres).</p>
+    <label class="campo">
+      <span>Contraseña actual</span>
+      <input id="pActual" type="password" autocomplete="current-password" required>
+    </label>
+    <label class="campo">
+      <span>Contraseña nueva</span>
+      <input id="pNueva" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <label class="campo">
+      <span>Repite la nueva</span>
+      <input id="pRepite" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <p id="pError" class="aviso-error" role="alert" hidden></p>
+    <button class="btn btn-naranja btn-ancho" type="submit">Guardar y entrar</button>
+    <button id="pSalir" class="btn btn-borde btn-ancho" type="button">Salir</button>
+  </form>
+</section>
+
+<!-- ============ PANEL ============ -->
+<div id="vPanel" hidden>
+
+  <!-- PEDIDOS -->
+  <main id="sPedidos" class="vista">
+    <div class="fila-stats">
+      <div class="stat"><div class="num" id="nPendientes">0</div><div class="lbl">PENDIENTES</div></div>
+      <div class="stat"><div class="num" id="nServidos">0</div><div class="lbl">SERVIDOS</div></div>
+      <div class="stat"><div class="num" id="nTotalHoy">0,00 €</div><div class="lbl">VENTAS HOY</div></div>
+    </div>
+    <div class="titulo-fila">
+      <div class="titulo-seccion">PEDIDOS PENDIENTES</div>
+      <button class="boton-mas" id="nuevoPedido" type="button" aria-label="Nuevo pedido" title="Nuevo pedido">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="listaPendientes"></div>
+    <div class="titulo-seccion separado">SERVIDOS</div>
+    <div id="listaServidos"></div>
+  </main>
+
+  <!-- LISTA DE PRECIOS (barra: agotados · admin: también precios) -->
+  <main id="sPrecios" class="vista" hidden>
+    <div class="titulo-seccion">LISTA DE PRECIOS</div>
+    <p class="sub-seccion" id="preciosAyuda"></p>
+    <input id="buscaProd" class="buscador" type="search" placeholder="Buscar producto…" autocomplete="off">
+    <div id="listaProductos"></div>
+    <button id="nuevoProd" class="btn btn-naranja btn-ancho separado" type="button" hidden>Añadir producto</button>
+    <div class="barra-guardar" id="barraGuardar" hidden>
+      <span id="nCambios">Sin cambios</span>
+      <button class="btn btn-naranja" id="guardarPrecios" type="button" disabled>Guardar cambios</button>
+    </div>
+  </main>
+
+  <!-- RESUMEN DEL DÍA -->
+  <main id="sResumen" class="vista" hidden>
+    <div class="titulo-seccion">VENTAS DEL DÍA</div>
+    <p class="sub-seccion" id="rFecha"></p>
+    <div class="stat-grande"><div class="lbl">Ventas totales</div><div class="num" id="rTotal">0,00 €</div><div class="lbl" id="rPunta"></div></div>
+    <div class="fila-stats separado-peq">
+      <div class="stat"><div class="num" id="rPedidos">0</div><div class="lbl">PEDIDOS</div></div>
+      <div class="stat"><div class="num" id="rUnidades">0</div><div class="lbl">UNIDADES</div></div>
+      <div class="stat"><div class="num" id="rMedio">0,00 €</div><div class="lbl">TICKET MEDIO</div></div>
+    </div>
+    <div class="titulo-seccion separado">POR ARTÍCULO</div>
+    <p class="sub-seccion">De más a menos vendido</p>
+    <div id="rArticulos"></div>
+  </main>
+
+  <!-- MESAS (admin) -->
+  <main id="sMesas" class="vista" hidden>
+    <div class="titulo-seccion">MESAS</div>
+    <p class="sub-seccion">Cada mesa tiene su enlace. Es el que va en el código QR de esa mesa.</p>
+    <div id="listaMesas"></div>
+    <div class="titulo-seccion separado">AÑADIR MESA</div>
+    <input type="text" id="nombreMesaNueva" class="buscador" placeholder="Nombre de la mesa (ej. Terraza 4)" autocomplete="off">
+    <button id="nuevaMesa" class="btn btn-naranja btn-ancho" type="button">Añadir mesa</button>
+  </main>
+
+  <!-- USUARIOS (admin) -->
+  <main id="sUsuarios" class="vista" hidden>
+    <div class="titulo-seccion">USUARIOS</div>
+    <p class="sub-seccion">Cada persona del local con su usuario y su rol.</p>
+    <div id="listaUsuarios"></div>
+    <button id="nuevoUsuario" class="btn btn-naranja btn-ancho separado" type="button">Añadir usuario</button>
+  </main>
+
+  <!-- Barra de abajo con el botón de menú -->
+  <div class="barra-abajo">
+    <button class="boton-menu" id="abrirMenu" type="button" aria-label="Menú" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
+    </button>
+  </div>
+  <div class="velo" id="velo"></div>
+  <nav class="hoja-menu" id="hojaMenu" aria-label="Vistas">
+    <div class="hoja-asa"></div>
+    <div id="menuVistas"></div>
+    <div class="hoja-pie">
+      <span id="menuUsuario"></span>
+      <button class="btn btn-borde btn-peq" id="bSalir" type="button">Salir</button>
+    </div>
+  </nav>
+</div>
+
+<!-- NUEVO PEDIDO DEL CAMARERO: la misma carta que ve el cliente -->
+<section id="vNuevo" class="nv-pantalla" hidden aria-label="Nuevo pedido">
+  <header class="nv-cab">
+    <button class="nv-cerrar" id="nvCerrar" type="button" aria-label="Cancelar el pedido">✕</button>
+    <div class="nv-local">LA MAR DE GAMBAS</div>
+    <div class="nv-mesa" id="nvMesa">NUEVO PEDIDO</div>
+    <nav class="nv-pestanas" id="nvPestanas"></nav>
+  </header>
+  <div class="nv-cuerpo">
+    <input id="nvBusca" class="buscador" type="search" placeholder="Buscar producto…" autocomplete="off">
+    <div id="nvLista"></div>
+  </div>
+  <div class="nv-dock">
+    <div class="nv-resumen"><span id="nvUds">Sin productos</span><span class="nv-total" id="nvTotal">0,00 €</span></div>
+    <button class="btn btn-naranja" id="nvEnviar" type="button" disabled>Enviar pedido</button>
+  </div>
+</section>
+
+<!-- Ventana para editar (producto, usuario, mesa) -->
+<div id="modal" class="modal" hidden>
+  <form id="modalForm" class="modal-caja" novalidate>
+    <div class="titulo-seccion" id="modalTitulo"></div>
+    <div id="modalCampos"></div>
+    <p id="modalError" class="aviso-error" role="alert" hidden></p>
+    <div class="modal-botones">
+      <button type="button" class="btn btn-borde" id="modalCancelar">Cancelar</button>
+      <button type="submit" class="btn btn-naranja">Guardar</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="../comun/datos.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>
