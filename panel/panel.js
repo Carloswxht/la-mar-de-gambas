@@ -285,11 +285,8 @@ function tarjeta(p){
     <div class="linea"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.precio * l.cantidad)}</span></div>
     ${l.nota ? `<div class="nota">⚠ ${esc(l.nota)}</div>` : ''}`).join('');
 
-  let etiquetas = '';
-  // El estado se ve por el color de la tarjeta y por el botón principal
-  // (Aceptar pedido / Marcar como servido): sin etiquetas de estado. Tampoco
-  // se marca si pasó solo a preparación: da igual quién lo aceptara.
-  if(p.modificado && !servido) etiquetas += `<span class="etq etq-mod">MODIFICADO ${hora(p.modificado)}</span>`;
+  // Sin etiquetas: el estado se ve por el color de la tarjeta y por el botón
+  // principal (Aceptar pedido / Marcar como servido).
 
   let pie = '';
   if(p.estado === 'enviado'){
@@ -311,7 +308,7 @@ function tarjeta(p){
     <div class="tarjeta ${clase}">
       <div class="pedido-num">Pedido ${esc(p.id)}</div>
       <div class="t-arriba"><span class="t-mesa">${esc(p.mesa_nombre || ('Mesa ' + p.mesa))}</span><span class="t-hora">${hora(p.creado)}</span></div>
-      ${servido ? '' : `<div class="t-estado"><span class="t-etiquetas">${etiquetas}</span><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
+      ${servido ? '' : `<div class="t-estado"><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
       ${lineas}
       <div class="t-total"><span>TOTAL</span><span>${euros(p.total)}</span></div>
       ${pie}
