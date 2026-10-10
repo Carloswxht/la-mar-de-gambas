@@ -300,7 +300,7 @@ function tarjeta(p){
       <button class="btn btn-borde" data-accion="servido" data-id="${p.id}" ${ocupado}>Servido</button></div>`;
   } else if(p.estado === 'en_preparacion'){
     pie = `<div class="t-botones">
-      <button class="btn btn-naranja" data-accion="servido" data-id="${p.id}" ${ocupado}>Marcar como servido</button>
+      <button class="btn btn-azul" data-accion="servido" data-id="${p.id}" ${ocupado}>Marcar como servido</button>
       <button class="btn btn-borde ajustado" data-accion="enviado" data-id="${p.id}" ${ocupado}>Deshacer</button></div>`;
   } else {
     pie = `<div class="t-servido">

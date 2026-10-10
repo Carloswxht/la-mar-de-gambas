@@ -20,9 +20,11 @@
   --rosa-osc:#A82B49;
   --rosa-claro:#FCE4EA;       /* pedido NUEVO: franja de arriba */
   --rosa-borde:#EDB6C3;
-  --prep-fondo:#FFF1E3;       /* en preparación */
-  --prep-texto:#A94E0E;
-  --prep-borde:#F3C9A3;
+  --prep-fondo:#E6EFFB;       /* en preparación: azul claro */
+  --prep-texto:#1F4E96;
+  --prep-borde:#B7CBEA;
+  --azul:#2556A3;             /* en preparación: botón "Marcar como servido" */
+  --azul-osc:#1B437F;
   --auto-borde:#9AA5C0;
   --verde:#2DB84D;
 }
@@ -80,6 +82,9 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 /* Botón principal de un pedido NUEVO: rosa intenso, a juego con su tarjeta */
 .btn-rosa{ background:var(--rosa); color:#fff; }
 .btn-rosa:active{ background:var(--rosa-osc); }
+/* Botón principal de un pedido EN PREPARACIÓN: azul, a juego con su tarjeta */
+.btn-azul{ background:var(--azul); color:#fff; }
+.btn-azul:active{ background:var(--azul-osc); }
 .btn-borde{ background:#fff; color:var(--navy); border:1.5px solid var(--navy); }
 .btn-borde:active{ background:var(--fondo-2); }
 .btn-ancho{ width:100%; }
