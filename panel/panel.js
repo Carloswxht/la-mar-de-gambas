@@ -52,7 +52,14 @@ function esc(t){
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function euros(n){ return Number(n || 0).toFixed(2).replace('.', ',') + '€'; }
+// Importes al estilo español: 1.234,50 € (con espacio antes del símbolo).
+const FORMATO_EUROS = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, useGrouping: true });
+function euros(n){ return FORMATO_EUROS.format(Number(n || 0)); }
+// "viernes, 10 de octubre" → "Viernes, 10 de octubre"
+function fechaLarga(d){
+  const t = (d || new Date()).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 function hora(f){ return new Date(f).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); }
 function minutosDesde(f){ return Math.max(0, Math.floor((Date.now() - new Date(f).getTime()) / 60000)); }
 function textoEspera(min){
@@ -214,7 +221,7 @@ function pintarVivo(){
   const v = $('cVivo');
   v.className = 'cab-vivo ' + (estado.sinConexion ? 'mal' : estado.ultimaCarga ? 'ok' : '');
   let t = estado.sinConexion ? 'sin conexión · reintentando…'
-        : estado.ultimaCarga ? 'en línea · ' + estado.ultimaCarga.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        : estado.ultimaCarga ? fechaLarga() + ' · en línea ' + estado.ultimaCarga.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
         : 'conectando…';
   $('cVivoTxt').innerHTML = esc(t) + (estado.sonidoActivo ? '' : ' · <b>toca la pantalla para activar el sonido</b>');
 }
@@ -275,8 +282,8 @@ function pintarPedidos(){
   document.title = (nuevos.length ? '(' + nuevos.length + ') ' : '') + 'La Mar de Gambas · Panel';
 
   const pendientes = nuevos.concat(prep);
-  $('listaPendientes').innerHTML = pendientes.length ? pendientes.map(tarjeta).join('') : '<div class="vacio">No hay pedidos pendientes ahora mismo.</div>';
-  $('listaServidos').innerHTML = servidos.length ? servidos.map(tarjeta).join('') : '<div class="vacio">Aún no se ha servido ningún pedido.</div>';
+  $('listaPendientes').innerHTML = pendientes.length ? pendientes.map(tarjeta).join('') : '<div class="vacio">Todo al día: no hay pedidos pendientes.</div>';
+  $('listaServidos').innerHTML = servidos.length ? servidos.map(tarjeta).join('') : '<div class="vacio">Todavía no se ha servido ningún pedido hoy.</div>';
 }
 
 function tarjeta(p){
@@ -313,7 +320,7 @@ function tarjeta(p){
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
     <div class="tarjeta ${clase}">
-      <div class="pedido-num">Pedido ${esc(p.id)}</div>
+      <div class="pedido-num">Pedido nº ${esc(p.id)}</div>
       <div class="t-arriba"><span class="t-mesa">${esc(p.mesa_nombre || ('Mesa ' + p.mesa))}</span><span class="t-hora">${hora(p.creado)}</span></div>
       ${servido ? '' : `<div class="t-estado"><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
       ${lineas}
@@ -342,7 +349,7 @@ async function alTocarPedido(ev){
     if(accion === 'enviado' && estado.vistos) estado.vistos.add(id);
     const deshacer = (antes === 'servido' && accion === 'en_preparacion') || (antes === 'en_preparacion' && accion === 'enviado');
     const mesa = p ? (p.mesa_nombre || 'Mesa ' + p.mesa) : '';
-    toast(deshacer ? 'Deshecho' : accion === 'servido' ? mesa + ': servido' : mesa + ': en preparación');
+    toast(deshacer ? 'Cambio deshecho' : accion === 'servido' ? mesa + ' · pedido servido' : mesa + ' · pedido en preparación');
   } catch(e) {
     tratarError(e);
   } finally {
@@ -596,14 +603,14 @@ function abrirModificar(p){
     pintar();
   };
 
-  abrirModalLibre('Modificar pedido ' + p.id, pintar, async () => {
+  abrirModalLibre('Modificar pedido nº ' + p.id, pintar, async () => {
     const lineas = (p.lineas || []).filter(l => cant[l.id] !== l.cantidad).map(l => ({ id: l.id, cantidad: cant[l.id] }));
     if(!lineas.length) return;
     const r = await datosPanel.modificar(p.id, { lineas });
     const i = estado.pedidos.findIndex(x => x.id === p.id);
     if(i >= 0 && r) estado.pedidos[i] = r;
     pintarPedidos();
-    toast('Pedido ' + p.id + ' modificado');
+    toast('Pedido nº ' + p.id + ' modificado');
   });
 }
 
@@ -757,7 +764,7 @@ $('nvEnviar').addEventListener('click', async () => {
     if(p){ estado.pedidos.push(p); if(estado.vistos) estado.vistos.add(p.id); }
     cerrarNuevo();
     if(estado.vista !== 'pedidos') irA('pedidos'); else pintarPedidos();
-    toast(nuevo.mesaNombre + ': pedido enviado');
+    toast(nuevo.mesaNombre + ' · pedido enviado a barra');
   } catch(e) {
     tratarError(e);
   } finally {
@@ -781,13 +788,19 @@ function pintarResumen(){
       a.cant += l.cantidad; a.importe += l.cantidad * Number(l.precio);
     });
   });
+  $('rFecha').textContent = fechaLarga();
   $('rPedidos').textContent = hoy.length;
   $('rUnidades').textContent = unidades;
+  $('rMedio').textContent = euros(hoy.length ? total / hoy.length : 0);
   $('rTotal').textContent = euros(total);
   const filas = Object.entries(porArticulo).sort((a, b) => b[1].cant - a[1].cant || b[1].importe - a[1].importe);
   $('rArticulos').innerHTML = filas.length
     ? filas.map(([n, a]) => `<div class="fila-dato"><span>${esc(n)}</span><span><b>${a.cant}×</b> · ${euros(a.importe)}</span></div>`).join('')
     : '<div class="vacio">Todavía no hay ventas hoy.</div>';
+  const horas = {};
+  hoy.forEach(p => { const h = new Date(p.creado).getHours(); horas[h] = (horas[h] || 0) + Number(p.total || 0); });
+  const punta = Object.entries(horas).sort((a, b) => b[1] - a[1])[0];
+  $('rPunta').textContent = punta ? 'Hora con más ventas: de ' + String(punta[0]).padStart(2, '0') + ':00 a ' + String((+punta[0] + 1) % 24).padStart(2, '0') + ':00 (' + euros(punta[1]) + ')' : '';
 }
 
 /* =====================================================================

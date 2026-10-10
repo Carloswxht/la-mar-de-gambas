@@ -323,3 +323,12 @@ html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
 .nv-total{ font-family:var(--font-titulos); font-size:25px; font-weight:600; }
 .nv-dock .btn{ min-width:160px; text-transform:uppercase; letter-spacing:.06em; }
 .nv-dock .btn:disabled{ background:rgba(255,255,255,.18); color:rgba(255,255,255,.6); opacity:1; }
+
+/* ---------------- RETOQUES DE ACABADO ---------------- */
+/* Cifras alineadas (precios, totales y recuadros) */
+.stat .num, .stat-grande .num, .linea .precio, .t-total, .fila-dato, .campo-precio input, .precio-fijo, .nv-precio, .nv-total, .cab-vivo{ font-variant-numeric:tabular-nums; }
+.stat-grande .lbl + .num + .lbl{ margin-top:4px; }
+.separado-peq{ margin-top:12px; }
+.pie-login{ text-align:center; font-size:12.5px; margin-top:4px; }
+/* Los importes de 4 cifras no deben partir la caja */
+.stat .num{ font-size:clamp(18px, 5.6vw, 24px); }

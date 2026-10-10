@@ -36,6 +36,7 @@
     </label>
     <p id="lError" class="aviso-error" role="alert" hidden></p>
     <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">Entrar</button>
+    <p class="texto-suave pie-login">Acceso reservado al personal de La Mar de Gambas.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
   </form>
 </section>
 
@@ -70,7 +71,7 @@
     <div class="fila-stats">
       <div class="stat"><div class="num" id="nPendientes">0</div><div class="lbl">PENDIENTES</div></div>
       <div class="stat"><div class="num" id="nServidos">0</div><div class="lbl">SERVIDOS</div></div>
-      <div class="stat"><div class="num" id="nTotalHoy">0,00€</div><div class="lbl">TOTAL HOY</div></div>
+      <div class="stat"><div class="num" id="nTotalHoy">0,00 €</div><div class="lbl">VENTAS HOY</div></div>
     </div>
     <div class="titulo-fila">
       <div class="titulo-seccion">PEDIDOS PENDIENTES</div>
@@ -99,11 +100,13 @@
   <!-- RESUMEN DEL DÍA -->
   <main id="sResumen" class="vista" hidden>
     <div class="titulo-seccion">VENTAS DEL DÍA</div>
-    <div class="fila-stats">
+    <p class="sub-seccion" id="rFecha"></p>
+    <div class="stat-grande"><div class="lbl">Ventas totales</div><div class="num" id="rTotal">0,00 €</div><div class="lbl" id="rPunta"></div></div>
+    <div class="fila-stats separado-peq">
       <div class="stat"><div class="num" id="rPedidos">0</div><div class="lbl">PEDIDOS</div></div>
       <div class="stat"><div class="num" id="rUnidades">0</div><div class="lbl">UNIDADES</div></div>
+      <div class="stat"><div class="num" id="rMedio">0,00 €</div><div class="lbl">TICKET MEDIO</div></div>
     </div>
-    <div class="stat-grande"><div class="lbl">Ventas totales</div><div class="num" id="rTotal">0,00€</div></div>
     <div class="titulo-seccion separado">POR ARTÍCULO</div>
     <p class="sub-seccion">De más a menos vendido</p>
     <div id="rArticulos"></div>
@@ -157,7 +160,7 @@
     <div id="nvLista"></div>
   </div>
   <div class="nv-dock">
-    <div class="nv-resumen"><span id="nvUds">Sin productos</span><span class="nv-total" id="nvTotal">0,00€</span></div>
+    <div class="nv-resumen"><span id="nvUds">Sin productos</span><span class="nv-total" id="nvTotal">0,00 €</span></div>
     <button class="btn btn-naranja" id="nvEnviar" type="button" disabled>Enviar pedido</button>
   </div>
 </section>
