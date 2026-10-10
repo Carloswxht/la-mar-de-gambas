@@ -286,17 +286,17 @@ function tarjeta(p){
     ${l.nota ? `<div class="nota">⚠ ${esc(l.nota)}</div>` : ''}`).join('');
 
   let etiquetas = '';
-  if(p.estado === 'enviado') etiquetas = '<span class="etq etq-nuevo">NUEVO</span>';
-  if(p.estado === 'en_preparacion'){
-    etiquetas = '<span class="etq etq-prep">EN PREPARACIÓN</span>';
-    if(p.auto) etiquetas += '<span class="etq etq-auto" title="Pasó solo a preparación porque nadie lo aceptó en 3 minutos">SIN ACEPTAR · AUTOMÁTICO</span>';
+  // El estado se ve por el color de la tarjeta y por el botón principal
+  // (Aceptar pedido / Marcar como servido): sin etiqueta NUEVO ni EN PREPARACIÓN.
+  if(p.estado === 'en_preparacion' && p.auto){
+    etiquetas = '<span class="etq etq-auto" title="Pasó solo a preparación porque nadie lo aceptó en 3 minutos">SIN ACEPTAR · AUTOMÁTICO</span>';
   }
   if(p.modificado && !servido) etiquetas += `<span class="etq etq-mod">MODIFICADO ${hora(p.modificado)}</span>`;
 
   let pie = '';
   if(p.estado === 'enviado'){
     pie = `<div class="t-botones">
-      <button class="btn btn-naranja" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Aceptar pedido</button>
+      <button class="btn btn-rosa" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Aceptar pedido</button>
       <button class="btn btn-borde" data-accion="servido" data-id="${p.id}" ${ocupado}>Servido</button></div>`;
   } else if(p.estado === 'en_preparacion'){
     pie = `<div class="t-botones">

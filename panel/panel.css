@@ -16,6 +16,10 @@
   --naranja-osc:#C25E14;      /* nombre de la vista */
   --rojo:#B0342A;             /* urgente */
   --rojo-fondo:#FFF8F7;
+  --rosa:#C8375A;             /* pedido NUEVO: botón y borde */
+  --rosa-osc:#A82B49;
+  --rosa-claro:#FCE4EA;       /* pedido NUEVO: franja de arriba */
+  --rosa-borde:#EDB6C3;
   --prep-fondo:#FFF1E3;       /* en preparación */
   --prep-texto:#A94E0E;
   --prep-borde:#F3C9A3;
@@ -73,6 +77,9 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 .btn:disabled{ opacity:.6; }
 .btn-naranja{ background:var(--orange); color:var(--navy); }
 .btn-naranja:active{ background:var(--orange-d); }
+/* Botón principal de un pedido NUEVO: rosa intenso, a juego con su tarjeta */
+.btn-rosa{ background:var(--rosa); color:#fff; }
+.btn-rosa:active{ background:var(--rosa-osc); }
 .btn-borde{ background:#fff; color:var(--navy); border:1.5px solid var(--navy); }
 .btn-borde:active{ background:var(--fondo-2); }
 .btn-ancho{ width:100%; }
@@ -110,8 +117,8 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 }
 /* Tarjeta siempre blanca; solo la franja de "Pedido N" lleva el color del estado */
 .tarjeta{ background:#fff; border:1px solid var(--linea); border-radius:12px; padding:14px 16px 16px; box-shadow:0 1px 3px rgba(20,41,94,.06); overflow:hidden; }
-.tarjeta.nuevo{ border:1.5px solid var(--rojo); }
-.tarjeta.nuevo .pedido-num{ background:#FBE4E1; border-bottom-color:#F1C4BF; }
+.tarjeta.nuevo{ border:1.5px solid var(--rosa); }
+.tarjeta.nuevo .pedido-num{ background:var(--rosa-claro); border-bottom-color:var(--rosa-borde); }
 .tarjeta.prep{ border:1px solid var(--prep-borde); }
 .tarjeta.prep .pedido-num{ background:var(--prep-fondo); border-bottom-color:var(--prep-borde); }
 .t-arriba{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--linea); }
@@ -131,7 +138,7 @@ body.destello .cab{ animation:destello .8s ease-in-out 3; }
 .linea .nombre{ min-width:0; overflow-wrap:anywhere; }
 .linea .puntos{ flex:1; min-width:12px; border-bottom:1px dotted var(--puntos); margin:0 4px; transform:translateY(-4px); }
 .linea .precio{ flex:none; white-space:nowrap; }
-.nota{ margin:0 0 4px 26px; font-size:13px; font-weight:700; color:var(--rojo); background:rgba(176,52,42,.08); padding:4px 8px; border-left:3px solid var(--rojo); border-radius:4px; overflow-wrap:anywhere; }
+.nota{ margin:0 0 4px 26px; font-size:13px; font-weight:700; color:var(--rojo); background:rgba(176,52,42,.08); padding:4px 8px; border-radius:6px; overflow-wrap:anywhere; }
 .t-total{ display:flex; justify-content:space-between; font-size:15px; font-weight:700; color:var(--navy); margin-top:8px; padding-top:8px; border-top:1px solid var(--linea); }
 .t-botones{ display:flex; gap:8px; margin-top:12px; }
 .t-botones .btn{ flex:1; }
