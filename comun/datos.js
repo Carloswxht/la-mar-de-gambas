@@ -15,15 +15,27 @@
 const AUTH_BASE = 'https://ep-sweet-sky-b18vlkug.neonauth.c-5.eu-central-1.aws.neon.tech/neondb/auth';
 const DATA_API = 'https://ep-sweet-sky-b18vlkug.apirest.c-5.eu-central-1.aws.neon.tech/neondb/rest/v1';
 
+/* ---------------- PASE ANÓNIMO ----------------
+   La Data API de Neon exige en cada llamada un "pase" (token JWT), aunque
+   sea de visitante anónimo. Se pide a Neon Auth (GET /token/anonymous),
+   se guarda en memoria y se renueva un minuto antes de que caduque.
+   Con ese pase la base solo deja ejecutar las funciones de seguridad.sql. */
 let cachedToken = null;
 let cachedTokenExpiry = 0;
 
 async function getAuthToken(force){
   const now = Date.now() / 1000;
   if(!force && cachedToken && cachedTokenExpiry - now > 60) return cachedToken;
-  const res = await fetch(AUTH_BASE + '/token/anonymous');
-  if(!res.ok) throw new Error('No se pudo obtener acceso a la carta (código ' + res.status + ')');
-  const data = await res.json();
+  let res;
+  try {
+    res = await fetch(AUTH_BASE + '/token/anonymous', { cache: 'no-store' });
+  } catch(e) {
+    // Sin internet, o el navegador no deja llegar a Neon Auth (dominio no autorizado).
+    throw new ErrorDatos(navigator.onLine === false ? 'SIN_CONEXION' : 'SIN_PASE:red');
+  }
+  let data = null;
+  try { data = await res.json(); } catch(e) { /* respuesta vacía */ }
+  if(!res.ok || !data || !data.token) throw new ErrorDatos('SIN_PASE:' + res.status);
   cachedToken = data.token;
   let e = data.expires_at;
   if(typeof e === 'string') e = Date.parse(e) / 1000;
@@ -34,15 +46,12 @@ async function getAuthToken(force){
 
 /* ---------------- LLAMADA A LAS "VENTANILLAS" DE LA BASE ----------------
    La web no toca tablas: solo llama a funciones de la base (ver
-   datos/seguridad.sql), que comprueban todo. Se llaman sin login de Neon:
-   la base las trata como visitante anónimo. Si un día la base exige
-   token anónimo, se pide y se reintenta. */
-let usarTokenAnonimo = false;
-
+   datos/seguridad.sql), que comprueban todo. Cada llamada lleva el pase
+   anónimo; si la base lo rechaza (caducado), se pide otro y se reintenta
+   una vez. */
 async function apiRpc(nombre, params){
-  const enviar = async () => {
-    const headers = { 'Content-Type': 'application/json' };
-    if(usarTokenAnonimo) headers['Authorization'] = 'Bearer ' + await getAuthToken();
+  const enviar = async (pase) => {
+    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pase };
     // Con mala cobertura una llamada puede quedarse colgada: se corta a los 20 s.
     const corte = window.AbortController ? new AbortController() : null;
     const reloj = corte ? setTimeout(() => corte.abort(), 20000) : null;
@@ -55,11 +64,15 @@ async function apiRpc(nombre, params){
     } finally { if(reloj) clearTimeout(reloj); }
   };
   let res;
+  const pase = await getAuthToken();
   try {
-    res = await enviar();
-    if(res.status === 401 && !usarTokenAnonimo){ usarTokenAnonimo = true; res = await enviar(); }
+    res = await enviar(pase);
   } catch(e) {
     throw new ErrorDatos('SIN_CONEXION');
+  }
+  if(res.status === 401){
+    const nuevo = await getAuthToken(true);
+    try { res = await enviar(nuevo); } catch(e) { throw new ErrorDatos('SIN_CONEXION'); }
   }
   const texto = res.texto;
   let datos = null;
@@ -86,6 +99,7 @@ function textoError(codigo){
   const [base, detalle] = [c.split(':')[0], c.split(':').slice(1).join(':')];
   const textos = {
     SIN_CONEXION: 'No hay conexión. Comprueba la cobertura e inténtalo otra vez.',
+    SIN_PASE: 'No se ha podido conectar con la base de datos (pase ' + (detalle || '?') + '). Inténtalo en un momento.',
     MESA_NO_VALIDA: 'Este código QR no es válido. Pide ayuda al camarero.',
     ESPERA_UN_MOMENTO: 'Acabas de enviar un pedido. Espera unos segundos.',
     LIMITE_MOVIL: 'Has enviado muchos pedidos en poco tiempo. Avisa al camarero.',
