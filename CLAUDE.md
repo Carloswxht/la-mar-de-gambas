@@ -40,18 +40,23 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Si una clave se filtra: cambiarla de inmediato, no basta con borrarla del repositorio.
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
-## Estado actual (última versión: v6 — pedidos desde la mesa, Fase 5; publicada en `main` y funcionando contra la base real desde el 11 oct)
+## Estado actual (última versión: v7 — pestañas de bebidas, 11 oct; v6 = pedidos desde la mesa)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
-- El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/menu-datos.json` (105 productos, 7 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
-- Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta ("Carta v6" desde la Fase 5).
+- El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/menu-datos.json` (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
+- Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta ("Carta v6" desde la Fase 5; "Carta v7" con las bebidas).
 - Fuentes Oswald y DM Sans guardadas en `comun/fuentes/` (ya no se cargan desde Google: RGPD hecho).
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
 - Los estilos de la carta están en `carta/carta.css`: un bloque `THEME` al final anula los estilos heredados de la carta de El Recreo (tema dorado).
 
-## Pestañas (7)
-Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.
+## Pestañas (9)
+**Café y bebidas · Cervezas y copas** · Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.
+- Las dos de bebidas van **primero** porque es lo primero que pide la gente (decisión de Carlos, 11 oct). Se añadieron con `datos/cambios/2026-10-11-bebidas.sql` (ids 106–139):
+  - **Café y bebidas** (`cafe`): CAFÉS (café solo, cortado, americano, café con leche, descafeinado, carajillo, infusión o té, Cola Cao) y REFRESCOS Y AGUA (Coca-Cola, Coca-Cola Zero, Fanta naranja y limón, Sprite, Aquarius, Nestea, tónica, zumo, agua, agua con gas).
+  - **Cervezas y copas** (`cervezas`): CERVEZAS (caña, tubo, jarra y tercio Cruzcampo, Cruzcampo Especial, Alhambra Reserva 1925, sin alcohol, clara con limón, tinto de verano) y COMBINADOS (gin tonic, gin tonic premium, ron con cola, whisky con cola, vodka con naranja o limón, chupito).
+  - **PRECIOS PROVISIONALES** (típicos de bar de Sevilla; las cartas físicas no traen bebidas). Pendiente: que el local confirme precios, marca de cerveza y qué combinados tiene. Se cambian desde el panel (Lista de precios) sin tocar código. Cada bebida es una línea sin tamaño (no se usan Tapa/Plato ni Copa/Botella); las preferencias (marca de ginebra, tipo de leche) van en la nota.
+  - Salen solas en la carta, en "Nuevo pedido" del panel y en la Lista de precios (todo lee las pestañas de la base). "Modificar pedido" no muestra la carta (solo − / + de lo ya pedido).
 Dentro de las pestañas que juntan varias secciones, los nombres originales de la carta física salen como subtítulo (por ejemplo "El picoteo del puerto").
 
 ## Cómo se modelan los precios
@@ -122,7 +127,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - `datos/menu-datos.json` → datos del menú (única copia).
 - `datos/esquema.sql` → tablas de la base. `datos/datos-iniciales.sql` → pestañas, productos y mesas de ejemplo (se genera desde `menu-datos.json`). `datos/seguridad.sql` → permisos, login del personal y todas las funciones que usa la web.
 - `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta.
-- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha).
+- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; el último, `2026-10-11-bebidas.sql`).
 - `PRUEBAS-FASE-5.md` → lista de pruebas con móviles reales antes de imprimir los QR (y lista de seguridad y legal).
 - `og-gambas5.jpg` → imagen para compartir por WhatsApp.
 - `fotos-cartas/` → `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg`, fotos de las cartas físicas. Son la fuente de verdad de los precios.
@@ -183,4 +188,5 @@ Plan por fases; Carlos aprueba cada fase antes de pasar a la siguiente y un pull
 - **Siguiente:**
   1. Terminar `PRUEBAS-FASE-5.md` (sobre todo con un **iPhone/Safari** y con dos aparatos: uno con el panel y otro con la carta). Después: borrar los pedidos de prueba (por SQL, con su OK) y crear la etiqueta `carta-v6` (desde Releases, como `carta-v5-estable`).
   2. Antes de imprimir los QR: lista de seguridad y legal (precios aprobados por el local, alérgenos, aviso legal, mesas reales en el panel, copias de seguridad, plan de Neon). Los QR llevan el enlace de cada mesa que da el panel (Mesas → Copiar enlace).
-  3. Ideas propuestas y no hechas (esperan a Carlos): generar los QR imprimibles desde el panel; icono propio para la pantalla de inicio; resumen de días anteriores.
+  3. Confirmar con el local los precios de las bebidas (provisionales), la cerveza que sirven (se puso Cruzcampo) y los combinados/ginebras que tienen.
+  4. Ideas propuestas y no hechas (esperan a Carlos): generar los QR imprimibles desde el panel; icono propio para la pantalla de inicio; resumen de días anteriores.

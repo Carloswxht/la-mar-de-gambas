@@ -1,21 +1,26 @@
 -- =====================================================================
 -- DATOS INICIALES · La Mar de Gambas
 -- Generado a partir de datos/menu-datos.json (precios de las cartas
--- físicas, pendientes de aprobación por escrito del local).
+-- físicas, pendientes de aprobación por escrito del local; las bebidas
+-- llevan precios provisionales).
 -- Ejecutar después de datos/esquema.sql.
 -- =====================================================================
 
--- ---------------- PESTAÑAS (7) ----------------
+-- ---------------- PESTAÑAS (9) ----------------
+-- Café y bebidas y Cervezas y copas van primero (añadidas el 11 oct, con
+-- precios provisionales: las cartas físicas no traen bebidas).
 insert into categories (id, name, sort_order, multi, fam, labs) values
-  ('mar', 'MARISCO Y MAR', 1, true, 'tp', ARRAY['Tapa','Plato']),
-  ('picar', 'PARA PICAR', 2, true, 'tp', ARRAY['Tapa','Plato']),
-  ('fritos', 'FRITOS Y CROQUETAS', 3, true, 'tp', ARRAY['Tapa','Plato']),
-  ('carne', 'CARNE Y ARROCES', 4, true, 'tp', ARRAY['Tapa','Plato']),
-  ('panes', 'PANES', 5, true, 'tp', ARRAY['Tapa','Plato']),
-  ('postres', 'POSTRES', 6, false, '', '{}'),
-  ('bodega', 'BODEGA', 7, false, 'cb', ARRAY['Copa','Botella']);
+  ('cafe', 'CAFÉ Y BEBIDAS', 1, true, '', '{}'),
+  ('cervezas', 'CERVEZAS Y COPAS', 2, true, '', '{}'),
+  ('mar', 'MARISCO Y MAR', 3, true, 'tp', ARRAY['Tapa','Plato']),
+  ('picar', 'PARA PICAR', 4, true, 'tp', ARRAY['Tapa','Plato']),
+  ('fritos', 'FRITOS Y CROQUETAS', 5, true, 'tp', ARRAY['Tapa','Plato']),
+  ('carne', 'CARNE Y ARROCES', 6, true, 'tp', ARRAY['Tapa','Plato']),
+  ('panes', 'PANES', 7, true, 'tp', ARRAY['Tapa','Plato']),
+  ('postres', 'POSTRES', 8, false, '', '{}'),
+  ('bodega', 'BODEGA', 9, false, 'cb', ARRAY['Copa','Botella']);
 
--- ---------------- PRODUCTOS (105) ----------------
+-- ---------------- PRODUCTOS (139) ----------------
 insert into products (id, category_id, name, display_name, description, size, only_size, section, price, featured, allergens, photo, sort_order) overriding system value values
   (1, 'mar', 'Media mariscada', NULL, '550 g aprox. · gambas, patas rusas, langostinos, cigalas y mejillones', NULL, false, 'MARISCO COCIDO', 20.00, false, NULL, '', 1),
   (2, 'mar', 'Gambas', NULL, '200 gr', NULL, false, 'MARISCO COCIDO', 7.50, false, NULL, '', 2),
@@ -122,7 +127,44 @@ insert into products (id, category_id, name, display_name, description, size, on
   (103, 'bodega', 'La Gabriela (Copa)', 'La Gabriela', 'manzanilla', 'Copa', false, 'LA BODEGA', 2.70, false, NULL, '', 103),
   (104, 'bodega', 'La Gabriela (Botella)', 'La Gabriela', 'manzanilla', 'Botella', false, 'LA BODEGA', 16.00, false, NULL, '', 104),
   (105, 'bodega', 'Izaguirre Rojo (Copa)', 'Izaguirre Rojo', 'Copa · vermouth', 'Copa', true, 'LA BODEGA', 3.80, false, NULL, '', 105);
--- Los productos nuevos que cree el admin seguirán a partir del 106.
+
+-- Bebidas (añadidas el 11 oct, ver datos/cambios/2026-10-11-bebidas.sql). PRECIOS PROVISIONALES.
+insert into products (id, category_id, name, display_name, description, size, only_size, section, price, featured, allergens, photo, sort_order) overriding system value values
+  (106, 'cafe', 'Café solo', NULL, '', NULL, false, 'CAFÉS', 1.30, false, NULL, '', 106),
+  (107, 'cafe', 'Cortado', NULL, '', NULL, false, 'CAFÉS', 1.40, false, NULL, '', 107),
+  (108, 'cafe', 'Americano', NULL, '', NULL, false, 'CAFÉS', 1.40, false, NULL, '', 108),
+  (109, 'cafe', 'Café con leche', NULL, '', NULL, false, 'CAFÉS', 1.60, false, NULL, '', 109),
+  (110, 'cafe', 'Descafeinado', NULL, 'de máquina o de sobre', NULL, false, 'CAFÉS', 1.60, false, NULL, '', 110),
+  (111, 'cafe', 'Carajillo', NULL, '', NULL, false, 'CAFÉS', 2.00, false, NULL, '', 111),
+  (112, 'cafe', 'Infusión o té', NULL, 'manzanilla, poleo, menta o té', NULL, false, 'CAFÉS', 1.50, false, NULL, '', 112),
+  (113, 'cafe', 'Cola Cao', NULL, '', NULL, false, 'CAFÉS', 1.80, false, NULL, '', 113),
+  (114, 'cafe', 'Coca-Cola', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 114),
+  (115, 'cafe', 'Coca-Cola Zero', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 115),
+  (116, 'cafe', 'Fanta naranja', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 116),
+  (117, 'cafe', 'Fanta limón', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 117),
+  (118, 'cafe', 'Sprite', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 118),
+  (119, 'cafe', 'Aquarius', NULL, 'limón o naranja', NULL, false, 'REFRESCOS Y AGUA', 2.40, false, NULL, '', 119),
+  (120, 'cafe', 'Nestea', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.40, false, NULL, '', 120),
+  (121, 'cafe', 'Tónica', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 121),
+  (122, 'cafe', 'Zumo', NULL, 'naranja, piña o melocotón', NULL, false, 'REFRESCOS Y AGUA', 2.30, false, NULL, '', 122),
+  (123, 'cafe', 'Agua', NULL, '50 cl', NULL, false, 'REFRESCOS Y AGUA', 1.50, false, NULL, '', 123),
+  (124, 'cafe', 'Agua con gas', NULL, '', NULL, false, 'REFRESCOS Y AGUA', 1.80, false, NULL, '', 124),
+  (125, 'cervezas', 'Caña Cruzcampo', NULL, '', NULL, false, 'CERVEZAS', 1.80, false, NULL, '', 125),
+  (126, 'cervezas', 'Tubo Cruzcampo', NULL, '', NULL, false, 'CERVEZAS', 2.20, false, NULL, '', 126),
+  (127, 'cervezas', 'Jarra Cruzcampo', NULL, '', NULL, false, 'CERVEZAS', 3.00, false, NULL, '', 127),
+  (128, 'cervezas', 'Tercio Cruzcampo', NULL, '', NULL, false, 'CERVEZAS', 2.50, false, NULL, '', 128),
+  (129, 'cervezas', 'Cruzcampo Especial', NULL, 'tercio', NULL, false, 'CERVEZAS', 2.80, false, NULL, '', 129),
+  (130, 'cervezas', 'Alhambra Reserva 1925', NULL, 'tercio', NULL, false, 'CERVEZAS', 3.20, false, NULL, '', 130),
+  (131, 'cervezas', 'Cerveza sin alcohol', NULL, 'tercio', NULL, false, 'CERVEZAS', 2.50, false, NULL, '', 131),
+  (132, 'cervezas', 'Clara con limón', NULL, 'caña', NULL, false, 'CERVEZAS', 2.00, false, NULL, '', 132),
+  (133, 'cervezas', 'Tinto de verano', NULL, '', NULL, false, 'CERVEZAS', 2.50, false, NULL, '', 133),
+  (134, 'cervezas', 'Gin tonic', NULL, '', NULL, false, 'COMBINADOS', 7.00, false, NULL, '', 134),
+  (135, 'cervezas', 'Gin tonic premium', NULL, 'ginebra premium a elegir', NULL, false, 'COMBINADOS', 9.00, false, NULL, '', 135),
+  (136, 'cervezas', 'Ron con cola', NULL, '', NULL, false, 'COMBINADOS', 6.50, false, NULL, '', 136),
+  (137, 'cervezas', 'Whisky con cola', NULL, '', NULL, false, 'COMBINADOS', 6.50, false, NULL, '', 137),
+  (138, 'cervezas', 'Vodka con naranja o limón', NULL, '', NULL, false, 'COMBINADOS', 6.50, false, NULL, '', 138),
+  (139, 'cervezas', 'Chupito', NULL, 'orujo, pacharán o licor de hierbas', NULL, false, 'COMBINADOS', 2.50, false, NULL, '', 139);
+-- Los productos nuevos que cree el admin seguirán a partir del 140.
 select setval(pg_get_serial_sequence('products','id'), (select max(id) from products));
 
 -- ---------------- MESAS DE EJEMPLO (1 a 10) ----------------
