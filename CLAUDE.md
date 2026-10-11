@@ -40,10 +40,10 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Si una clave se filtra: cambiarla de inmediato, no basta con borrarla del repositorio.
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
-## Estado actual (última versión: v5, separada en archivos)
+## Estado actual (última versión: v6 — pedidos desde la mesa, Fase 5; pendiente de que Carlos la pruebe y fusione)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
-- Los datos del menú están en **una sola copia**: `datos/menu-datos.json` (la carta lo lee al abrirse). 105 productos, 7 pestañas.
+- El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/menu-datos.json` (105 productos, 7 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
 - Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta (se añadirá con la v6).
 - Fuentes Oswald y DM Sans guardadas en `comun/fuentes/` (ya no se cargan desde Google: RGPD hecho).
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
@@ -60,10 +60,15 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - Productos que solo existen en un tamaño salen como línea normal con la etiqueta ("Plato").
 - En el tique, cada línea lleva el tamaño: "Croquetas de caña de lomo (Tapa)".
 
-## Comportamiento actual de pedidos
-- Se puede añadir con + / −, poner nota por producto y ver el tique con el total.
-- **El pedido NO se envía a ningún sitio**: el cliente le enseña el tique al camarero. El botón "Enviar pedido a barra" está oculto y el tique dice "Enséñale este tique al camarero para pedir."
-- Motivo: este local aún no tiene su propia base de datos ni panel de barra.
+## Comportamiento actual de pedidos (v6, Fase 5)
+- Se puede añadir con + / −, poner nota por producto (máx. 140 caracteres, 20 unidades por producto) y ver el tique con el total.
+- **Con el QR de la mesa** (`/carta/?mesa=N&c=CÓDIGO`): la cabecera pone "MESA N · PIDE DESDE TU MESA" y salen "Enviar pedido a barra" (barra naranja encima de la barra azul) y el botón grande del tique. El pedido llega al panel como NUEVO.
+- **Sin QR o con código falso:** solo mirar, como antes ("Enséñale este tique al camarero para pedir."). Con código falso la cabecera pone "QR NO VÁLIDO · AVISA AL CAMARERO". Si al abrir no hay cobertura para comprobar el código, se deja pedir y la base lo comprueba al enviar.
+- **Tique:** cada pedido con su estado ("PEDIDO 1 · ENVIADO" naranja oscuro, "EN PREPARACIÓN" azul, "SERVIDO ✓" verde); mientras está NUEVO (3 min y sin "Aceptar pedido") lleva "puedes cambiarlo m:ss" y − / + por línea; quitar la última línea pregunta "¿Anular el pedido N?". Las líneas que el personal puso a 0 salen tachadas en gris. Los servidos se pliegan en "Ver pedidos anteriores". Se ven solo los pedidos de este móvil en esta mesa (últimas 12 h).
+- La carta pregunta el estado cada 6 s mientras hay pedidos sin servir, y los precios/agotados cada minuto (y al volver a la pestaña). Si algo del pedido sin enviar se agota, se quita y se avisa. Un producto nuevo o retirado se ve al recargar.
+- **Agotados:** en gris con la etiqueta "AGOTADO" y sin botón +.
+- **Avisos** en la tarjeta con sello (reutiliza `.confirm`): "PEDIDO ENVIADO", "NO SE HA ENVIADO" (con el motivo en español de `textoError`), "YA EN MARCHA", "SE HA AGOTADO".
+- **Mala cobertura:** cada llamada se corta a los 20 s; si al enviar se pierde la respuesta, la carta pregunta a la base si el pedido llegó antes de decir que falló (evita pedidos repetidos).
 
 ## Dudas de transcripción (confirmar con las cartas físicas)
 - Carne mechá 6,50 € y Chicharrón de Cádiz 6,50 €: precio medio tapado en la foto.
@@ -80,7 +85,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 3. Alérgenos: la carta física los lleva en un QR aparte. Pedir la lista y añadirla (hay un botón "i" por categoría, hoy oculto).
 4. Fotos de productos: hay un botón "FOTO" que aparece solo cuando un producto tiene imagen (se mantiene pulsado para verla). Los postres tienen foto en la carta física, pero hay que pedirlas aparte.
 5. Opcional: logo de la gamba en la cabecera (usar una foto limpia que dé Carlos).
-6. Opcional: **pedidos reales a un panel de barra**. Requiere su propia base de datos (no usar la de El Recreo) y un panel como el de El Recreo; hay que decidir con Carlos antes. Si se hace, avisar de esperar 30–60 s tras crear tablas antes de probar.
+6. ~~Pedidos reales a un panel de barra~~: hecho (panel + Fase 5, ver "Panel de barra").
 7. Opcional: buscador de productos arriba, y una pestaña "Lo mejor de la casa" con los platos estrella (el dueño debe decir cuáles).
 
 ## Infraestructura (decidida el 5 oct)
@@ -102,9 +107,10 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - El enlace de la portada a la carta es relativo (`carta/`), para que funcione igual en `carloswxht.github.io/la-mar-de-gambas/` y en el dominio propio.
 
 ## Estructura de la carta (para tocar sin romper)
-- `loadMenu()` (en `carta/carta.js`) carga el menú desde `datos/menu-datos.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único).
+- `loadMenu()` (en `carta/carta.js`) carga el menú de la base (`datosCarta.menu`) o, si no responde, de `datos/menu-datos.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único), `agotado` (solo desde la base).
+- Pedidos en `carta.js`: `comprobarMesa()` (lee `?mesa`/`c`, activa `body.modo-pedir`), `sendOrder()`, `adjustSentItem()` (editar/anular), `refreshRoundStatuses()` (mis pedidos), `refrescarCarta()` (precios y agotados), `aviso()`. Todo el texto de la base se escapa con `esc()`.
 - `renderCategories()` agrupa las filas del mismo producto bajo un único nombre y pinta los subtítulos de sección.
-- `buildLine()` pinta cada fila y su control +/−; el tique se calcula con `cartLines()`.
+- `buildLine()` pinta cada fila y su control +/−/Agotado (`pintarControles()`); el tique se calcula con `cartLines()`.
 - Cabecera fija: el `padding-top` del body se ajusta por JS (no tocar).
 - La barra inferior y el tique usan clases `.fixed-bottom`, `.dock`, `.panel`.
 
@@ -112,16 +118,17 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - `index.html` → portada provisional del local (raíz).
 - `carta/index.html`, `carta/carta.css`, `carta/carta.js` → la carta, publicada en `/carta/`.
 - `comun/estilos.css` → colores y fuentes comunes de carta y panel. `comun/fuentes/` → Oswald y DM Sans (woff2, licencia OFL).
-- `comun/datos.js` → **único** bloque de acceso a la base de datos y login: `apiRpc` (llama a las funciones de la base), `datosCarta` (menú, mesa, crear/editar pedido, mis pedidos), login del personal (`login`, `logout`, `comprobarSesion`, `cambiarPassword`, `getSesion`), `datosPanel` (pedidos, marcar, agotados, y lo del admin) y `textoError` (mensajes en español). Quedan `apiGet/apiPost/apiPatch/apiDelete` antiguos de El Recreo que ya no sirven (tablas cerradas); se quitan en la Fase 5. Para migrar a Supabase se cambia solo este archivo.
+- `comun/datos.js` → **único** bloque de acceso a la base de datos y login: `apiRpc` (llama a las funciones de la base), `datosCarta` (menú, mesa, crear/editar pedido, mis pedidos), login del personal (`login`, `logout`, `comprobarSesion`, `cambiarPassword`, `getSesion`), `datosPanel` (pedidos, marcar, agotados, y lo del admin) y `textoError` (mensajes en español). Las funciones antiguas de El Recreo (`apiGet/apiPost/apiPatch/apiDelete`) se quitaron en la Fase 5. Cada llamada se corta a los 20 s (mala cobertura). Para migrar a Supabase se cambia solo este archivo.
 - `datos/menu-datos.json` → datos del menú (única copia).
 - `datos/esquema.sql` → tablas de la base. `datos/datos-iniciales.sql` → pestañas, productos y mesas de ejemplo (se genera desde `menu-datos.json`). `datos/seguridad.sql` → permisos, login del personal y todas las funciones que usa la web.
 - `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta.
 - `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha).
+- `PRUEBAS-FASE-5.md` → lista de pruebas con móviles reales antes de imprimir los QR (y lista de seguridad y legal).
 - `og-gambas5.jpg` → imagen para compartir por WhatsApp.
 - `fotos-cartas/` → `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg`, fotos de las cartas físicas. Son la fuente de verdad de los precios.
 - `versiones/` → versiones antiguas: `carta-digital-la-mar-de-gambas-v5.html`.
 
-## Panel de barra (diseño aprobado el 10 oct; falta la Fase 5)
+## Panel de barra (diseño aprobado y fusionado el 10 oct; Fase 5 hecha el 11 oct, falta probarla y fusionarla)
 Ojo: `panel` es el nombre de la **rama** (copia de trabajo de todo el proyecto); la pantalla del camarero/barra/admin irá en la **carpeta** `panel/`.
 Plan por fases; Carlos aprueba cada fase antes de pasar a la siguiente y un pull request por fase.
 - **Fase 0 (hecha, 6 oct):** plan explicado. Decisiones de Carlos: rama `panel`; un PR por fase; mesas de ejemplo sencillas (mesas 1–10) hasta tener las reales; un usuario por persona; login con correo + contraseña; límites anti-spam propuestos (1 pedido cada 20 s y 10/hora por móvil, 6 pedidos cada 10 min por mesa, 30 líneas y 20 unidades por línea); la carta leerá precios de la base con la copia local de reserva; se activa con los precios de las cartas físicas mientras el local no los aprueba; pedidos se guardan 30 días y notas 24 h (revisar con el cliente al pasar a producción); tablet en la barra aún por decidir. Código secreto por mesa en el QR: **sí** (decidido el 6 oct). Los QR serán `/carta/?mesa=N&c=CÓDIGO`; la base solo acepta pedidos si el código coincide con el de la mesa. Si se cambia el código de una mesa, hay que reimprimir su QR.
@@ -163,8 +170,11 @@ Plan por fases; Carlos aprueba cada fase antes de pasar a la siguiente y un pull
   - `2026-10-10-pedido-desde-panel.sql`: `panel_crear_pedido(token, mesa, lineas)` (entra como NUEVO; sin código de QR ni anti-spam; sin agotados) y `panel_mesas(token)` (mesas sin códigos).
   - El cliente solo puede cambiar su pedido mientras está NUEVO (3 primeros minutos y antes de "Aceptar pedido").
   - En `comun/datos.js`: `datosPanel.modificar`, `datosPanel.crearPedido`, `datosPanel.mesasPanel`.
+- **PR #5 fusionado por Carlos (10 oct).** Antes de la Fase 5 se guardó la rama `estable-panel-v8` (copia de `main` con el panel aprobado y la carta v5) por si hay que volver atrás.
+- **Fase 5 (hecha el 11 oct, rama `fase-5-pedidos`, con el OK de Carlos):** pedidos desde la mesa en la carta (ver "Comportamiento actual de pedidos"). Archivos: `carta/carta.js`, `carta/index.html` ("Carta v6" en el pie), `carta/carta.css` (bloque "v6" al final), `comun/datos.js` (fuera funciones antiguas; corte a los 20 s), `PRUEBAS-FASE-5.md`. **Sin cambios en la base ni en el panel.**
+  - Probado en Chromium a 390 px con la base simulada (misma lógica que `seguridad.sql`): sin QR, QR falso, QR bueno, agotado, enviar, editar, aviso de 20 s, en preparación (bloqueado), se agota en el carrito, cambio de precio, respuesta perdida, anular, servido con línea a 0, sin conexión, base caída al abrir (carta de reserva). Sin errores en consola. El panel sigue igual (comprobado). Comprobado por SQL que `carta_menu` de la base coincide exactamente con `menu-datos.json`. **No probado aún en Safari real ni contra la base por internet** (el proxy de Claude Code lo impide): lo hace Carlos con `PRUEBAS-FASE-5.md`.
 - **Siguiente:**
-  1. Carlos fusiona el **PR #5** (incluye la Fase 4; el #4 se marcará solo como fusionado) y prueba el panel real en `carloswxht.github.io/la-mar-de-gambas/panel/` con `carloswxht+admin@gmail.com` (contraseña provisional dada por el chat; le pedirá cambiarla). Revisar que funciona en iPhone (Safari) y Android.
-  2. **Fase 5** (rama `fase-5-pedidos`): activar el envío en la carta del cliente (`?mesa=N&c=CÓDIGO`, "Mesa N", edición hasta "Aceptar pedido" o 3 min, mostrar "En preparación" en vez de "Recibido", leer precios y agotados de la base con la copia local de reserva, quitar `apiGet/apiPost/apiPatch/apiDelete` antiguos de `datos.js`) y **lista de pruebas** con un pedido real antes de dejarlo activo. Tocar `carta/` exige avisar antes (cambios acotados).
-  3. Ideas propuestas y no hechas (esperan a Carlos): icono propio para la pantalla de inicio; resumen de días anteriores.
+  1. Carlos fusiona el PR de la Fase 5 y hace `PRUEBAS-FASE-5.md` con un iPhone y un Android. Después: borrar los pedidos de prueba (por SQL, con su OK) y crear la etiqueta `carta-v6` (desde Releases, como `carta-v5-estable`).
+  2. Antes de imprimir los QR: lista de seguridad y legal (precios aprobados, alérgenos, aviso legal, mesas reales, copias de seguridad, plan de Neon). Los QR llevan el enlace de cada mesa que da el panel (Mesas → Copiar enlace).
+  3. Ideas propuestas y no hechas (esperan a Carlos): icono propio para la pantalla de inicio; resumen de días anteriores; generar los QR imprimibles desde el panel.
 - Al añadir el dominio propio: añadirlo también como dominio de confianza en Neon Auth.

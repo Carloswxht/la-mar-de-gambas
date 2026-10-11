@@ -389,7 +389,7 @@ footer{ padding:34px 24px 20px; font-size:10.5px; letter-spacing:0.04em; }
 .fixed-bottom .top-send.idle{ padding:0 !important; height:2px; min-height:0; font-size:0 !important; border-top:none !important; box-shadow:none !important; background:#111; }
 
 /* ===== La Mar de Gambas ===== */
-.confirm, .li-connector, .al-info, .al-note, .top-send, .send-btn, .panel-foot .note{ display:none !important; }
+.li-connector, .al-info, .al-note, .top-send, .send-btn, .panel-foot .note{ display:none !important; }
 .panel-foot::after{ content:'Enséñale este tique al camarero para pedir.'; display:block; text-align:center; font-size:12px; opacity:.75; margin-top:8px; }
 .cat-head{ display:none !important; }
 .li-sublab{ font-family:'DM Sans',sans-serif; font-size:14.5px; color:rgba(20,20,20,.85); }
@@ -462,3 +462,40 @@ body{ padding-bottom:110px !important; }
 .cart-row{ gap:12px; } .cart-row .cr-name{ flex:1; }
 .cart-row > *:last-child{ flex:none; white-space:nowrap; }
 .stamp-mark{ font-family:'Oswald',sans-serif !important; color:var(--navy) !important; border-color:var(--orange) !important; }
+
+/* ===== v6: pedidos desde la mesa (Fase 5) =====
+   Sin QR válido (modo "solo mirar") los botones de enviar siguen ocultos y
+   el tique se enseña al camarero. Con QR de mesa el body lleva .modo-pedir. */
+body.modo-pedir .top-send, body.modo-pedir .send-btn{ display:block !important; }
+body.modo-pedir .panel-foot::after{ content:'El pedido llega directo a la barra.'; }
+.fixed-bottom .top-send{ background:var(--orange) !important; color:#fff !important; border:0 !important; box-shadow:0 -6px 16px rgba(10,20,55,.18) !important; font-family:'DM Sans',sans-serif !important; font-size:13px !important; font-weight:700 !important; letter-spacing:.14em !important; padding:15px !important; cursor:pointer; }
+.fixed-bottom .top-send:active{ background:var(--orange-d) !important; }
+.fixed-bottom .top-send.idle{ background:var(--navy) !important; }
+.send-btn{ background:var(--orange) !important; color:#fff !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-size:14px !important; font-weight:700 !important; letter-spacing:.1em !important; padding:16px !important; }
+.send-btn:active{ background:var(--orange-d) !important; }
+.send-btn:disabled, .fixed-bottom .top-send:disabled{ opacity:.65; cursor:default; }
+
+/* Estado de cada pedido en el tique */
+.round-label{ font-family:'DM Sans',sans-serif !important; font-size:11.5px !important; font-weight:700 !important; letter-spacing:.1em !important; color:var(--ink-soft) !important; gap:10px; flex-wrap:wrap; }
+.round-label.current{ color:#C25E14 !important; }
+.round-label.est-enviado{ color:#C25E14 !important; }
+.round-label.est-prep{ color:#2556A3 !important; }
+.round-label.est-servido{ color:#2E7D4F !important; }
+.round-label .cuenta{ font-weight:500; letter-spacing:.02em; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+.cart-row.quitado .cr-name, .cart-row.quitado .cr-price{ color:rgba(15,30,69,.35) !important; font-weight:400 !important; text-decoration:line-through; }
+.cr-stepper{ border:1.5px solid var(--orange) !important; border-radius:999px !important; overflow:hidden; }
+.cr-stepper button{ width:38px !important; height:36px !important; background:#fff !important; color:var(--orange) !important; font-family:'DM Sans',sans-serif !important; font-size:20px !important; }
+.cr-stepper button.plus{ background:var(--orange) !important; color:#fff !important; }
+.cart-row .cr-main, .cart-row .cr-name-row{ min-width:0; }
+.cart-row .cr-name{ white-space:normal !important; }
+.panel-body.ocupado .cr-stepper{ opacity:.45; pointer-events:none; }
+
+/* Agotados (los marca la barra desde el panel) */
+.line-item.agotado .li-name, .line-item.agotado .li-sublab, .line-item.agotado .li-sub, .line-item.agotado .li-price{ color:rgba(15,30,69,.38) !important; }
+.li-agotado{ display:none; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(15,30,69,.55); border:1px solid rgba(15,30,69,.2); border-radius:999px; padding:6px 10px; white-space:nowrap; }
+
+/* Avisos (pedido enviado, errores) */
+.confirm-card p{ font-size:14px !important; color:var(--ink) !important; }
+.confirm-card button{ background:var(--orange) !important; color:#fff !important; border:0 !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-size:14px !important; padding:12px 30px !important; }
+
+footer .version{ margin-top:8px; font-size:11px; opacity:.7; letter-spacing:.06em; }

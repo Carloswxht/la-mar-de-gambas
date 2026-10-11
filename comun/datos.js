@@ -32,56 +32,6 @@ async function getAuthToken(force){
   return cachedToken;
 }
 
-/* Funciones antiguas heredadas de El Recreo (leían las tablas directamente).
-   Ya no sirven: las tablas están cerradas a la web. Las usa todavía el
-   código dormido de envío de la carta; se quitan en la Fase 5. */
-async function apiGet(path){
-  let token = await getAuthToken();
-  let res = await fetch(DATA_API + path, { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' });
-  if(res.status === 401){ token = await getAuthToken(true); res = await fetch(DATA_API + path, { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }); }
-  if(!res.ok) throw new Error('Error al leer la carta (código ' + res.status + ')');
-  return res.json();
-}
-
-async function apiPost(path, body){
-  const token = await getAuthToken();
-  const res = await fetch(DATA_API + path, {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-    },
-    body: JSON.stringify(body),
-  });
-  if(!res.ok) throw new Error('Error al guardar el pedido (código ' + res.status + ')');
-  return res.json();
-}
-
-async function apiPatch(path, body){
-  const token = await getAuthToken();
-  const res = await fetch(DATA_API + path, {
-    method: 'PATCH',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-    },
-    body: JSON.stringify(body),
-  });
-  if(!res.ok) throw new Error('Error al actualizar (código ' + res.status + ')');
-  return res.json();
-}
-
-async function apiDelete(path){
-  const token = await getAuthToken();
-  const res = await fetch(DATA_API + path, {
-    method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token },
-  });
-  if(!res.ok) throw new Error('Error al eliminar (código ' + res.status + ')');
-}
-
 /* ---------------- LLAMADA A LAS "VENTANILLAS" DE LA BASE ----------------
    La web no toca tablas: solo llama a funciones de la base (ver
    datos/seguridad.sql), que comprueban todo. Se llaman sin login de Neon:
@@ -93,9 +43,16 @@ async function apiRpc(nombre, params){
   const enviar = async () => {
     const headers = { 'Content-Type': 'application/json' };
     if(usarTokenAnonimo) headers['Authorization'] = 'Bearer ' + await getAuthToken();
-    return fetch(DATA_API + '/rpc/' + nombre, {
-      method: 'POST', headers, cache: 'no-store', body: JSON.stringify(params || {}),
-    });
+    // Con mala cobertura una llamada puede quedarse colgada: se corta a los 20 s.
+    const corte = window.AbortController ? new AbortController() : null;
+    const reloj = corte ? setTimeout(() => corte.abort(), 20000) : null;
+    try {
+      const r = await fetch(DATA_API + '/rpc/' + nombre, {
+        method: 'POST', headers, cache: 'no-store', body: JSON.stringify(params || {}),
+        signal: corte ? corte.signal : undefined,
+      });
+      return { status: r.status, ok: r.ok, texto: await r.text() };
+    } finally { if(reloj) clearTimeout(reloj); }
   };
   let res;
   try {
@@ -104,7 +61,7 @@ async function apiRpc(nombre, params){
   } catch(e) {
     throw new ErrorDatos('SIN_CONEXION');
   }
-  const texto = await res.text();
+  const texto = res.texto;
   let datos = null;
   try { datos = texto ? JSON.parse(texto) : null; } catch(e) { /* respuesta vacía */ }
   if(!res.ok){
