@@ -40,11 +40,11 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Si una clave se filtra: cambiarla de inmediato, no basta con borrarla del repositorio.
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
-## Estado actual (última versión: v7 — pestañas de bebidas, 11 oct; v6 = pedidos desde la mesa)
+## Estado actual (última versión: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
 - El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/menu-datos.json` (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
-- Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta ("Carta v6" desde la Fase 5; "Carta v7" con las bebidas).
+- Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta ("Carta v6" desde la Fase 5; "Carta v7" con las bebidas; "Carta v8" al empezar cada pestaña arriba).
 - Fuentes Oswald y DM Sans guardadas en `comun/fuentes/` (ya no se cargan desde Google: RGPD hecho).
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
@@ -117,6 +117,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - `renderCategories()` agrupa las filas del mismo producto bajo un único nombre y pinta los subtítulos de sección.
 - `buildLine()` pinta cada fila y su control +/−/Agotado (`pintarControles()`); el tique se calcula con `cartLines()`.
 - Cabecera fija: el `padding-top` del body se ajusta por JS (no tocar).
+- Al tocar una pestaña, la página sube al principio (`window.scrollTo(0, 0)`, sin animación, solo si estabas más abajo) para que se vea el primer producto (v8, 11 oct, a petición de Carlos). El "Nuevo pedido" del panel ya lo hacía (`.nv-cuerpo` vuelve arriba).
 - La barra inferior y el tique usan clases `.fixed-bottom`, `.dock`, `.panel`.
 
 ## Archivos de este repositorio

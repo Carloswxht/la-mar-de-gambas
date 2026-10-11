@@ -190,6 +190,8 @@ function addCategory(id, name, buildItems){
     catPanels.forEach(p => p.classList.remove("active"));
     tab.classList.add("active");
     panel.classList.add("active");
+    // Cada pestaña empieza en su primer producto (si estabas más abajo, se sube al principio).
+    if(window.scrollY > 0) window.scrollTo(0, 0);
     tab.scrollIntoView({behavior:"smooth", block:"nearest", inline:"center"});
   });
 }
