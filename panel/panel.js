@@ -62,7 +62,12 @@ function pintarBar(info){
 async function pintarBarDelEnlace(){
   pintarBar(leerLocal('bar.' + BAR));
   try { const info = await datosCarta.bar(); guardarLocal('bar.' + BAR, info); if(!estado.sesion) pintarBar(info); }
-  catch(e) { /* sin conexión: se queda lo que había */ }
+  catch(e) {
+    // Sin conexión con la base: copia de reserva del bar (si no se sabía ya).
+    if(NOMBRE_BAR) return;
+    try { const r = await fetch('../datos/bares/' + BAR + '/bar.json', { cache: 'no-cache' }); if(r.ok && !estado.sesion) pintarBar(await r.json()); }
+    catch(e2) { /* sin reserva */ }
+  }
 }
 
 /* Escapar texto antes de meterlo en la página (las notas las escribe

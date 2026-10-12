@@ -499,3 +499,7 @@ body.modo-pedir .panel-foot::after{ content:'El pedido llega directo a la barra.
 .confirm-card button{ background:var(--orange) !important; color:#fff !important; border:0 !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-size:14px !important; padding:12px 30px !important; }
 
 footer .version{ margin-top:8px; font-size:11px; opacity:.7; letter-spacing:.06em; }
+
+/* Firma de la plataforma (autonomIA Lab), pequeña y discreta debajo del número de versión */
+footer .firma{ margin-top:2px; font-size:10.5px; opacity:.6; letter-spacing:.04em; }
+footer .firma a{ color:inherit; text-decoration:none; font-weight:600; }
