@@ -1,5 +1,8 @@
 /* =====================================================================
-   PANEL DE BARRA · La Mar de Gambas · diseño v8
+   PANEL DE BARRA · Multi-Bar · diseño v8
+   Cada usuario es de un bar: el nombre del bar (cabecera, título,
+   "Nuevo pedido") sale de su sesión; en la pantalla de entrar, del bar
+   del enlace (/panel/?bar=…) o del bar por defecto.
    Todo el acceso a la base pasa por comun/datos.js (login, datosPanel,
    datosCarta). Aquí solo se pinta la pantalla y se reacciona a los toques.
 
@@ -44,6 +47,28 @@ const estado = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+/* ---------------- EL BAR ---------------- */
+let NOMBRE_BAR = '';
+function pintarBar(info){
+  if(!info || !info.nombre) return;
+  NOMBRE_BAR = String(info.nombre);
+  $('cLocal').textContent = NOMBRE_BAR;
+  $('nvLocal').textContent = NOMBRE_BAR.toUpperCase();
+  $('lLocal').textContent = NOMBRE_BAR;
+  document.title = NOMBRE_BAR + ' · Panel';
+}
+// Antes de entrar: el bar del enlace (lo último que se supo, y luego la base).
+async function pintarBarDelEnlace(){
+  pintarBar(leerLocal('bar.' + BAR));
+  try { const info = await datosCarta.bar(); guardarLocal('bar.' + BAR, info); if(!estado.sesion) pintarBar(info); }
+  catch(e) {
+    // Sin conexión con la base: copia de reserva del bar (si no se sabía ya).
+    if(NOMBRE_BAR) return;
+    try { const r = await fetch('../datos/bares/' + BAR + '/bar.json', { cache: 'no-cache' }); if(r.ok && !estado.sesion) pintarBar(await r.json()); }
+    catch(e2) { /* sin reserva */ }
+  }
+}
 
 /* Escapar texto antes de meterlo en la página (las notas las escribe
    el cliente: nunca se pintan como HTML). */
@@ -98,6 +123,7 @@ async function arrancar(){
 
 function entrarConSesion(s){
   estado.sesion = s;
+  if(s.bar){ usarBar(s.bar.slug); pintarBar(s.bar); }
   if(s.cambiarPassword){ mostrar('vPass'); return; }
   $('menuUsuario').textContent = s.nombre + ' · ' + (ROLES[s.rol] || s.rol);
   pintarMenu();
@@ -113,6 +139,8 @@ function volverAlLogin(mensaje){
   cerrarNuevo();
   cerrarMenu();
   estado.sesion = null; estado.pedidos = []; estado.vistos = null; estado.cambios = {};
+  // Lo de la carta se vuelve a leer al entrar (el siguiente usuario puede ser de otro bar).
+  estado.categorias = []; estado.menuCarta = null; estado.productos = []; estado.mesas = []; estado.usuarios = [];
   $('lPass').value = '';
   mostrar('vLogin');
   if(mensaje){ $('lError').textContent = mensaje; $('lError').hidden = false; }
@@ -279,7 +307,7 @@ function pintarPedidos(){
   $('nPendientes').textContent = nuevos.length + prep.length;
   $('nServidos').textContent = servidos.filter(deHoy).length;
   $('nTotalHoy').textContent = euros(ps.filter(deHoy).reduce((s, p) => s + Number(p.total || 0), 0));
-  document.title = (nuevos.length ? '(' + nuevos.length + ') ' : '') + 'La Mar de Gambas · Panel';
+  document.title = (nuevos.length ? '(' + nuevos.length + ') ' : '') + (NOMBRE_BAR ? NOMBRE_BAR + ' · ' : '') + 'Panel';
 
   const pendientes = nuevos.concat(prep);
   $('listaPendientes').innerHTML = pendientes.length ? pendientes.map(tarjeta).join('') : '<div class="vacio">Todo al día: no hay pedidos pendientes.</div>';
@@ -812,7 +840,7 @@ async function cargarMesas(){
   catch(e) { $('listaMesas').innerHTML = ''; tratarError(e); }
 }
 function enlaceMesa(m){
-  return new URL('../carta/?mesa=' + m.id + '&c=' + encodeURIComponent(m.codigo), location.href).href;
+  return new URL('../carta/?bar=' + encodeURIComponent(BAR) + '&mesa=' + m.id + '&c=' + encodeURIComponent(m.codigo), location.href).href;
 }
 function pintarMesas(){
   $('listaMesas').innerHTML = estado.mesas.map(m => `
@@ -962,4 +990,5 @@ $('modalForm').addEventListener('submit', async (ev) => {
   } finally { boton.disabled = false; }
 });
 
+pintarBarDelEnlace();
 arrancar();
