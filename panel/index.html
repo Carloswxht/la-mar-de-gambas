@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Gambas Panel">
-<title>La Mar de Gambas · Panel</title>
+<meta name="apple-mobile-web-app-title" content="Panel">
+<title>Panel</title>
 <link rel="stylesheet" href="../comun/estilos.css">
 <link rel="stylesheet" href="panel.css">
 </head>
@@ -17,7 +17,7 @@
 
 <!-- Cabecera (igual en todas las pantallas) -->
 <header class="cab">
-  <div class="cab-local">La Mar de Gambas</div>
+  <div class="cab-local" id="cLocal">&nbsp;</div>
   <div class="cab-vista" id="cVista">PANEL</div>
   <div class="cab-vivo" id="cVivo" hidden><span class="punto"></span><span id="cVivoTxt">conectando…</span></div>
 </header>
@@ -36,7 +36,7 @@
     </label>
     <p id="lError" class="aviso-error" role="alert" hidden></p>
     <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">Entrar</button>
-    <p class="texto-suave pie-login">Acceso reservado al personal de La Mar de Gambas.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
+    <p class="texto-suave pie-login">Acceso reservado al personal de <span id="lLocal">este bar</span>.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
   </form>
 </section>
 
@@ -151,7 +151,7 @@
 <section id="vNuevo" class="nv-pantalla" hidden aria-label="Nuevo pedido">
   <header class="nv-cab">
     <button class="nv-cerrar" id="nvCerrar" type="button" aria-label="Cancelar el pedido">✕</button>
-    <div class="nv-local">LA MAR DE GAMBAS</div>
+    <div class="nv-local" id="nvLocal"></div>
     <div class="nv-mesa" id="nvMesa">NUEVO PEDIDO</div>
     <nav class="nv-pestanas" id="nvPestanas"></nav>
   </header>

@@ -43,7 +43,7 @@
 })();
 </script>
 
-<title>La Mar de Gambas · Carta digital</title>
+<title>Carta digital</title>
 <link rel="stylesheet" href="../comun/estilos.css">
 <link rel="stylesheet" href="carta.css">
 </head>
@@ -52,9 +52,10 @@
 <div class="paper">
   <div class="sticky-top">
     <div class="ticket-head">
-      <div class="store">LA MAR DE GAMBAS</div>
+      <!-- Nombre y subtítulo del bar: los pone carta.js con lo que dice la base -->
+      <div class="store" id="barNombre">&nbsp;</div>
       <div class="head-extra">
-        <p class="hero-line">Cervecerías · Desde 2007</p>
+        <p class="hero-line">&nbsp;</p>
       </div>
     </div>
 
@@ -66,11 +67,9 @@
   <div id="menu"></div>
 
   <footer>
-    <div>IVA incluido</div>
-    <div>Picos 0,90€ por persona · Extra de salsa 0,50€</div>
-    <div>Salsas: mojo picón, brava, BBQ, ali-oli, cheddar, whisky, crema de queso, césar o salsa verde</div>
-    <div>La Mar de Gambas · Cervecerías</div>
-    <div class="version">Carta v8</div>
+    <!-- Líneas del pie de cada bar (ajustes.pie en la base) -->
+    <div id="barPie"></div>
+    <div class="version">Carta v9</div>
   </footer>
 </div>
 

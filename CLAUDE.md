@@ -1,6 +1,42 @@
-# La Mar de Gambas · Carta digital
+# Multi-Bar · plataforma de cartas digitales y pedidos (autonomIA Lab)
 
-Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro). Carta digital a la que se entra por QR desde el móvil. Es un proyecto aparte de El Recreo: no compartir base de datos, archivos ni repositorio con él.
+Proyecto de Carlos (autonomIA Lab). Empezó como la carta de **La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro), que es el **primer cliente y el piloto**, y desde el 12 oct se convierte en una **plataforma para muchos bares**: una sola web y una sola base de datos, cada bar totalmente separado de los demás, y cada uno con su aspecto. Carta digital a la que se entra por QR desde el móvil, pedidos desde la mesa y panel de barra. Es un proyecto aparte de El Recreo (otro cliente con su propio repositorio y base): no compartir base de datos, archivos ni repositorio con él.
+
+## La idea de la plataforma (Carlos, 12 oct)
+- La Mar de Gambas debe seguir funcionando y viéndose como ahora y salir a operar cuanto antes: es lo más importante.
+- Una sola base para todos los bares; nadie ve los datos de otro. Cada bar: su carta, sus mesas, sus pedidos y su personal.
+- Cada bar se ve distinto (nombre, logo, colores, estilo, textos, organización de la carta) y todo se cambia **sin tocar código**, desde ajustes guardados en la base.
+- Panel de autonomIA Lab (de Carlos) para dar de alta un bar y configurarlo con casillas y selectores, con vista previa. El panel de cada bar gestiona productos, precios, agotados y usuarios, pero no el diseño.
+- Lo que pida un cliente se añade como **opción para todos, desactivada por defecto**, no como arreglo para uno.
+- No tener en cuenta datos fiscales ni TPV por ahora. No borrar nada: lo antiguo se mueve a una carpeta de archivo.
+- Repositorio a renombrar a **`multi-bar`** (lo hace Carlos en GitHub; ver "Pendiente Multi-Bar").
+
+## Plan por fases de la plataforma
+- **Fase A** (renombrar y ordenar): repositorio `multi-bar`; separar notas de la plataforma y de cada bar; `versiones/` a `archivo/`. Pendiente.
+- **Fase B (hecha en código el 12 oct, rama `ccr-b8e34435-bworp5`; FALTA aplicarla en Neon con el OK de Carlos):** "bar" en la base. Ver "Multi-Bar: cómo está hecho".
+- **Fase C:** el aspecto sale de la ficha del bar (colores, logo, fuentes, textos, funciones activadas, iconos, imagen de WhatsApp); el diseño de La Mar de Gambas pasa a ser la primera plantilla.
+- **Fase D:** panel de autonomIA Lab (alta de bares, casillas, vista previa, publicar) con un rol "plataforma" por encima del admin de cada bar.
+- **Fase E en adelante:** más plantillas (minimalista, fotos grandes…), idiomas, fotos de productos, alérgenos, domicilios… cada una como opción apagada por defecto.
+- Orden acordado: B antes de abrir La Mar de Gambas (con la base casi vacía es más seguro), abrir, y después C y D.
+
+## Multi-Bar: cómo está hecho (Fase B, 12 oct)
+- Tabla **`bares`**: `slug` (dirección corta, p. ej. `lamardegambas`), `nombre` (se escribe **una sola vez** y sale en carta, panel, tique y títulos), `subtitulo`, `zona_horaria` (para "pedidos de hoy"), `activo` (de baja = sin carta ni login) y `ajustes` (JSON; hoy solo `pie`: las líneas del pie de la carta). La Mar de Gambas es el **bar nº 1**.
+- Pestañas, productos, mesas, pedidos y personal llevan `bar_id`. El id de pestaña y el número de mesa solo son únicos dentro de cada bar (todos pueden tener "Mesa 1").
+- **Enlace / QR:** `/carta/?bar=SLUG&mesa=N&c=CÓDIGO`. Sin `bar=` se usa `BAR_POR_DEFECTO` (`lamardegambas`, en `comun/datos.js`), para que sigan valiendo los enlaces de antes. El panel (Mesas → Copiar enlace) ya da el enlace con `bar=`.
+- **Personal:** cada usuario es de un bar; el correo es único en toda la plataforma (al entrar, el correo dice de qué bar es). El panel pinta el nombre del bar de la sesión; en la pantalla de entrar, el del enlace (`/panel/?bar=SLUG`) o el de por defecto.
+- **Base:** `datos/funciones.sql` (nuevo) tiene todas las ventanillas (`create or replace`, se puede volver a ejecutar entera); `seguridad.sql` queda solo con lo que se crea una vez (zona `privado`, sesiones). Ventanilla nueva `carta_bar(bar)`; `carta_menu`, `carta_mesa`, `crear_pedido` y `mis_pedidos` reciben `p_bar`; las del panel se limitan siempre al bar de la sesión. Errores nuevos: `BAR_NO_VALIDO`, `EMAIL_EN_USO`.
+- **Copia de reserva por bar:** `datos/bares/SLUG/menu.json` (antes `datos/menu-datos.json`, movido) y `datos/bares/SLUG/bar.json` (nombre, subtítulo y pie). Si la base dice que el bar no existe o está de baja, la carta no enseña la copia.
+- La carta recuerda en el móvil el nombre del bar (`bar.SLUG`) para pintar la cabecera al momento.
+- Cambio para la base real: `datos/cambios/2026-10-12-multibar.sql` (una transacción; pasa todo lo que hay al bar nº 1, no borra nada). **Aplicarlo a la vez que se fusiona el PR** (la web antigua no manda el bar y dejaría de ir unos minutos; aún no hay clientes reales).
+- **Probado (12 oct):** la migración sobre una copia de la base de hoy da exactamente el mismo esquema que una instalación nueva; 31 pruebas por SQL como usuario anónimo con dos bares (un bar no ve ni toca pedidos, productos, precios, mesas ni usuarios del otro; QR de un bar no vale en otro; bar de baja sin carta ni login; último admin por bar; correo repetido); y en Chromium a 390 px contra la base local: La Mar de Gambas idéntica píxel a píxel a la v8 (salvo "Carta v9"), pedido en el bar de prueba que solo ve su panel, bar inexistente, enlace antiguo sin `bar=`. Sin errores en consola.
+- **Para dar de alta un bar hoy (hasta la Fase D):** por SQL, con el OK de Carlos: `insert into bares (slug, nombre, subtitulo, ajustes)`, sus pestañas, productos, mesas y un usuario admin (contraseña provisional).
+
+## Pendiente Multi-Bar
+1. Carlos: revisar y fusionar el PR de la Fase B; justo después, aplicar `datos/cambios/2026-10-12-multibar.sql` en Neon (con su OK).
+2. Carlos: crear la etiqueta `carta-v8-estable` desde Releases sobre `main` (el proxy de Claude no deja subir etiquetas) y, tras la Fase B, `carta-v9`.
+3. Carlos: renombrar el repositorio a `multi-bar` (Ajustes del repositorio → nombre). La web pasa a `carloswxht.github.io/multi-bar/`; después hay que cambiar `og:image`/`twitter:image` de `carta/index.html`. Neon Auth no cambia (el dominio de confianza es `https://carloswxht.github.io`).
+4. Carlos: confirmar que seguimos en **Neon** (no Supabase); ver la nota del 12 oct en "Infraestructura".
+5. Cosas vistas que faltan (Fase C o cuando Carlos diga): número de pedido por bar (hoy "Pedido nº" es el número global: un bar nuevo empezaría por el 3, el 50…); imagen y textos de WhatsApp (`og:`), iconos de la app y nombre al instalar siguen siendo los de La Mar de Gambas (WhatsApp no ejecuta la página: hará falta una página de entrada por bar); la portada (`index.html`) es la de La Mar de Gambas; colores y fuentes aún fijos en `comun/estilos.css`; quedan estilos heredados de El Recreo en `carta/carta.css` (bloque THEME los anula).
 
 ## Reglas de trabajo (siempre)
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
@@ -40,10 +76,10 @@ Proyecto de Carlos (autonomIA Lab) para el local **La Mar de Gambas Cervecerías
 - [ ] Si una clave se filtra: cambiarla de inmediato, no basta con borrarla del repositorio.
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
-## Estado actual (última versión: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa)
+## Estado actual (última versión publicada: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = Multi-Bar, en PR, sin cambios visibles**)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
-- El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/menu-datos.json` (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
+- El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/bares/lamardegambas/menu.json` (antes `datos/menu-datos.json`) (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
 - Versiones a partir de ahora (decidido con Carlos el 6 oct): ya no se saca un `carta-digital-…-vN.html`; cada versión se marca con una etiqueta de git (`carta-v6`…) y un número visible en el pie de la carta ("Carta v6" desde la Fase 5; "Carta v7" con las bebidas; "Carta v8" al empezar cada pestaña arriba).
 - Fuentes Oswald y DM Sans guardadas en `comun/fuentes/` (ya no se cargan desde Google: RGPD hecho).
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
@@ -96,6 +132,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 ## Infraestructura (decidida el 5 oct)
 - Carlos trabaja desde el móvil con Claude Code + **GitHub**. Va a comprar un **dominio exclusivo** para el local. No hace falta VPS.
 - **Frontend:** el HTML estático (`index.html`) en GitHub Pages. El dominio apunta a GitHub Pages (DNS en el registrador del dominio: 4 registros A a 185.199.108.153, .109.153, .110.153, .111.153 y un CNAME `www` a `carloswxht.github.io`; archivo `CNAME` en el repo con el dominio; activar HTTPS en Settings → Pages).
+- **12 oct:** Carlos creía que la base estaba en Supabase; está en **Neon** (lo dicen las direcciones de `comun/datos.js`). Recomendado quedarse en Neon (el login propio ya funciona en iPhone y la Fase B vale igual en cualquier Postgres): pendiente de su respuesta.
 - **Base de datos (solo si se activan pedidos reales) — plan acordado el 5 oct:** hacer el **prototipo en Neon gratis** (proyecto nuevo, separado del de El Recreo, con Data API y el esquema de El Recreo: categories, products, orders, order_items, mesas) para enseñárselo al cliente. Si el cliente lo aprueba y pasa a producción, migrar a **Supabase** (mejor sistema de login para camarero/barra/admin, o a un plan de pago de Neon). Carlos tiene ya 2 proyectos gratis en Supabase ocupados; Supabase Pro cuesta unos 25 $/mes y cada proyecto extra unos 10 $/mes.
 - **Para que migrar sea fácil:** poner TODO el acceso a datos y el login en un único bloque de código del HTML (funciones tipo `apiGet`, `apiPost`, `getAuthToken`, `login`), sin repartir llamadas por el resto del código. El esquema SQL se guarda en el repo (`esquema.sql`) para recrearlo en otra base. Las reglas de seguridad (RLS) se escriben aparte y se rehacen al migrar, porque las funciones de usuario difieren entre Neon y Supabase.
 - Preferible que, al operar, la base esté en una cuenta a nombre del cliente o de Carlos con facturación clara.
@@ -112,7 +149,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - El enlace de la portada a la carta es relativo (`carta/`), para que funcione igual en `carloswxht.github.io/la-mar-de-gambas/` y en el dominio propio.
 
 ## Estructura de la carta (para tocar sin romper)
-- `loadMenu()` (en `carta/carta.js`) carga el menú de la base (`datosCarta.menu`) o, si no responde, de `datos/menu-datos.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único), `agotado` (solo desde la base).
+- `loadBar()` pinta nombre, subtítulo, pie y título del bar (base → copia `datos/bares/SLUG/bar.json`). `loadMenu()` (en `carta/carta.js`) carga el menú de la base (`datosCarta.menu`) o, si no responde, de `datos/bares/SLUG/menu.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único), `agotado` (solo desde la base).
 - Pedidos en `carta.js`: `comprobarMesa()` (lee `?mesa`/`c`, activa `body.modo-pedir`), `sendOrder()`, `adjustSentItem()` (editar/anular), `refreshRoundStatuses()` (mis pedidos), `refrescarCarta()` (precios y agotados), `aviso()`. Todo el texto de la base se escapa con `esc()`.
 - `renderCategories()` agrupa las filas del mismo producto bajo un único nombre y pinta los subtítulos de sección.
 - `buildLine()` pinta cada fila y su control +/−/Agotado (`pintarControles()`); el tique se calcula con `cartLines()`.
@@ -125,8 +162,8 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - `carta/index.html`, `carta/carta.css`, `carta/carta.js` → la carta, publicada en `/carta/`.
 - `comun/estilos.css` → colores y fuentes comunes de carta y panel. `comun/fuentes/` → Oswald y DM Sans (woff2, licencia OFL).
 - `comun/datos.js` → **único** bloque de acceso a la base de datos y login: `apiRpc` (llama a las funciones de la base), `datosCarta` (menú, mesa, crear/editar pedido, mis pedidos), login del personal (`login`, `logout`, `comprobarSesion`, `cambiarPassword`, `getSesion`), `datosPanel` (pedidos, marcar, agotados, y lo del admin) y `textoError` (mensajes en español). Las funciones antiguas de El Recreo (`apiGet/apiPost/apiPatch/apiDelete`) se quitaron en la Fase 5. Cada llamada se corta a los 20 s (mala cobertura). Para migrar a Supabase se cambia solo este archivo.
-- `datos/menu-datos.json` → datos del menú (única copia).
-- `datos/esquema.sql` → tablas de la base. `datos/datos-iniciales.sql` → pestañas, productos y mesas de ejemplo (se genera desde `menu-datos.json`). `datos/seguridad.sql` → permisos, login del personal y todas las funciones que usa la web.
+- `datos/bares/SLUG/` → copia de reserva de cada bar: `menu.json` (la carta) y `bar.json` (nombre, subtítulo, pie). Hoy solo `lamardegambas`.
+- `datos/esquema.sql` → tablas de la base (con `bares`). `datos/datos-iniciales.sql` → bar nº 1, pestañas, productos y mesas de ejemplo (sale de `datos/bares/lamardegambas/menu.json`). `datos/seguridad.sql` → zona privada y sesiones del login. `datos/funciones.sql` → todas las funciones que usa la web y sus permisos.
 - `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta.
 - `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; el último, `2026-10-11-bebidas.sql`).
 - `PRUEBAS-FASE-5.md` → lista de pruebas con móviles reales antes de imprimir los QR (y lista de seguridad y legal).

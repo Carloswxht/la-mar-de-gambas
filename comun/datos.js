@@ -1,12 +1,13 @@
 /* =====================================================================
-   ACCESO A DATOS Y LOGIN · La Mar de Gambas
+   ACCESO A DATOS Y LOGIN · Multi-Bar (todos los bares)
    ---------------------------------------------------------------------
    Este es el ÚNICO sitio donde la carta y el panel hablan con la base
    de datos. Si algún día se pasa de Neon a Supabase, solo se cambia
    este archivo (direcciones y funciones de aquí abajo).
 
    Base de datos: proyecto Neon "la-mar-de-gambas" (Frankfurt), separado
-   de El Recreo. Aquí solo van direcciones PÚBLICAS: sin login, la base
+   de El Recreo. Una sola base para todos los bares: cada llamada de la
+   carta dice de qué bar es (BAR) y el personal solo ve lo de su bar. Aquí solo van direcciones PÚBLICAS: sin login, la base
    únicamente deja hacer lo que permiten sus reglas de seguridad
    (datos/seguridad.sql). NUNCA poner aquí claves de administrador.
    ===================================================================== */
@@ -14,6 +15,20 @@
 /* ---------------- DIRECCIONES DE LA BASE ---------------- */
 const AUTH_BASE = 'https://ep-sweet-sky-b18vlkug.neonauth.c-5.eu-central-1.aws.neon.tech/neondb/auth';
 const DATA_API = 'https://ep-sweet-sky-b18vlkug.apirest.c-5.eu-central-1.aws.neon.tech/neondb/rest/v1';
+
+/* ---------------- QUÉ BAR ES ----------------
+   El bar va en el enlace de la carta y del QR: /carta/?bar=lamardegambas&mesa=5&c=…
+   Si el enlace no lo lleva, se usa BAR_POR_DEFECTO (La Mar de Gambas, el
+   primer cliente), para que sigan valiendo los enlaces de antes.
+   En el panel, el bar es el del usuario que entra (usarBar). */
+const BAR_POR_DEFECTO = 'lamardegambas';
+let BAR = (function(){
+  try {
+    const b = (new URLSearchParams(window.location.search).get('bar') || '').trim().toLowerCase();
+    return /^[a-z0-9][a-z0-9-]{1,39}$/.test(b) ? b : BAR_POR_DEFECTO;
+  } catch(e) { return BAR_POR_DEFECTO; }
+})();
+function usarBar(slug){ if(slug) BAR = slug; }
 
 /* ---------------- PASE ANÓNIMO ----------------
    La Data API de Neon exige en cada llamada un "pase" (token JWT), aunque
@@ -101,6 +116,8 @@ function textoError(codigo){
     SIN_CONEXION: 'No hay conexión. Comprueba la cobertura e inténtalo otra vez.',
     SIN_PASE: 'No se ha podido conectar con la base de datos (pase ' + (detalle || '?') + '). Inténtalo en un momento.',
     MESA_NO_VALIDA: 'Este código QR no es válido. Pide ayuda al camarero.',
+    BAR_NO_VALIDO: 'Este bar no está disponible ahora mismo.',
+    EMAIL_EN_USO: 'Ya hay un usuario con ese correo.',
     ESPERA_UN_MOMENTO: 'Acabas de enviar un pedido. Espera unos segundos.',
     LIMITE_MOVIL: 'Has enviado muchos pedidos en poco tiempo. Avisa al camarero.',
     LIMITE_MESA: 'Esta mesa ha enviado muchos pedidos seguidos. Avisa al camarero.',
@@ -158,23 +175,25 @@ function dispositivoId(){
 
 /* ---------------- CARTA (cliente de la mesa) ---------------- */
 const datosCarta = {
-  menu: () => apiRpc('carta_menu'),
-  mesa: (mesa, codigo) => apiRpc('carta_mesa', { p_mesa: Number(mesa), p_codigo: String(codigo || '') }),
+  // { slug, nombre, subtitulo, ajustes: { pie: [líneas del pie de la carta] } }
+  bar: () => apiRpc('carta_bar', { p_bar: BAR }),
+  menu: () => apiRpc('carta_menu', { p_bar: BAR }),
+  mesa: (mesa, codigo) => apiRpc('carta_mesa', { p_bar: BAR, p_mesa: Number(mesa), p_codigo: String(codigo || '') }),
   // lineas: [{ producto: id, cantidad: n, nota: '...' }]
   crearPedido: (mesa, codigo, lineas) => apiRpc('crear_pedido', {
-    p_mesa: Number(mesa), p_codigo: String(codigo || ''), p_dispositivo: dispositivoId(), p_lineas: lineas,
+    p_bar: BAR, p_mesa: Number(mesa), p_codigo: String(codigo || ''), p_dispositivo: dispositivoId(), p_lineas: lineas,
   }),
   // lineas vacías = anular el pedido
   editarPedido: (pedidoId, lineas) => apiRpc('editar_pedido', {
     p_pedido: pedidoId, p_dispositivo: dispositivoId(), p_lineas: lineas,
   }),
-  misPedidos: () => apiRpc('mis_pedidos', { p_dispositivo: dispositivoId() }),
+  misPedidos: () => apiRpc('mis_pedidos', { p_bar: BAR, p_dispositivo: dispositivoId() }),
 };
 
 /* ---------------- LOGIN DEL PERSONAL ----------------
    El login es propio de la base (sin cookies), para que funcione igual en
    iPhone (Safari) y Android. Se guarda en el móvil solo el token de la
-   sesión (dura 16 h) y el nombre/rol para pintar el panel. */
+   sesión (dura 16 h), el nombre/rol y el bar del usuario para pintar el panel. */
 const CLAVE_SESION = 'lmdg.sesion';
 
 function getSesion(){ return leerLocal(CLAVE_SESION); }
@@ -183,7 +202,7 @@ function getAuthTokenPersonal(){ const s = getSesion(); return s ? s.token : nul
 async function login(email, password){
   const r = await apiRpc('personal_entrar', { p_email: email, p_password: password });
   if(!r || r.error) throw new ErrorDatos((r && r.error) || 'CREDENCIALES');
-  const sesion = { token: r.token, nombre: r.nombre, rol: r.rol, email: r.email, cambiarPassword: !!r.cambiar_password };
+  const sesion = { token: r.token, nombre: r.nombre, rol: r.rol, email: r.email, cambiarPassword: !!r.cambiar_password, bar: r.bar || null };
   guardarLocal(CLAVE_SESION, sesion);
   return sesion;
 }
@@ -200,7 +219,7 @@ async function comprobarSesion(){
   if(!s) return null;
   try {
     const r = await apiRpc('personal_yo', { p_token: s.token });
-    const nueva = Object.assign({}, s, { nombre: r.nombre, rol: r.rol, email: r.email, cambiarPassword: !!r.cambiar_password });
+    const nueva = Object.assign({}, s, { nombre: r.nombre, rol: r.rol, email: r.email, cambiarPassword: !!r.cambiar_password, bar: r.bar || s.bar || null });
     guardarLocal(CLAVE_SESION, nueva);
     return nueva;
   } catch(e) {
