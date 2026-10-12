@@ -13,7 +13,7 @@ Proyecto de Carlos (autonomIA Lab). Empezó como la carta de **La Mar de Gambas 
 
 ## Plan por fases de la plataforma
 - **Fase A** (renombrar y ordenar): repositorio `multi-bar`; separar notas de la plataforma y de cada bar; `versiones/` a `archivo/`. Pendiente.
-- **Fase B (hecha en código el 12 oct, rama `ccr-b8e34435-bworp5`; FALTA aplicarla en Neon con el OK de Carlos):** "bar" en la base. Ver "Multi-Bar: cómo está hecho".
+- **Fase B (hecha el 12 oct, rama `ccr-b8e34435-bworp5`, PR #11; cambio de la base APLICADO en Neon el 12 oct con el OK de Carlos y comprobado idéntico a lo probado; falta que Carlos fusione el PR #11 desde la app):** "bar" en la base. Ver "Multi-Bar: cómo está hecho".
 - **Fase C:** el aspecto sale de la ficha del bar (colores, logo, fuentes, textos, funciones activadas, iconos, imagen de WhatsApp); el diseño de La Mar de Gambas pasa a ser la primera plantilla.
 - **Fase D:** panel de autonomIA Lab (alta de bares, casillas, vista previa, publicar) con un rol "plataforma" por encima del admin de cada bar.
 - **Fase E en adelante:** más plantillas (minimalista, fotos grandes…), idiomas, fotos de productos, alérgenos, domicilios… cada una como opción apagada por defecto.
@@ -32,10 +32,14 @@ Proyecto de Carlos (autonomIA Lab). Empezó como la carta de **La Mar de Gambas 
 - **Para dar de alta un bar hoy (hasta la Fase D):** por SQL, con el OK de Carlos: `insert into bares (slug, nombre, subtitulo, ajustes)`, sus pestañas, productos, mesas y un usuario admin (contraseña provisional).
 
 ## Pendiente Multi-Bar
-1. Carlos: revisar y fusionar el PR de la Fase B; justo después, aplicar `datos/cambios/2026-10-12-multibar.sql` en Neon (con su OK).
+1. Carlos: fusionar el PR #11 (la base ya está cambiada; hasta fusionar, la carta publicada no puede enviar pedidos). Claude no puede fusionar (permiso de publicación denegado): lo hace Carlos desde la app.
 2. Carlos: crear la etiqueta `carta-v8-estable` desde Releases sobre `main` (el proxy de Claude no deja subir etiquetas) y, tras la Fase B, `carta-v9`.
 3. Carlos: renombrar el repositorio a `multi-bar` (Ajustes del repositorio → nombre). La web pasa a `carloswxht.github.io/multi-bar/`; después hay que cambiar `og:image`/`twitter:image` de `carta/index.html`. Neon Auth no cambia (el dominio de confianza es `https://carloswxht.github.io`).
-4. Carlos: confirmar que seguimos en **Neon** (no Supabase); ver la nota del 12 oct en "Infraestructura".
+4. Carlos prefiere **Supabase** (12 oct). Recomendación dada: sí, migrar antes de abrir La Mar de Gambas (base casi vacía, mismo Postgres y mismo estilo de llamadas); pendiente: qué cuenta/proyecto (sus 2 gratis están ocupados) y su OK para la migración.
+6. Hecho 12 oct (a petición de Carlos): sin vista previa de WhatsApp (fuera og:/twitter:/description en carta y portada; `og-gambas5.jpg` sigue en el repo sin usar) y firma pequeña "Carta digital por autonomIA Lab" (enlace a www.autonomialab.es) en el pie de la carta y "Panel por autonomIA Lab" en la entrada del panel.
+7. Nombre corto aprobado: `lamardegambas`. Nombre del repositorio aprobado: `multi-bar` (en minúsculas).
+8. Dominios: GitHub Pages admite UN dominio propio por repositorio. Propuesta: un dominio de la plataforma (p. ej. `carta.autonomialab.es`) para todos; si un bar quiere el suyo, redirección en su registrador o, más adelante, mover la web a Netlify/Vercel (no Cloudflare), que admiten muchos dominios.
+9. Separar notas (Fase A): este CLAUDE.md quedaría para la plataforma y cada bar tendría su ficha de notas (p. ej. `datos/bares/lamardegambas/NOTAS.md`). Explicado a Carlos, pendiente de su OK.
 5. Cosas vistas que faltan (Fase C o cuando Carlos diga): número de pedido por bar (hoy "Pedido nº" es el número global: un bar nuevo empezaría por el 3, el 50…); imagen y textos de WhatsApp (`og:`), iconos de la app y nombre al instalar siguen siendo los de La Mar de Gambas (WhatsApp no ejecuta la página: hará falta una página de entrada por bar); la portada (`index.html`) es la de La Mar de Gambas; colores y fuentes aún fijos en `comun/estilos.css`; quedan estilos heredados de El Recreo en `carta/carta.css` (bloque THEME los anula).
 
 ## Reglas de trabajo (siempre)
@@ -165,7 +169,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - `datos/bares/SLUG/` → copia de reserva de cada bar: `menu.json` (la carta) y `bar.json` (nombre, subtítulo, pie). Hoy solo `lamardegambas`.
 - `datos/esquema.sql` → tablas de la base (con `bares`). `datos/datos-iniciales.sql` → bar nº 1, pestañas, productos y mesas de ejemplo (sale de `datos/bares/lamardegambas/menu.json`). `datos/seguridad.sql` → zona privada y sesiones del login. `datos/funciones.sql` → todas las funciones que usa la web y sus permisos.
 - `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta.
-- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; el último, `2026-10-11-bebidas.sql`).
+- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; el último, `2026-10-12-multibar.sql`).
 - `PRUEBAS-FASE-5.md` → lista de pruebas con móviles reales antes de imprimir los QR (y lista de seguridad y legal).
 - `og-gambas5.jpg` → imagen para compartir por WhatsApp.
 - `fotos-cartas/` → `carta-1-bodega.jpg`, `carta-2-marisco.jpg`, `carta-3-postres.jpg`, `carta-4-bocados.jpg`, fotos de las cartas físicas. Son la fuente de verdad de los precios.
