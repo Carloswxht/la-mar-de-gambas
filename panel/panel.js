@@ -20,6 +20,8 @@ const TAMANOS = ['Tapa', 'Plato', 'Copa', 'Botella'];
 // Vistas del menú y quién las ve.
 const VISTAS = {
   pedidos:  { nombre: 'Pedidos',          cab: 'PEDIDOS',          roles: ['camarero', 'barra', 'admin'], icono: 'M7 4h10v16H7zM9.5 8h5M9.5 12h5M9.5 16h3' },
+  // Solo si el bar tiene encendido el "control de mesas" (ajustes.control_mesas).
+  abrir:    { nombre: 'Abrir mesas',      cab: 'ABRIR MESAS',      roles: ['camarero', 'barra', 'admin'], icono: 'M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3', control: true },
   precios:  { nombre: 'Lista de precios', cab: 'LISTA DE PRECIOS', roles: ['barra', 'admin'],             icono: 'M4 6h16M4 12h16M4 18h10M18 16v4' },
   resumen:  { nombre: 'Resumen del día',  cab: 'RESUMEN DEL DÍA',  roles: ['barra', 'admin'],             icono: 'M5 20V11M12 20V5M19 20v-7' },
   mesas:    { nombre: 'Mesas',            cab: 'MESAS',            roles: ['admin'],                      icono: 'M4 9h16M6 9v10M18 9v10M9 5h6' },
@@ -143,7 +145,7 @@ function volverAlLogin(mensaje){
   cerrarMenu();
   estado.sesion = null; estado.pedidos = []; estado.vistos = null; estado.cambios = {};
   // Lo de la carta se vuelve a leer al entrar (el siguiente usuario puede ser de otro bar).
-  estado.categorias = []; estado.menuCarta = null; estado.productos = []; estado.mesas = []; estado.usuarios = [];
+  estado.categorias = []; estado.menuCarta = null; estado.productos = []; estado.mesas = []; estado.usuarios = []; estado.mesasAbrir = null;
   $('lPass').value = '';
   mostrar('vLogin');
   if(mensaje){ $('lError').textContent = mensaje; $('lError').hidden = false; }
@@ -201,7 +203,8 @@ $('pSalir').addEventListener('click', salir);
 $('bSalir').addEventListener('click', salir);
 
 /* ---------------- MENÚ DE ABAJO ---------------- */
-function vistasDelRol(rol){ return Object.keys(VISTAS).filter(v => VISTAS[v].roles.includes(rol)); }
+function controlMesas(){ const b = estado.sesion && estado.sesion.bar; return !!(b && b.ajustes && b.ajustes.control_mesas); }
+function vistasDelRol(rol){ return Object.keys(VISTAS).filter(v => VISTAS[v].roles.includes(rol) && (!VISTAS[v].control || controlMesas())); }
 
 function pintarMenu(){
   const nuevos = estado.pedidos.filter(p => p.estado === 'enviado').length;
@@ -231,16 +234,18 @@ $('menuVistas').addEventListener('click', (ev) => {
 });
 
 function irA(vista){
-  if(!VISTAS[vista] || !VISTAS[vista].roles.includes(estado.sesion.rol)) vista = 'pedidos';
+  if(!vistasDelRol(estado.sesion.rol).includes(vista)) vista = 'pedidos';
   estado.vista = vista;
   $('cVista').textContent = VISTAS[vista].cab;
   $('sPedidos').hidden = vista !== 'pedidos';
+  $('sAbrir').hidden = vista !== 'abrir';
   $('sPrecios').hidden = vista !== 'precios';
   $('sResumen').hidden = vista !== 'resumen';
   $('sMesas').hidden = vista !== 'mesas';
   $('sUsuarios').hidden = vista !== 'usuarios';
   window.scrollTo(0, 0);
   if(vista === 'pedidos') pintarPedidos();
+  if(vista === 'abrir') cargarAbrir();
   if(vista === 'precios') cargarProductos();
   if(vista === 'resumen') pintarResumen();
   if(vista === 'mesas') cargarMesas();
@@ -833,6 +838,42 @@ function pintarResumen(){
   const punta = Object.entries(horas).sort((a, b) => b[1] - a[1])[0];
   $('rPunta').textContent = punta ? 'Hora con más ventas: de ' + String(punta[0]).padStart(2, '0') + ':00 a ' + String((+punta[0] + 1) % 24).padStart(2, '0') + ':00 (' + euros(punta[1]) + ')' : '';
 }
+
+/* =====================================================================
+   ABRIR MESAS (control de mesas, todo el personal)
+   Con la opción del bar encendida, una mesa solo admite pedidos del QR
+   cuando se abre aquí; se cierra sola a las horas fijadas o con "Cerrar".
+   ===================================================================== */
+async function cargarAbrir(){
+  if(!estado.mesasAbrir) $('listaAbrir').innerHTML = '<div class="vacio">Cargando…</div>';
+  try { estado.mesasAbrir = await datosPanel.mesasPanel() || []; pintarAbrir(); }
+  catch(e) { tratarError(e); }
+}
+function pintarAbrir(){
+  const ms = (estado.mesasAbrir || []).filter(m => m.activa);
+  $('listaAbrir').innerHTML = ms.map(m => {
+    const abierta = !!m.abierta_hasta;
+    return `<div class="ficha mesa-abrir ${abierta ? 'abierta' : ''}">
+      <div>
+        <div class="ficha-titulo">${esc(m.nombre)}</div>
+        <div class="ficha-detalle">${abierta ? '<span class="estado-mesa si">Abierta</span> · admite pedidos hasta las ' + hora(m.abierta_hasta) : '<span class="estado-mesa">Cerrada</span> · el QR no deja pedir'}</div>
+      </div>
+      <button class="btn ${abierta ? 'btn-borde' : 'btn-naranja'}" type="button" data-abrir="${m.id}" data-valor="${abierta ? 0 : 1}">${abierta ? 'Cerrar' : 'Abrir'}</button>
+    </div>`;
+  }).join('') || '<div class="vacio">No hay mesas activas.</div>';
+}
+$('listaAbrir').addEventListener('click', async (ev) => {
+  const b = ev.target.closest('[data-abrir]');
+  if(!b || b.disabled) return;
+  b.disabled = true;
+  try {
+    const m = await datosPanel.abrirMesa(b.dataset.abrir, b.dataset.valor === '1');
+    const i = (estado.mesasAbrir || []).findIndex(x => x.id === m.id);
+    if(i >= 0) estado.mesasAbrir[i] = m;
+    pintarAbrir();
+    toast(m.abierta_hasta ? m.nombre + ' abierta' : m.nombre + ' cerrada');
+  } catch(e) { b.disabled = false; tratarError(e); }
+});
 
 /* =====================================================================
    MESAS (admin)

@@ -228,6 +228,8 @@ begin
 end $$;
 
 -- Nombre de la mesa si el bar, el número y el código del QR son correctos.
+-- Con el "control de mesas" del bar encendido (ajustes.control_mesas), dice
+-- además si el camarero ha abierto la mesa (solo entonces admite pedidos).
 create or replace function public.carta_mesa(p_bar text, p_mesa integer, p_codigo text)
 returns jsonb
 language plpgsql stable security definer
@@ -236,7 +238,9 @@ as $$
 declare b bares;
 begin
   b := privado.bar_de_slug(p_bar);
-  return (select jsonb_build_object('id', m.id, 'nombre', m.name)
+  return (select jsonb_build_object('id', m.id, 'nombre', m.name,
+                   'control', coalesce((b.ajustes->>'control_mesas')::boolean, false),
+                   'abierta', m.abierta_hasta is not null and m.abierta_hasta > now())
             from mesas m
            where m.bar_id = b.id and m.id = p_mesa and m.active and m.code = p_codigo);
 end $$;
@@ -248,7 +252,7 @@ language plpgsql security definer
 set search_path = public, privado, pg_temp
 as $$
 declare
-  b bares; v_id bigint; v_total numeric; v_ronda int;
+  b bares; v_id bigint; v_total numeric; v_ronda int; v_hasta timestamptz;
 begin
   b := privado.bar_de_slug(p_bar);
   if p_dispositivo is null then
@@ -256,9 +260,15 @@ begin
   end if;
   -- La mesa debe ser de este bar, estar activa y el código coincidir. Se
   -- bloquea la fila de la mesa para contar los pedidos sin carreras.
-  perform 1 from mesas where bar_id = b.id and id = p_mesa and active and code = p_codigo for update;
+  select abierta_hasta into v_hasta from mesas
+   where bar_id = b.id and id = p_mesa and active and code = p_codigo for update;
   if not found then
     raise exception 'MESA_NO_VALIDA';
+  end if;
+  -- Control de mesas: solo se pide si el camarero ha abierto la mesa.
+  if coalesce((b.ajustes->>'control_mesas')::boolean, false)
+     and (v_hasta is null or v_hasta <= now()) then
+    raise exception 'MESA_CERRADA';
   end if;
 
   -- Límites anti-spam.
@@ -528,8 +538,31 @@ as $$
 declare s staff;
 begin
   s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
-  return (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', name, 'activa', active) order by id), '[]'::jsonb)
+  return (select coalesce(jsonb_agg(jsonb_build_object('id', id, 'nombre', name, 'activa', active,
+                   'abierta_hasta', case when abierta_hasta > now() then abierta_hasta end) order by id), '[]'::jsonb)
             from mesas where bar_id = s.bar_id);
+end $$;
+
+-- Control de mesas: abrir (admite pedidos durante las horas de
+-- ajustes.horas_mesa, 4 por defecto) o cerrar una mesa de su bar.
+create or replace function public.panel_abrir_mesa(p_token text, p_mesa integer, p_abrir boolean)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff; v_horas int; r jsonb;
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  select coalesce((ajustes->>'horas_mesa')::int, 4) into v_horas from bares where id = s.bar_id;
+  update mesas
+     set abierta_hasta = case when p_abrir then now() + make_interval(hours => least(greatest(v_horas, 1), 24)) end
+   where bar_id = s.bar_id and id = p_mesa
+  returning jsonb_build_object('id', id, 'nombre', name, 'activa', active,
+            'abierta_hasta', case when abierta_hasta > now() then abierta_hasta end) into r;
+  if r is null then
+    raise exception 'MESA_NO_VALIDA';
+  end if;
+  return r;
 end $$;
 
 -- Modificar un pedido desde el panel (camarero, barra y admin), en
@@ -840,6 +873,7 @@ grant execute on function
   public.panel_modificar_pedido(text, bigint, jsonb),
   public.panel_crear_pedido(text, integer, jsonb),
   public.panel_mesas(text),
+  public.panel_abrir_mesa(text, integer, boolean),
   public.panel_productos(text),
   public.panel_disponible(text, integer, boolean),
   public.admin_guardar_producto(text, jsonb),

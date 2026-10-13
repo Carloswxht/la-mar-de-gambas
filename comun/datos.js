@@ -76,6 +76,7 @@ function textoError(codigo){
   const textos = {
     SIN_CONEXION: 'No hay conexión. Comprueba la cobertura e inténtalo otra vez.',
     MESA_NO_VALIDA: 'Este código QR no es válido. Pide ayuda al camarero.',
+    MESA_CERRADA: 'Tu mesa todavía no está abierta para pedir. Pide al camarero que la abra y vuelve a intentarlo.',
     BAR_NO_VALIDO: 'Este bar no está disponible ahora mismo.',
     EMAIL_EN_USO: 'Ya hay un usuario con ese correo.',
     ESPERA_UN_MOMENTO: 'Acabas de enviar un pedido. Espera unos segundos.',
@@ -217,6 +218,8 @@ const datosPanel = {
   // lineas: [{ producto, cantidad, nota }]
   crearPedido: (mesa, lineas) => rpcPersonal('panel_crear_pedido', { p_mesa: Number(mesa), p_lineas: lineas }),
   mesasPanel: () => rpcPersonal('panel_mesas'),
+  // Control de mesas: abrir (true) o cerrar (false) una mesa para pedidos del QR.
+  abrirMesa: (mesa, abrir) => rpcPersonal('panel_abrir_mesa', { p_mesa: Number(mesa), p_abrir: !!abrir }),
   productos: () => rpcPersonal('panel_productos'),
   disponible: (productoId, disponible) => rpcPersonal('panel_disponible', { p_producto: productoId, p_disponible: !!disponible }),
   // Solo admin:

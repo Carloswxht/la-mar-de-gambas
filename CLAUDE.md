@@ -95,6 +95,12 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - **Plan gratis de Neon:** ~100 CU-horas/mes; con el panel preguntando cada 4 s la base no se duerme mientras el bar abre.
 - Cada cambio en la base va en `datos/cambios/AAAA-MM-DD-nombre.sql` y se aplica solo con el OK de Carlos. Historial completo de fases en `archivo/HISTORIAL.md`.
 
+## Control de mesas (14 oct, carta v11) — opción de la plataforma, apagada por defecto
+- Con `bares.ajustes.control_mesas = true`, el QR de una mesa **solo deja pedir cuando el personal la abre** en el panel (menú → **Abrir mesas**, visible para camarero, barra y admin solo si el bar tiene la opción). Se cierra sola a las `ajustes.horas_mesa` horas (4 por defecto, entre 1 y 24) o al tocar «Cerrar». Evita pedidos desde fuera con un QR fotografiado.
+- Base: columna `mesas.abierta_hasta`; `carta_mesa` devuelve `control` y `abierta`; `crear_pedido` da `MESA_CERRADA` si la mesa no está abierta; `panel_mesas` devuelve `abierta_hasta`; función nueva `panel_abrir_mesa(token, mesa, abrir)` (solo mesas de su bar). Los pedidos que crea el personal desde el panel no necesitan la mesa abierta. Cambio: `datos/cambios/2026-10-14-control-de-mesas.sql` (aplicado en Supabase el 14 oct, firma idéntica a la copia probada).
+- Carta: con la mesa cerrada la cabecera dice "Mesa N cerrada · Avisa al camarero"; al enviar sale el aviso "MESA CERRADA"; vuelve a comprobar cada minuto y al volver a la carta, y al enviar bien quita el aviso.
+- Para encender o apagar en un bar: `update bares set ajustes = ajustes || '{"control_mesas": true}' where slug = '…';` (apagar: `false`).
+
 ## Aviso legal y privacidad (14 oct, carta v10)
 - Página común `legal/?bar=SLUG` (`legal/index.html`, `legal.css`, `legal.js`): aviso legal (LSSI-CE) y política de privacidad (RGPD) con el mismo texto para todos los bares; los datos del titular salen de `bares.ajustes.legal` = `{titular, nif, domicilio, email, telefono?, registro?}` (y de `bar.json` sin conexión). Responsable = el bar; autonomIA Lab = encargado del tratamiento.
 - El enlace "Aviso legal y privacidad" sale en el pie de la carta (y "Privacidad" en la entrada del panel) **solo si el bar tiene `ajustes.legal` con titular**; sin datos, la página dice que no está disponible.
