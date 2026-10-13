@@ -1,7 +1,9 @@
 -- =====================================================================
 -- ESQUEMA DE LA BASE DE DATOS · Multi-Bar (plataforma de autonomIA Lab)
 -- ---------------------------------------------------------------------
--- Proyecto Neon "la-mar-de-gambas" (Frankfurt), separado de El Recreo.
+-- Base: proyecto Supabase "multi-bar" (Frankfurt), separado de El Recreo
+-- (antes, Neon "la-mar-de-gambas"). Los roles de la web son los de
+-- Supabase: "anon" (visitante) y "authenticated".
 -- UNA sola base para TODOS los bares: cada fila de cada tabla lleva el
 -- bar al que pertenece (bar_id) y las funciones de seguridad.sql nunca
 -- dejan ver ni tocar lo de otro bar. La Mar de Gambas es el bar nº 1.
@@ -173,4 +175,10 @@ alter table order_items enable row level security;
 alter table staff       enable row level security;
 
 revoke all on bares, categories, products, mesas, orders, order_items, staff
-  from public, anonymous, authenticated;
+  from public, anon, authenticated;
+-- Supabase da por defecto permisos a anon/authenticated en todo lo nuevo
+-- del esquema public: se quitan (tablas, secuencias y funciones).
+revoke all on all sequences in schema public from anon, authenticated;
+alter default privileges in schema public revoke all on tables from anon, authenticated;
+alter default privileges in schema public revoke all on sequences from anon, authenticated;
+alter default privileges in schema public revoke execute on functions from public, anon, authenticated;

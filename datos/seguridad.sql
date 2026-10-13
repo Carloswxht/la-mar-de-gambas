@@ -36,8 +36,26 @@
 
 -- ---------------- ZONA PRIVADA (no se publica en la web) ----------------
 create schema if not exists privado;
-revoke all on schema privado from public, anonymous, authenticated;
-create extension if not exists pgcrypto schema privado;
+revoke all on schema privado from public, anon, authenticated;
+
+-- Cifrado (pgcrypto). Las funciones siempre lo llaman como privado.crypt,
+-- privado.digest… Si pgcrypto no está instalado, se instala en "privado";
+-- si ya está en otro sitio (Supabase lo trae en "extensions"), se crean en
+-- "privado" unos atajos que llaman a ese.
+do $$
+declare esq text;
+begin
+  select n.nspname into esq from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+   where e.extname = 'pgcrypto';
+  if esq is null then
+    create extension pgcrypto schema privado;
+  elsif esq <> 'privado' then
+    execute format('create function privado.crypt(text, text) returns text language sql immutable strict set search_path = pg_catalog as $f$ select %I.crypt($1, $2) $f$', esq);
+    execute format('create function privado.gen_salt(text, integer) returns text language sql volatile strict set search_path = pg_catalog as $f$ select %I.gen_salt($1, $2) $f$', esq);
+    execute format('create function privado.digest(text, text) returns bytea language sql immutable strict set search_path = pg_catalog as $f$ select %I.digest($1, $2) $f$', esq);
+    execute format('create function privado.gen_random_bytes(integer) returns bytea language sql volatile strict set search_path = pg_catalog as $f$ select %I.gen_random_bytes($1) $f$', esq);
+  end if;
+end $$;
 
 -- Sesiones del personal: se guarda solo la huella (hash) del token.
 create table privado.sesiones (

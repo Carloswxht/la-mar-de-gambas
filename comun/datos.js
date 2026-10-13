@@ -2,19 +2,20 @@
    ACCESO A DATOS Y LOGIN · Multi-Bar (todos los bares)
    ---------------------------------------------------------------------
    Este es el ÚNICO sitio donde la carta y el panel hablan con la base
-   de datos. Si algún día se pasa de Neon a Supabase, solo se cambia
-   este archivo (direcciones y funciones de aquí abajo).
+   de datos. Para cambiar de base, solo se cambia este archivo.
 
-   Base de datos: proyecto Neon "la-mar-de-gambas" (Frankfurt), separado
-   de El Recreo. Una sola base para todos los bares: cada llamada de la
-   carta dice de qué bar es (BAR) y el personal solo ve lo de su bar. Aquí solo van direcciones PÚBLICAS: sin login, la base
-   únicamente deja hacer lo que permiten sus reglas de seguridad
-   (datos/seguridad.sql). NUNCA poner aquí claves de administrador.
+   Base de datos: proyecto Supabase "multi-bar" (Frankfurt), separado de
+   El Recreo (antes estuvo en Neon). Una sola base para todos los bares:
+   cada llamada de la carta dice de qué bar es (BAR) y el personal solo ve
+   lo de su bar. Aquí solo va la clave PÚBLICA de Supabase ("publishable",
+   pensada para ir en la web): con ella la base solo deja usar las
+   funciones de datos/funciones.sql. NUNCA poner aquí claves secretas
+   (service_role, secret ni la contraseña de la base).
    ===================================================================== */
 
-/* ---------------- DIRECCIONES DE LA BASE ---------------- */
-const AUTH_BASE = 'https://ep-sweet-sky-b18vlkug.neonauth.c-5.eu-central-1.aws.neon.tech/neondb/auth';
-const DATA_API = 'https://ep-sweet-sky-b18vlkug.apirest.c-5.eu-central-1.aws.neon.tech/neondb/rest/v1';
+/* ---------------- DIRECCIÓN Y CLAVE PÚBLICA DE LA BASE ---------------- */
+const DATA_API = 'https://dorunbacwnkwdatfscri.supabase.co/rest/v1';
+const CLAVE_PUBLICA = 'sb_publishable_PK12CcvGBEZsFT9lsLpSIA_IsP-v8iS';
 
 /* ---------------- QUÉ BAR ES ----------------
    El bar va en el enlace de la carta y del QR: /carta/?bar=lamardegambas&mesa=5&c=…
@@ -30,68 +31,28 @@ let BAR = (function(){
 })();
 function usarBar(slug){ if(slug) BAR = slug; }
 
-/* ---------------- PASE ANÓNIMO ----------------
-   La Data API de Neon exige en cada llamada un "pase" (token JWT), aunque
-   sea de visitante anónimo. Se pide a Neon Auth (GET /token/anonymous),
-   se guarda en memoria y se renueva un minuto antes de que caduque.
-   Con ese pase la base solo deja ejecutar las funciones de seguridad.sql. */
-let cachedToken = null;
-let cachedTokenExpiry = 0;
-
-async function getAuthToken(force){
-  const now = Date.now() / 1000;
-  if(!force && cachedToken && cachedTokenExpiry - now > 60) return cachedToken;
-  let res;
-  try {
-    res = await fetch(AUTH_BASE + '/token/anonymous', { cache: 'no-store' });
-  } catch(e) {
-    // Sin internet, o el navegador no deja llegar a Neon Auth (dominio no autorizado).
-    throw new ErrorDatos(navigator.onLine === false ? 'SIN_CONEXION' : 'SIN_PASE:red');
-  }
-  let data = null;
-  try { data = await res.json(); } catch(e) { /* respuesta vacía */ }
-  if(!res.ok || !data || !data.token) throw new ErrorDatos('SIN_PASE:' + res.status);
-  cachedToken = data.token;
-  let e = data.expires_at;
-  if(typeof e === 'string') e = Date.parse(e) / 1000;
-  if(typeof e === 'number' && e > 1e11) e = e / 1000;
-  cachedTokenExpiry = (typeof e === 'number' && !isNaN(e)) ? e : now + 300;
-  return cachedToken;
-}
-
 /* ---------------- LLAMADA A LAS "VENTANILLAS" DE LA BASE ----------------
    La web no toca tablas: solo llama a funciones de la base (ver
-   datos/seguridad.sql), que comprueban todo. Cada llamada lleva el pase
-   anónimo; si la base lo rechaza (caducado), se pide otro y se reintenta
-   una vez. */
+   datos/funciones.sql), que comprueban todo. Cada llamada lleva la clave
+   pública de Supabase. */
 async function apiRpc(nombre, params){
-  const enviar = async (pase) => {
-    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pase };
-    // Con mala cobertura una llamada puede quedarse colgada: se corta a los 20 s.
-    const corte = window.AbortController ? new AbortController() : null;
-    const reloj = corte ? setTimeout(() => corte.abort(), 20000) : null;
-    try {
-      const r = await fetch(DATA_API + '/rpc/' + nombre, {
-        method: 'POST', headers, cache: 'no-store', body: JSON.stringify(params || {}),
-        signal: corte ? corte.signal : undefined,
-      });
-      return { status: r.status, ok: r.ok, texto: await r.text() };
-    } finally { if(reloj) clearTimeout(reloj); }
-  };
+  // Con mala cobertura una llamada puede quedarse colgada: se corta a los 20 s.
+  const corte = window.AbortController ? new AbortController() : null;
+  const reloj = corte ? setTimeout(() => corte.abort(), 20000) : null;
   let res;
-  const pase = await getAuthToken();
   try {
-    res = await enviar(pase);
+    const r = await fetch(DATA_API + '/rpc/' + nombre, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': CLAVE_PUBLICA },
+      cache: 'no-store', body: JSON.stringify(params || {}),
+      signal: corte ? corte.signal : undefined,
+    });
+    res = { status: r.status, ok: r.ok, texto: await r.text() };
   } catch(e) {
     throw new ErrorDatos('SIN_CONEXION');
-  }
-  if(res.status === 401){
-    const nuevo = await getAuthToken(true);
-    try { res = await enviar(nuevo); } catch(e) { throw new ErrorDatos('SIN_CONEXION'); }
-  }
-  const texto = res.texto;
+  } finally { if(reloj) clearTimeout(reloj); }
   let datos = null;
-  try { datos = texto ? JSON.parse(texto) : null; } catch(e) { /* respuesta vacía */ }
+  try { datos = res.texto ? JSON.parse(res.texto) : null; } catch(e) { /* respuesta vacía */ }
   if(!res.ok){
     const msg = (datos && datos.message) || ('HTTP_' + res.status);
     throw new ErrorDatos(msg);
@@ -114,7 +75,6 @@ function textoError(codigo){
   const [base, detalle] = [c.split(':')[0], c.split(':').slice(1).join(':')];
   const textos = {
     SIN_CONEXION: 'No hay conexión. Comprueba la cobertura e inténtalo otra vez.',
-    SIN_PASE: 'No se ha podido conectar con la base de datos (pase ' + (detalle || '?') + '). Inténtalo en un momento.',
     MESA_NO_VALIDA: 'Este código QR no es válido. Pide ayuda al camarero.',
     BAR_NO_VALIDO: 'Este bar no está disponible ahora mismo.',
     EMAIL_EN_USO: 'Ya hay un usuario con ese correo.',
