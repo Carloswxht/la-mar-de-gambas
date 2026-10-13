@@ -5,7 +5,7 @@
 - Enlace de la carta: `/carta/?bar=lamardegambas` (sin `bar=` también lleva aquí: es el bar por defecto). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
 - Copia de reserva: `menu.json` y `bar.json` en esta carpeta. Fotos de las cartas físicas (fuente de verdad de los precios): `fotos-cartas/`.
 - Usuarios de prueba: `carloswxht+admin@gmail.com` (admin; Carlos ya cambió su contraseña), `carloswxht+barra@gmail.com`, `carloswxht+camarero@gmail.com` (contraseña provisional dada por el chat). Son alias de Gmail: llegan al buzón de Carlos.
-- En la base quedan **2 pedidos de prueba** de la Mesa 1 (11 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba".
+- En la base (Supabase) quedan **7 pedidos de prueba** de la Mesa 1 (11–13 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba" (lleva DELETE: dárselo para pegar en el SQL Editor).
 - Mesas: 1–10 de ejemplo hasta tener las reales del local.
 
 ## Aspecto y versiones (última versión publicada: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = Multi-Bar, publicada el 12 oct, se ve igual salvo "Carta v9" y la firma de autonomIA Lab**)
