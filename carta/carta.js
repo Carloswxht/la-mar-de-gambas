@@ -511,7 +511,7 @@ setInterval(() => {
   if(caducado && !editando) updateCartBar();
 }, 1000);
 
-function alVolver(){ livePoll(); refrescarCarta(); }
+function alVolver(){ livePoll(); refrescarCarta(); revisarMesa(); }
 document.addEventListener("visibilitychange", () => { if(!document.hidden) alVolver(); });
 window.addEventListener("focus", livePoll);
 window.addEventListener("online", alVolver);
@@ -599,6 +599,7 @@ async function sendOrder(){
   }
   enviando = false;
   if(p){
+    if(MESA.cerrada){ MESA.cerrada = false; pintarMesa(); }
     if(p.id) rounds.push(aRonda(p));
     vaciarCarrito();
     closePanel();
@@ -608,6 +609,7 @@ async function sendOrder(){
   }
   if(fallo.codigo === 'AGOTADO'){ ultimaCarta = 0; await refrescarCarta(); }
   if(fallo.codigo === 'MESA_NO_VALIDA') desactivarPedidos();
+  if(fallo.codigo === 'MESA_CERRADA'){ MESA.cerrada = true; pintarMesa(); updateCartBar(); aviso("MESA CERRADA", fallo.message); return; }
   updateCartBar();
   aviso("NO SE HA ENVIADO", fallo.message);
 }
@@ -641,8 +643,25 @@ let QR_INVALIDO = false;
 function activarPedidos(m){
   MESA = m;
   document.body.classList.add("modo-pedir");
-  heroLine.innerHTML = '<b class="mesa-tag">' + esc(m.nombre) + '</b> · Pide desde tu mesa';
+  pintarMesa();
 }
+// Control de mesas (opción del bar): si el camarero no ha abierto la mesa,
+// se avisa arriba; la base no deja enviar hasta que la abra.
+function pintarMesa(){
+  if(!MESA) return;
+  heroLine.innerHTML = MESA.cerrada
+    ? '<b class="mesa-tag">' + esc(MESA.nombre) + ' cerrada</b> · Avisa al camarero'
+    : '<b class="mesa-tag">' + esc(MESA.nombre) + '</b> · Pide desde tu mesa';
+}
+// Vuelve a preguntar si la mesa está abierta (al volver a la carta, cada minuto y al fallar un envío).
+async function revisarMesa(){
+  if(!MESA || !MESA.cerrada) return;
+  try {
+    const m = await datosCarta.mesa(MESA_NUM, MESA_CODIGO);
+    if(m && m.id){ MESA.cerrada = !!(m.control && !m.abierta); pintarMesa(); }
+  } catch(e) { /* sin conexión: se queda como estaba */ }
+}
+setInterval(() => { if(!document.hidden) revisarMesa(); }, 60000);
 function desactivarPedidos(){
   MESA = null;
   rounds.length = 0;
@@ -654,7 +673,7 @@ async function comprobarMesa(){
   if(!MESA_NUM || !MESA_CODIGO) return;
   let m = null, sinRespuesta = false;
   try { m = await conTiempo(datosCarta.mesa(MESA_NUM, MESA_CODIGO), 8000); } catch(e) { sinRespuesta = true; }
-  if(m && m.id) activarPedidos({ id: m.id, nombre: m.nombre || ("Mesa " + m.id) });
+  if(m && m.id) activarPedidos({ id: m.id, nombre: m.nombre || ("Mesa " + m.id), cerrada: !!(m.control && !m.abierta) });
   // Sin cobertura ahora mismo: se deja pedir y la base comprobará el código al enviar.
   else if(sinRespuesta) activarPedidos({ id: MESA_NUM, nombre: "Mesa " + MESA_NUM });
   else desactivarPedidos();
