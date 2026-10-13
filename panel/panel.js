@@ -1,5 +1,5 @@
 /* =====================================================================
-   PANEL DE BARRA · Multi-Bar · diseño v8
+   PANEL DE BARRA · MultiBar · diseño v8
    Cada usuario es de un bar: el nombre del bar (cabecera, título,
    "Nuevo pedido") sale de su sesión; en la pantalla de entrar, del bar
    del enlace (/panel/?bar=…) o del bar por defecto.
@@ -56,6 +56,9 @@ function pintarBar(info){
   $('cLocal').textContent = NOMBRE_BAR;
   $('nvLocal').textContent = NOMBRE_BAR.toUpperCase();
   $('lLocal').textContent = NOMBRE_BAR;
+  const conLegal = !!(info.ajustes && info.ajustes.legal && info.ajustes.legal.titular);
+  $('lLegal').hidden = $('lLegalSep').hidden = !conLegal;
+  $('lLegal').href = '../legal/?bar=' + encodeURIComponent(info.slug || BAR) + '#privacidad';
   document.title = NOMBRE_BAR + ' · Panel';
 }
 // Antes de entrar: el bar del enlace (lo último que se supo, y luego la base).

@@ -1,6 +1,6 @@
 # La Mar de Gambas · ficha del bar (bar nº 1, slug `lamardegambas`)
 
-**La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro). Primer cliente y piloto de la plataforma Multi-Bar. Aquí va todo lo que es SOLO de este bar; lo común está en el `CLAUDE.md` de la raíz.
+**La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro). Primer cliente y piloto de la plataforma MultiBar. Aquí va todo lo que es SOLO de este bar; lo común está en el `CLAUDE.md` de la raíz.
 
 - Enlace de la carta: `/carta/?bar=lamardegambas` (sin `bar=` también lleva aquí: es el bar por defecto). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
 - Copia de reserva: `menu.json` y `bar.json` en esta carpeta. Fotos de las cartas físicas (fuente de verdad de los precios): `fotos-cartas/`.
@@ -8,7 +8,7 @@
 - En la base (Supabase) quedan **7 pedidos de prueba** de la Mesa 1 (11–13 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba" (lleva DELETE: dárselo para pegar en el SQL Editor).
 - Mesas: 1–10 de ejemplo hasta tener las reales del local.
 
-## Aspecto y versiones (última versión publicada: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = Multi-Bar, publicada el 12 oct, se ve igual salvo "Carta v9" y la firma de autonomIA Lab**)
+## Aspecto y versiones (última versión publicada: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = MultiBar, publicada el 12 oct, se ve igual salvo "Carta v9" y la firma de autonomIA Lab**)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `archivo/versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
 - El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/bares/lamardegambas/menu.json` (antes `datos/menu-datos.json`) (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
@@ -37,6 +37,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - Pimentada de gambas con huevos fritos, Patatas para dipear (4,00 €) y Zamburiñas (2,50 €/ud) están como una línea cada una.
 
 ## Pendiente de este bar
+0. **Datos legales del titular** para el aviso legal y la privacidad (14 oct): razón social o nombre, NIF/CIF, domicilio, correo de contacto (y teléfono y datos registrales si es sociedad). Hasta tenerlos, la carta no enseña el enlace.
 1. Generar los **QR** de las mesas reales (con el dominio `carta.autonomialab.es`, nunca github.io), cuando el local dé sus mesas.
 8. Pruebas con móviles reales (`PRUEBAS-FASE-5.md`), sobre todo **iPhone/Safari** y con dos aparatos (panel y carta).
 9. Confirmar con el local precios de las bebidas (provisionales), la cerveza que sirven (puesta Cruzcampo) y los combinados.

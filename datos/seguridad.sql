@@ -1,5 +1,5 @@
 -- =====================================================================
--- SEGURIDAD, LOGIN Y PERMISOS POR ROL · Multi-Bar
+-- SEGURIDAD, LOGIN Y PERMISOS POR ROL · MultiBar
 -- ---------------------------------------------------------------------
 -- Ejecutar después de datos/esquema.sql y datos/datos-iniciales.sql, y
 -- a continuación datos/funciones.sql (las ventanillas y sus permisos).

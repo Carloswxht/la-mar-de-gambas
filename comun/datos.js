@@ -1,5 +1,5 @@
 /* =====================================================================
-   ACCESO A DATOS Y LOGIN · Multi-Bar (todos los bares)
+   ACCESO A DATOS Y LOGIN · MultiBar (todos los bares)
    ---------------------------------------------------------------------
    Este es el ÚNICO sitio donde la carta y el panel hablan con la base
    de datos. Para cambiar de base, solo se cambia este archivo.
