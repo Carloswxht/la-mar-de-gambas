@@ -37,6 +37,7 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - Pimentada de gambas con huevos fritos, Patatas para dipear (4,00 €) y Zamburiñas (2,50 €/ud) están como una línea cada una.
 
 ## Pendiente de este bar
+0. **Datos legales del titular** para el aviso legal y la privacidad (14 oct): razón social o nombre, NIF/CIF, domicilio, correo de contacto (y teléfono y datos registrales si es sociedad). Hasta tenerlos, la carta no enseña el enlace.
 1. Generar los **QR** de las mesas reales (con el dominio `carta.autonomialab.es`, nunca github.io), cuando el local dé sus mesas.
 8. Pruebas con móviles reales (`PRUEBAS-FASE-5.md`), sobre todo **iPhone/Safari** y con dos aparatos (panel y carta).
 9. Confirmar con el local precios de las bebidas (provisionales), la cerveza que sirven (puesta Cruzcampo) y los combinados.

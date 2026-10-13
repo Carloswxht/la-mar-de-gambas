@@ -68,7 +68,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - [ ] 2FA en GitHub, correo, dominio y cuentas de base de datos.
 - [ ] Alérgenos accesibles en la carta (obligatorio para locales de comida). Pedir la lista al local.
 - [x] Fuentes de Google guardadas dentro del repositorio (no cargarlas desde Google) por RGPD. (Hecho en la Fase 1 del panel: `comun/fuentes/`.)
-- [ ] Aviso legal y política de privacidad sencillos enlazados en el pie.
+- [ ] Aviso legal y política de privacidad sencillos enlazados en el pie. (14 oct: página `legal/` hecha para todos los bares; falta poner los datos del titular de cada bar en `ajustes.legal` y que un asesor revise el texto.)
 - [ ] Dominio a nombre del cliente. Acuerdo por escrito con el local (qué incluye, precio, quién paga dominio y base de datos, mantenimiento mensual).
 - [ ] Precios y platos aprobados por escrito por el local antes de publicar.
 - [ ] Probar en iPhone y Android reales, con mala cobertura, y un día de partido (bloqueo de LaLiga).
@@ -94,6 +94,13 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - **Seguridad:** tablas cerradas a la web (RLS, sin permisos). La web solo ejecuta funciones `security definer` de `datos/funciones.sql`, que comprueban bar, rol, código de mesa, precio de la base, límites anti-spam (20 s y 10/h por móvil, 6 cada 10 min por mesa, 30 líneas, 1–20 uds, nota ≤ 140) y limpieza (pedidos > 30 días, notas > 24 h).
 - **Plan gratis de Neon:** ~100 CU-horas/mes; con el panel preguntando cada 4 s la base no se duerme mientras el bar abre.
 - Cada cambio en la base va en `datos/cambios/AAAA-MM-DD-nombre.sql` y se aplica solo con el OK de Carlos. Historial completo de fases en `archivo/HISTORIAL.md`.
+
+## Aviso legal y privacidad (14 oct, carta v10)
+- Página común `legal/?bar=SLUG` (`legal/index.html`, `legal.css`, `legal.js`): aviso legal (LSSI-CE) y política de privacidad (RGPD) con el mismo texto para todos los bares; los datos del titular salen de `bares.ajustes.legal` = `{titular, nif, domicilio, email, telefono?, registro?}` (y de `bar.json` sin conexión). Responsable = el bar; autonomIA Lab = encargado del tratamiento.
+- El enlace "Aviso legal y privacidad" sale en el pie de la carta (y "Privacidad" en la entrada del panel) **solo si el bar tiene `ajustes.legal` con titular**; sin datos, la página dice que no está disponible.
+- Dice lo que de verdad hace la web: sin cookies de publicidad ni analítica; almacenamiento local técnico (número al azar del móvil, nombre del bar, sesión del personal); notas 24 h, pedidos 30 días; proveedores Supabase (UE, Fráncfort) y GitHub Pages (EE. UU., registra IP). Si cambia algo de eso (analítica, nuevos datos, otro proveedor), actualizar `legal.js` y su fecha.
+- Es una plantilla: Carlos debe hacerla revisar por un asesor antes de abrir. Con cada bar hace falta además el contrato de encargado del tratamiento.
+- Para poner los datos de un bar: `update bares set ajustes = ajustes || jsonb_build_object('legal', jsonb_build_object('titular', …, 'nif', …, 'domicilio', …, 'email', …)) where slug = '…';` (sin DELETE: lo puede hacer Claude con `execute_sql`, con el OK de Carlos) y copiarlo en `datos/bares/SLUG/bar.json`.
 
 ## Web y dominios
 - Publicada con GitHub Pages desde `main` (`https://carta.autonomialab.es/` desde el 13 oct; `carloswxht.github.io/multibar-platform/` redirige allí). Enlaces internos relativos.
@@ -136,6 +143,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 
 ## Archivos de este repositorio
 - `index.html` → portada provisional de La Mar de Gambas (raíz).
+- `legal/` → aviso legal y privacidad de cada bar (`?bar=SLUG`).
 - `carta/index.html`, `carta/carta.css`, `carta/carta.js` → la carta, publicada en `/carta/`.
 - `comun/estilos.css` → colores y fuentes comunes de carta y panel. `comun/fuentes/` → Oswald y DM Sans (woff2, licencia OFL).
 - `comun/datos.js` → **único** bloque de acceso a la base de datos y login: `apiRpc` (llama a las funciones de la base), `datosCarta` (menú, mesa, crear/editar pedido, mis pedidos), login del personal (`login`, `logout`, `comprobarSesion`, `cambiarPassword`, `getSesion`), `datosPanel` (pedidos, marcar, agotados, y lo del admin) y `textoError` (mensajes en español). Las funciones antiguas de El Recreo (`apiGet/apiPost/apiPatch/apiDelete`) se quitaron en la Fase 5. Cada llamada se corta a los 20 s (mala cobertura). Desde el 13 oct llama a Supabase con la clave pública; para cambiar de base se cambia solo este archivo.

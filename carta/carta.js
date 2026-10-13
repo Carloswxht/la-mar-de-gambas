@@ -46,6 +46,10 @@ function pintarBar(info){
   if(!document.body.classList.contains("modo-pedir") && !QR_INVALIDO) heroLine.textContent = info.subtitulo || "";
   const pie = (info.ajustes && Array.isArray(info.ajustes.pie)) ? info.ajustes.pie : [info.nombre];
   barPieEl.innerHTML = pie.map(l => "<div>" + esc(l) + "</div>").join("");
+  // Enlace al aviso legal y privacidad: solo cuando el bar tiene sus datos de titular.
+  const conLegal = !!(info.ajustes && info.ajustes.legal && info.ajustes.legal.titular);
+  document.getElementById("legalEnlace").hidden = !conLegal;
+  document.getElementById("legalLink").href = "../legal/?bar=" + encodeURIComponent(info.slug || BAR);
   document.title = info.nombre + " · Carta digital";
 }
 async function loadBar(){
