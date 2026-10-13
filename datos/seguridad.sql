@@ -50,10 +50,10 @@ begin
   if esq is null then
     create extension pgcrypto schema privado;
   elsif esq <> 'privado' then
-    execute format('create function privado.crypt(text, text) returns text language sql immutable strict as $f$ select %I.crypt($1, $2) $f$', esq);
-    execute format('create function privado.gen_salt(text, integer) returns text language sql volatile strict as $f$ select %I.gen_salt($1, $2) $f$', esq);
-    execute format('create function privado.digest(text, text) returns bytea language sql immutable strict as $f$ select %I.digest($1, $2) $f$', esq);
-    execute format('create function privado.gen_random_bytes(integer) returns bytea language sql volatile strict as $f$ select %I.gen_random_bytes($1) $f$', esq);
+    execute format('create function privado.crypt(text, text) returns text language sql immutable strict set search_path = pg_catalog as $f$ select %I.crypt($1, $2) $f$', esq);
+    execute format('create function privado.gen_salt(text, integer) returns text language sql volatile strict set search_path = pg_catalog as $f$ select %I.gen_salt($1, $2) $f$', esq);
+    execute format('create function privado.digest(text, text) returns bytea language sql immutable strict set search_path = pg_catalog as $f$ select %I.digest($1, $2) $f$', esq);
+    execute format('create function privado.gen_random_bytes(integer) returns bytea language sql volatile strict set search_path = pg_catalog as $f$ select %I.gen_random_bytes($1) $f$', esq);
   end if;
 end $$;
 
