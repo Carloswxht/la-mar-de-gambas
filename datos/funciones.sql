@@ -819,11 +819,11 @@ end $$;
 -- =====================================================================
 -- PERMISOS: la web solo puede usar estas ventanillas
 -- =====================================================================
-revoke execute on all functions in schema public from public;
-revoke execute on all functions in schema privado from public;
+revoke execute on all functions in schema public from public, anon, authenticated;
+revoke execute on all functions in schema privado from public, anon, authenticated;
 
--- Cliente de la mesa y personal (la web siempre entra como "anonymous"
--- o "authenticated"; quién es el personal lo dice su token de sesión).
+-- Cliente de la mesa y personal (la web siempre entra como "anon", el
+-- visitante de Supabase; quién es el personal lo dice su token de sesión).
 grant execute on function
   public.carta_bar(text),
   public.carta_menu(text),
@@ -847,7 +847,7 @@ grant execute on function
   public.admin_guardar_usuario(text, jsonb),
   public.admin_mesas(text),
   public.admin_guardar_mesa(text, jsonb)
-to anonymous, authenticated;
+to anon, authenticated;
 
 -- Las tablas siguen cerradas a la web (ver esquema.sql): ni lectura ni escritura.
-revoke all on all tables in schema public from public, anonymous, authenticated;
+revoke all on all tables in schema public from public, anon, authenticated;
