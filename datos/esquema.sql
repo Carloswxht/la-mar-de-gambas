@@ -1,5 +1,5 @@
 -- =====================================================================
--- ESQUEMA DE LA BASE DE DATOS · Multi-Bar (plataforma de autonomIA Lab)
+-- ESQUEMA DE LA BASE DE DATOS · MultiBar (plataforma de autonomIA Lab)
 -- ---------------------------------------------------------------------
 -- Base: proyecto Supabase "multi-bar" (Frankfurt), separado de El Recreo
 -- (antes, Neon "la-mar-de-gambas"). Los roles de la web son los de

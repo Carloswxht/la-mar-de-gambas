@@ -6,7 +6,7 @@ Necesitas dos aparatos: **A** = móvil "cliente" (mejor un iPhone) y **B** = mó
 Marca cada casilla cuando salga bien. Si algo falla, haz una captura y mándamela.
 
 ## Preparación
-- [ ] 1. En **B**, entra en `carloswxht.github.io/la-mar-de-gambas/panel/` como admin. Toca la pantalla una vez (activa el sonido).
+- [ ] 1. En **B**, entra en `carloswxht.github.io/multibar-platform/panel/` como admin. Toca la pantalla una vez (activa el sonido).
 - [ ] 2. En **B**: menú → **Mesas** → Mesa 1 → **Copiar enlace**. Mándatelo a **A** (por WhatsApp a ti mismo, por ejemplo) y ábrelo en **A**.
 - [ ] 3. En **A**, arriba debe poner **"MESA 1 · PIDE DESDE TU MESA"** y abajo del todo **"Carta v6"**.
 
@@ -24,7 +24,7 @@ Marca cada casilla cuando salga bien. Si algo falla, haz una captura y mándamel
 - [ ] 12. **Agotado:** en **B** → Lista de precios → marca un producto **Agotado**. En **A** (en 1 minuto, o cerrando y abriendo la carta) sale en gris con "AGOTADO" y no se puede añadir.
 - [ ] 13. **Precio:** en **B** (admin) cambia un precio y guarda. En **A** sale el precio nuevo (en 1 minuto, o al volver a abrir). Luego déjalo como estaba.
 - [ ] 14. **QR falso:** en **A**, cambia una letra del final del enlace (lo que va detrás de `c=`) → arriba pone **"QR NO VÁLIDO · AVISA AL CAMARERO"** y no deja enviar.
-- [ ] 15. **Sin QR:** en **A** abre `carloswxht.github.io/la-mar-de-gambas/carta/` → se ve la carta pero no hay botón de enviar ("Enséñale este tique al camarero").
+- [ ] 15. **Sin QR:** en **A** abre `carloswxht.github.io/multibar-platform/carta/` → se ve la carta pero no hay botón de enviar ("Enséñale este tique al camarero").
 - [ ] 16. **Sin cobertura:** en **A** añade algo, pon el **modo avión** y pulsa enviar → "No hay conexión…". Quita el modo avión y vuelve a enviar → sale bien.
 - [ ] 17. **Desde el panel:** en **B**, "+" → Mesa 2 → pide algo → entra como NUEVO.
 

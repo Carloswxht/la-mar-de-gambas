@@ -1,5 +1,5 @@
 /* =====================================================================
-   PANEL DE BARRA · Multi-Bar · diseño v8
+   PANEL DE BARRA · MultiBar · diseño v8
    Cada usuario es de un bar: el nombre del bar (cabecera, título,
    "Nuevo pedido") sale de su sesión; en la pantalla de entrar, del bar
    del enlace (/panel/?bar=…) o del bar por defecto.

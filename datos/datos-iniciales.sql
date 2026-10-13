@@ -1,5 +1,5 @@
 -- =====================================================================
--- DATOS INICIALES · Multi-Bar · bar nº 1: La Mar de Gambas
+-- DATOS INICIALES · MultiBar · bar nº 1: La Mar de Gambas
 -- Generado a partir de datos/bares/lamardegambas/menu.json (precios de las cartas
 -- físicas, pendientes de aprobación por escrito del local; las bebidas
 -- llevan precios provisionales).

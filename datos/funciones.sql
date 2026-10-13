@@ -1,5 +1,5 @@
 -- =====================================================================
--- FUNCIONES ("VENTANILLAS") DE LA BASE · Multi-Bar
+-- FUNCIONES ("VENTANILLAS") DE LA BASE · MultiBar
 -- ---------------------------------------------------------------------
 -- Ejecutar después de datos/seguridad.sql. Se puede volver a ejecutar
 -- entero cuando se cambie alguna función (todas son "create or replace").

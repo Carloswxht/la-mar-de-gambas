@@ -1,4 +1,6 @@
-# Multi-Bar · plataforma de cartas digitales y pedidos (autonomIA Lab)
+# MultiBar · plataforma de cartas digitales y pedidos (autonomIA Lab)
+
+Repositorio: **`Carloswxht/multibar-platform`** (renombrado por Carlos el 13 oct; antes `la-mar-de-gambas`). Nombre del producto: **MultiBar, de autonomIA Lab**.
 
 Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con una sola web y una sola base de datos, cada bar totalmente separado de los demás y con su propio aspecto. Carta digital por QR desde el móvil, pedidos desde la mesa y panel de barra. Primer cliente y piloto: **La Mar de Gambas** (ficha en `datos/bares/lamardegambas/NOTAS.md`). Es un proyecto aparte de El Recreo (otro cliente con su propio repositorio y base): no compartir base de datos, archivos ni repositorio con él.
 
@@ -11,19 +13,19 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Panel de autonomIA Lab (de Carlos) para dar de alta un bar y configurarlo con casillas y selectores, con vista previa. El panel de cada bar gestiona productos, precios, agotados y usuarios, pero no el diseño.
 - Lo que pida un cliente se añade como **opción para todos, desactivada por defecto**, no como arreglo para uno.
 - No tener en cuenta datos fiscales ni TPV por ahora. No borrar nada: lo antiguo se mueve a una carpeta de archivo.
-- Repositorio a renombrar a **`multi-bar`** (lo hace Carlos en GitHub).
+- Repositorio renombrado a **`multibar-platform`** (13 oct); el producto se llama **MultiBar**.
 - Firma pequeña "Carta digital por autonomIA Lab" (enlace a www.autonomialab.es) en el pie de cada carta y "Panel por autonomIA Lab" en la entrada del panel (12 oct).
 
 ## Plan por fases de la plataforma
-- **Fase A (hecha 12 oct salvo el nombre del repo):** notas separadas (este archivo = plataforma; `datos/bares/SLUG/NOTAS.md` = cada bar; `archivo/HISTORIAL.md` = notas antiguas); `versiones/` y `og-gambas5.jpg` a `archivo/`; `fotos-cartas/` a `datos/bares/lamardegambas/`. Falta renombrar el repositorio a `multi-bar` (Carlos).
-- **Fase B (hecha y publicada el 12 oct, PR #11 fusionado por Carlos; base de Neon cambiada y comprobada):** "bar" en la base. Ver "Multi-Bar: cómo está hecho".
+- **Fase A (hecha 12–13 oct):** notas separadas (este archivo = plataforma; `datos/bares/SLUG/NOTAS.md` = cada bar; `archivo/HISTORIAL.md` = notas antiguas); `versiones/` y `og-gambas5.jpg` a `archivo/`; `fotos-cartas/` a `datos/bares/lamardegambas/`. Repositorio renombrado a `multibar-platform` el 13 oct.
+- **Fase B (hecha y publicada el 12 oct, PR #11 fusionado por Carlos; base de Neon cambiada y comprobada):** "bar" en la base. Ver "MultiBar: cómo está hecho".
 - **Migración a Supabase (hecha y publicada el 13 oct, PR #12 fusionado por Carlos):** la web usa el proyecto Supabase "multi-bar". Comprobado en real: Carlos entró en el panel y envió pedidos desde la Mesa 1, que llegaron a Supabase (no a Neon). Ver "Base de datos".
 - **Fase C:** el aspecto sale de la ficha del bar (colores, logo, fuentes, textos, funciones activadas, iconos, imagen de WhatsApp); el diseño de La Mar de Gambas pasa a ser la primera plantilla.
 - **Fase D:** panel de autonomIA Lab (alta de bares, casillas, vista previa, publicar) con un rol "plataforma" por encima del admin de cada bar.
 - **Fase E en adelante:** más plantillas (minimalista, fotos grandes…), idiomas, fotos de productos, alérgenos, domicilios… cada una como opción apagada por defecto.
 - Orden acordado: B antes de abrir La Mar de Gambas (con la base casi vacía es más seguro), abrir, y después C y D.
 
-## Multi-Bar: cómo está hecho (Fase B, 12 oct)
+## MultiBar: cómo está hecho (Fase B, 12 oct)
 - Tabla **`bares`**: `slug` (dirección corta, p. ej. `lamardegambas`), `nombre` (se escribe **una sola vez** y sale en carta, panel, tique y títulos), `subtitulo`, `zona_horaria` (para "pedidos de hoy"), `activo` (de baja = sin carta ni login) y `ajustes` (JSON; hoy solo `pie`: las líneas del pie de la carta). La Mar de Gambas es el **bar nº 1**.
 - Pestañas, productos, mesas, pedidos y personal llevan `bar_id`. El id de pestaña y el número de mesa solo son únicos dentro de cada bar (todos pueden tener "Mesa 1").
 - **Enlace / QR:** `/carta/?bar=SLUG&mesa=N&c=CÓDIGO`. Sin `bar=` se usa `BAR_POR_DEFECTO` (`lamardegambas`, en `comun/datos.js`), para que sigan valiendo los enlaces de antes. El panel (Mesas → Copiar enlace) ya da el enlace con `bar=`.
@@ -35,13 +37,13 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - **Probado (12 oct):** la migración sobre una copia de la base de hoy da exactamente el mismo esquema que una instalación nueva; 31 pruebas por SQL como usuario anónimo con dos bares (un bar no ve ni toca pedidos, productos, precios, mesas ni usuarios del otro; QR de un bar no vale en otro; bar de baja sin carta ni login; último admin por bar; correo repetido); y en Chromium a 390 px contra la base local: La Mar de Gambas idéntica píxel a píxel a la v8 (salvo "Carta v9"), pedido en el bar de prueba que solo ve su panel, bar inexistente, enlace antiguo sin `bar=`. Sin errores en consola.
 - **Para dar de alta un bar hoy (hasta la Fase D):** por SQL, con el OK de Carlos: `insert into bares (slug, nombre, subtitulo, ajustes)`, sus pestañas, productos, mesas y un usuario admin (contraseña provisional).
 
-## Pendiente Multi-Bar (12 oct)
+## Pendiente MultiBar (12 oct)
 1. **War300 pausado por Carlos (12 oct)**: queda un hueco gratis en Supabase para el proyecto "multi-bar". Proyectos en su cuenta de Supabase: "Suelos la Giralda" (inactivo), "War300" (activo, a pausar), "autonomIA Lab" (activo, Frankfurt). No tocar ninguno de ellos ni El Recreo.
 2. **Migración a Supabase (hecha y en marcha desde el 13 oct; PR #12 fusionado):** proyecto `multi-bar` (ref `dorunbacwnkwdatfscri`, Frankfurt, organización de Carlos). Tablas, datos (copiados de Neon y comprobados idénticos: carta, 10 mesas con sus mismos códigos, 3 usuarios con sus contraseñas, 5 pedidos de prueba), zona privada y las 22 funciones (firma idéntica a la copia probada). `comun/datos.js` llama a `https://dorunbacwnkwdatfscri.supabase.co/rest/v1/rpc/…` con la clave **publishable** (pública por diseño) en la cabecera `apikey`; ya no hace falta Neon Auth. Antes de fusionar se comprobó que Neon y Supabase eran idénticos. **Neon queda de reserva** (ya no recibe nada desde el 13 oct); se puede pausar o borrar más adelante con el OK de Carlos. Contraseña de admin: el 13 oct se le puso otra provisional en Supabase y Carlos la cambió por una suya. Pendiente: plan Pro (~25 $/mes, copias diarias) antes de abrir; Supabase Auth (recuperar contraseña por correo) y tiempo real más adelante.
    - **Cómo cargar cosas en Supabase desde Claude:** `execute_sql` funciona; `apply_migration` y cualquier SQL que contenga `DELETE` piden una confirmación que en la app de Carlos se cancela sola. Lo que lleve DELETE se le da a Carlos en una página con botón "Copiar" para pegarlo en Supabase → SQL Editor → Run (así se hizo `datos/cambios/2026-10-13-supabase-ultimo-paso.sql`; el aviso rojo "destructive" se confirma con Run). Enlace directo al editor: https://supabase.com/dashboard/project/dorunbacwnkwdatfscri/sql/new
    - Avisos del asesor de seguridad de Supabase esperados (por diseño): "RLS sin políticas" (las tablas están cerradas a propósito) y "funciones security definer ejecutables por anon" (son las 22 ventanillas).
 3. Dominio de la plataforma: **`carta.autonomialab.es`** (aprobado). El dominio está en **DonDominio** (Parking & Zona DNS). Carlos: añadir un registro **CNAME** `carta` → `carloswxht.github.io` sin tocar los demás (correo: mail, pop, smtp, imap, webmail, ftp, bbdd, TXT spf). Ojo: `www` y la raíz apuntan al "parking" de DonDominio (la web www.autonomialab.es aún no está publicada) y hay un comodín `*` también al parking; el registro `carta` concreto manda sobre el comodín. Carlos creó el CNAME el 13 oct. Falta: en GitHub (navegador) Settings → Pages → Custom domain `carta.autonomialab.es` → Save y, cuando salga en verde, Enforce HTTPS. Con Supabase no hace falta dar de alta el dominio en ningún sitio más (la clave pública vale desde cualquier web). GitHub Pages admite UN dominio propio por repositorio: si un bar quiere el suyo, redirección en su registrador o, más adelante, Netlify/Vercel (no Cloudflare).
-4. Carlos: renombrar el repositorio a `multi-bar` (Settings → nombre; el 12 oct seguía llamándose `la-mar-de-gambas`). Después, añadir `multi-bar` a la sesión de Claude (el acceso es por nombre).
+4. **Hecho (13 oct):** repositorio renombrado a `multibar-platform` y añadido a la sesión de Claude. La web de prueba pasa a `carloswxht.github.io/multibar-platform/` (la de `/la-mar-de-gambas/` deja de abrir) hasta activar `carta.autonomialab.es`.
 5. Carlos: etiquetas `carta-v8-estable` y `carta-v9` desde Releases (el proxy de Claude no deja subir etiquetas).
 6. Vistas que faltan (Fase C o cuando Carlos diga): número de pedido por bar (hoy es el número global); iconos y nombre al instalar la app siguen siendo de La Mar de Gambas; vista previa de WhatsApp quitada a petición de Carlos (volverá por bar con una página de entrada por bar); la portada (`index.html`) es la de La Mar de Gambas; colores y fuentes fijos en `comun/estilos.css`; estilos heredados de El Recreo en `carta/carta.css` (bloque THEME los anula).
 7. Otros tipos de negocio (gimnasios…): opinión dada a Carlos el 12 oct: primero hostelería; más adelante un "tipo de negocio" por cliente que active sus funciones.
@@ -86,7 +88,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - [ ] Revisar y explicar a Carlos cada cambio antes de aprobarlo. No dar claves de administrador de producción a Claude Code si no hace falta; usar un proyecto de pruebas.
 
 ## Base de datos y login (Supabase desde el 13 oct; antes Neon)
-- **Supabase** `multi-bar` (Frankfurt): ver "Pendiente Multi-Bar" punto 2. Roles de la web: `anon` (y `authenticated`). pgcrypto está en el esquema `extensions`; `seguridad.sql` crea atajos `privado.crypt/gen_salt/digest/gen_random_bytes`. Desde el contenedor de Claude no se llega a la API de Supabase (proxy): pruebas por SQL (`set local role anon`) y en el navegador con una base local que imita a Supabase.
+- **Supabase** `multi-bar` (Frankfurt): ver "Pendiente MultiBar" punto 2. Roles de la web: `anon` (y `authenticated`). pgcrypto está en el esquema `extensions`; `seguridad.sql` crea atajos `privado.crypt/gen_salt/digest/gen_random_bytes`. Desde el contenedor de Claude no se llega a la API de Supabase (proxy): pruebas por SQL (`set local role anon`) y en el navegador con una base local que imita a Supabase.
 - **Neon** (de reserva desde el 13 oct, la web ya no lo usa): proyecto `la-mar-de-gambas` (id `snowy-moon-50249964`, base `neondb`, Frankfurt, Postgres 17), en la cuenta de Carlos, separado de El Recreo. Data API con `db_anon_role = anonymous` y sin permisos por defecto; Neon Auth activado solo para el **pase anónimo** (JWT) que la Data API exige en cada llamada, con dominio de confianza `https://carloswxht.github.io`. Desde el contenedor de Claude no se llega a la Data API (proxy): las pruebas se hacen por SQL (`set local role anonymous`) y en el navegador con una base Postgres local.
 - **Login del personal propio** (no Neon Auth: sus cookies de otro dominio las bloquea Safari): tabla `staff` (bcrypt con pgcrypto en el esquema `privado`), sesiones en `privado.sesiones` (hash del token, 16 h), 5 fallos = 15 min bloqueado, contraseña provisional obligatoria de cambiar.
 - **Seguridad:** tablas cerradas a la web (RLS, sin permisos). La web solo ejecuta funciones `security definer` de `datos/funciones.sql`, que comprueban bar, rol, código de mesa, precio de la base, límites anti-spam (20 s y 10/h por móvil, 6 cada 10 min por mesa, 30 líneas, 1–20 uds, nota ≤ 140) y limpieza (pedidos > 30 días, notas > 24 h).
@@ -94,7 +96,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Cada cambio en la base va en `datos/cambios/AAAA-MM-DD-nombre.sql` y se aplica solo con el OK de Carlos. Historial completo de fases en `archivo/HISTORIAL.md`.
 
 ## Web y dominios
-- Publicada con GitHub Pages desde `main` (hoy `carloswxht.github.io/la-mar-de-gambas/`; tras renombrar, `/multi-bar/`; luego `carta.autonomialab.es`). Enlaces internos relativos.
+- Publicada con GitHub Pages desde `main` (hoy `carloswxht.github.io/multibar-platform/`; definitiva: `carta.autonomialab.es`). Enlaces internos relativos.
 - `/carta/` = carta de cada bar (`?bar=SLUG`); `/panel/` = panel (`?bar=SLUG` solo para la pantalla de entrar); raíz `index.html` = portada provisional de La Mar de Gambas.
 - **Los QR siempre con el dominio de la plataforma** (nunca github.io), para no reimprimir al cambiar de alojamiento.
 - **Evitar Cloudflare** para lo que ve el cliente (bloqueos de LaLiga en días de fútbol). Probar un día de partido.
@@ -121,7 +123,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Menú (botón naranja abajo) según rol: camarero → Pedidos; barra → + Lista de precios (Hay/Agotado) y Resumen del día; admin → + precios, Mesas (enlace/QR de cada mesa) y Usuarios.
 - Tarjeta de pedido "Pedido nº N", Mesa, hora, "hace N min", líneas con puntos, notas con ⚠, TOTAL. NUEVO → "Aceptar pedido" rosa `#C8375A` + "Servido"; EN PREPARACIÓN → "Marcar como servido" azul `#2556A3` + "Deshacer"; SERVIDO → apagada + "Deshacer". "✎ Modificar pedido" (líneas a 0) y "+ Nuevo pedido" (réplica de la carta dentro del panel). Pasa solo a preparación a los 3 min sin aceptar.
 - Avisos: pitido, vibración (Android), destello, nº de nuevos en el título, Wake Lock. Con la pantalla bloqueada no avisa: tablet fija enchufada.
-- Detalle completo y su historia en `archivo/HISTORIAL.md`. Demo con datos de ejemplo: https://claude.ai/artifact/4KhG8XRaDpR2GxiLqFAW2i (desactualizada desde Multi-Bar).
+- Detalle completo y su historia en `archivo/HISTORIAL.md`. Demo con datos de ejemplo: https://claude.ai/artifact/4KhG8XRaDpR2GxiLqFAW2i (desactualizada desde MultiBar).
 
 ## Estructura de la carta (para tocar sin romper)
 - `loadBar()` pinta nombre, subtítulo, pie y título del bar (base → copia `datos/bares/SLUG/bar.json`). `loadMenu()` (en `carta/carta.js`) carga el menú de la base (`datosCarta.menu`) o, si no responde, de `datos/bares/SLUG/menu.json`; cada producto: `n` (nombre con tamaño), `dn` (nombre a mostrar), `d` (nota), `p` (precio), `size` (Tapa/Plato/Copa/Botella), `only` (solo existe ese tamaño), `sec` (sección original), `dbId` (id único), `agotado` (solo desde la base).
