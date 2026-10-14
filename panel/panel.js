@@ -65,6 +65,7 @@ function pintarBar(info){
 }
 // Antes de entrar: el bar del enlace (lo último que se supo, y luego la base).
 async function pintarBarDelEnlace(){
+  if(!BAR) return; // sin ?bar=… la entrada es neutra: el bar sale al entrar, del usuario
   pintarBar(leerLocal('bar.' + BAR));
   try { const info = await datosCarta.bar(); guardarLocal('bar.' + BAR, info); if(!estado.sesion) pintarBar(info); }
   catch(e) {

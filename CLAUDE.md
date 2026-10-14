@@ -28,8 +28,8 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 ## MultiBar: cómo está hecho (Fase B, 12 oct)
 - Tabla **`bares`**: `slug` (dirección corta, p. ej. `lamardegambas`), `nombre` (se escribe **una sola vez** y sale en carta, panel, tique y títulos), `subtitulo`, `zona_horaria` (para "pedidos de hoy"), `activo` (de baja = sin carta ni login) y `ajustes` (JSON; hoy solo `pie`: las líneas del pie de la carta). La Mar de Gambas es el **bar nº 1**.
 - Pestañas, productos, mesas, pedidos y personal llevan `bar_id`. El id de pestaña y el número de mesa solo son únicos dentro de cada bar (todos pueden tener "Mesa 1").
-- **Enlace / QR:** `/carta/?bar=SLUG&mesa=N&c=CÓDIGO`. Sin `bar=` se usa `BAR_POR_DEFECTO` (`lamardegambas`, en `comun/datos.js`), para que sigan valiendo los enlaces de antes. El panel (Mesas → Copiar enlace) ya da el enlace con `bar=`.
-- **Personal:** cada usuario es de un bar; el correo es único en toda la plataforma (al entrar, el correo dice de qué bar es). El panel pinta el nombre del bar de la sesión; en la pantalla de entrar, el del enlace (`/panel/?bar=SLUG`) o el de por defecto.
+- **Enlace / QR:** `/carta/?bar=SLUG&mesa=N&c=CÓDIGO`. **Sin `bar=` (o con uno mal escrito) no se abre ningún bar: la carta, la página legal y la portada mandan a `https://www.autonomialab.es/`** (decisión de Carlos, 14 oct: un enlace sin bar nunca debe enseñar La Mar de Gambas a otro negocio). Ya no existe bar por defecto (`SIN_BAR_IR_A` en `comun/datos.js`). El panel (Mesas → Copiar enlace) da el enlace con `bar=`.
+- **Personal:** cada usuario es de un bar; el correo es único en toda la plataforma (al entrar, el correo dice de qué bar es). El panel pinta el nombre del bar de la sesión; en la pantalla de entrar, el del enlace (`/panel/?bar=SLUG`) o, sin él, "MultiBar" (neutro).
 - **Base:** `datos/funciones.sql` (nuevo) tiene todas las ventanillas (`create or replace`, se puede volver a ejecutar entera); `seguridad.sql` queda solo con lo que se crea una vez (zona `privado`, sesiones). Ventanilla nueva `carta_bar(bar)`; `carta_menu`, `carta_mesa`, `crear_pedido` y `mis_pedidos` reciben `p_bar`; las del panel se limitan siempre al bar de la sesión. Errores nuevos: `BAR_NO_VALIDO`, `EMAIL_EN_USO`.
 - **Copia de reserva por bar:** `datos/bares/SLUG/menu.json` (antes `datos/menu-datos.json`, movido) y `datos/bares/SLUG/bar.json` (nombre, subtítulo y pie). Si la base dice que el bar no existe o está de baja, la carta no enseña la copia.
 - La carta recuerda en el móvil el nombre del bar (`bar.SLUG`) para pintar la cabecera al momento.
@@ -110,7 +110,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 
 ## Web y dominios
 - Publicada con GitHub Pages desde `main` (`https://carta.autonomialab.es/` desde el 13 oct; `carloswxht.github.io/multibar-platform/` redirige allí). Enlaces internos relativos.
-- `/carta/` = carta de cada bar (`?bar=SLUG`); `/panel/` = panel (`?bar=SLUG` solo para la pantalla de entrar); raíz `index.html` = portada provisional de La Mar de Gambas.
+- `/carta/` = carta de cada bar (`?bar=SLUG`); `/panel/` = panel (`?bar=SLUG` solo para la pantalla de entrar); raíz `index.html` = redirige a www.autonomialab.es (la antigua portada de La Mar de Gambas está en `archivo/portada-lamardegambas.html`). **Ojo:** www.autonomialab.es está hoy en el "parking" de DonDominio; cuando Carlos publique su web, los enlaces sin bar llevarán allí.
 - **Los QR siempre con el dominio de la plataforma** (nunca github.io), para no reimprimir al cambiar de alojamiento: `https://carta.autonomialab.es/carta/?bar=SLUG&mesa=N&c=CÓDIGO` (el panel → Mesas → Copiar enlace ya lo da con este dominio si se abre desde él).
 - **Evitar Cloudflare** para lo que ve el cliente (bloqueos de LaLiga en días de fútbol). Probar un día de partido.
 - Nunca subir claves de administrador al repositorio ni al HTML; solo claves públicas con permisos mínimos.
@@ -148,7 +148,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - La barra inferior y el tique usan clases `.fixed-bottom`, `.dock`, `.panel`.
 
 ## Archivos de este repositorio
-- `index.html` → portada provisional de La Mar de Gambas (raíz).
+- `index.html` → redirige a www.autonomialab.es (raíz).
 - `legal/` → aviso legal y privacidad de cada bar (`?bar=SLUG`).
 - `carta/index.html`, `carta/carta.css`, `carta/carta.js` → la carta, publicada en `/carta/`.
 - `comun/estilos.css` → colores y fuentes comunes de carta y panel. `comun/fuentes/` → Oswald y DM Sans (woff2, licencia OFL).
