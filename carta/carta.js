@@ -37,11 +37,15 @@ async function loadMenu(){
    recuerda en el móvil la última vez; si la base no responde, se usa la
    copia de reserva datos/bares/<bar>/bar.json. */
 let BAR_INFO = null;
+let CARTA_LISTA = false; // true cuando init() ha terminado de pintar la carta
 const barNombreEl = document.getElementById("barNombre");
 const barPieEl = document.getElementById("barPie");
 function pintarBar(info){
   if(!info || !info.nombre) return;
   BAR_INFO = info;
+  // Colores, fuentes, logo, icono para instalar y textos del bar (comun/aspecto.js).
+  Aspecto.aplicar(info, { instalable: true });
+  pintarTextos();
   barNombreEl.textContent = String(info.nombre).toUpperCase();
   if(!document.body.classList.contains("modo-pedir") && !QR_INVALIDO) heroLine.textContent = info.subtitulo || "";
   const pie = (info.ajustes && Array.isArray(info.ajustes.pie)) ? info.ajustes.pie : [info.nombre];
@@ -52,17 +56,29 @@ function pintarBar(info){
   document.getElementById("legalLink").href = "../legal/?bar=" + encodeURIComponent(info.slug || BAR);
   document.title = info.nombre + " · Carta digital";
 }
+// Textos que cada bar puede cambiar (ajustes.aspecto.textos).
+function pintarTextos(){
+  document.getElementById("openCartBtn").textContent = Aspecto.texto("ver_tique");
+  document.getElementById("txtTuTique").textContent = Aspecto.texto("tu_tique");
+  document.getElementById("txtTotal").textContent = Aspecto.texto("total");
+  document.getElementById("pieTique").textContent = document.body.classList.contains("modo-pedir") ? Aspecto.texto("pie_pedir") : Aspecto.texto("pie_mirar");
+  if(CARTA_LISTA) updateCartBar();
+}
 async function loadBar(){
-  pintarBar(leerLocal("bar." + BAR));
+  // Lo recordado de la última vez (solo si ya trae el aspecto del bar: _v 2, carta v12).
+  const recordado = leerLocal("bar." + BAR);
+  if(recordado && recordado._v === 2) pintarBar(recordado);
   let info = null;
   try { info = await conTiempo(datosCarta.bar(), 6000); }
-  catch(e) { if(e.codigo === 'BAR_NO_VALIDO') return; }
+  catch(e) { if(e.codigo === 'BAR_NO_VALIDO'){ document.documentElement.classList.remove("mb-cargando"); return; } }
   if(!info){
     try { const r = await fetch(RESERVA + 'bar.json', { cache: 'no-cache' }); if(r.ok) info = await r.json(); } catch(e) { /* sin reserva */ }
   } else {
-    guardarLocal("bar." + BAR, info);
+    guardarLocal("bar." + BAR, Object.assign({ _v: 2 }, info));
   }
   pintarBar(info);
+  // Sin base ni copia de reserva: se enseña la carta igualmente (con lo que haya).
+  if(!info) document.documentElement.classList.remove("mb-cargando");
 }
 
 /* ---------------- STATE ---------------- */
@@ -365,13 +381,13 @@ function updateCartBar(){
   cartTotalLbl.textContent = money(currentTotal);
   renderPanel(lines, grandTotal);
   // Sin productos: de la barra de enviar solo queda una línea fina encima de la barra azul
-  bottomSendBtn.textContent = enviando ? "Enviando…" : (count === 0 ? "" : "Enviar pedido a barra");
+  bottomSendBtn.textContent = enviando ? "Enviando…" : (count === 0 ? "" : Aspecto.texto("enviar"));
   bottomSendBtn.classList.toggle("idle", count === 0 && !enviando);
   bottomSendBtn.style.display = "block";
   bottomSendBtn.style.pointerEvents = count === 0 ? "none" : "auto";
   bottomSendBtn.setAttribute("aria-hidden", count === 0 ? "true" : "false");
   bottomSendBtn.tabIndex = count === 0 ? -1 : 0;
-  sendBtn.textContent = enviando ? "ENVIANDO…" : (count > 0 ? "ENVIAR PEDIDO A BARRA" : (rounds.length ? "PEDIR ALGO MÁS" : "ESCOGE TUS PRODUCTOS"));
+  sendBtn.textContent = enviando ? "ENVIANDO…" : (count > 0 ? Aspecto.texto("enviar").toUpperCase() : (rounds.length ? "PEDIR ALGO MÁS" : "ESCOGE TUS PRODUCTOS"));
   sendBtn.disabled = bottomSendBtn.disabled = enviando;
   updateTabBadges();
 }
@@ -415,7 +431,7 @@ function renderPanel(lines, total){
   panelBody.innerHTML = "";
 
   if(rounds.length === 0 && lines.length === 0){
-    panelBody.innerHTML = `<div class="cart-empty">TIQUE VACÍO<br>Marca algo del menú para empezar.</div>`;
+    panelBody.innerHTML = `<div class="cart-empty">TIQUE VACÍO<br>${esc(Aspecto.texto("tique_vacio"))}</div>`;
     panelTotal.textContent = money(total);
     return;
   }
@@ -643,6 +659,7 @@ let QR_INVALIDO = false;
 function activarPedidos(m){
   MESA = m;
   document.body.classList.add("modo-pedir");
+  pintarTextos();
   pintarMesa();
 }
 // Control de mesas (opción del bar): si el camarero no ha abierto la mesa,
@@ -666,6 +683,7 @@ function desactivarPedidos(){
   MESA = null;
   rounds.length = 0;
   document.body.classList.remove("modo-pedir");
+  pintarTextos();
   QR_INVALIDO = true;
   heroLine.innerHTML = '<b class="mesa-tag">QR no válido</b> · Avisa al camarero';
 }
@@ -683,6 +701,7 @@ async function comprobarMesa(){
 /* ---------------- INIT ---------------- */
 async function init(){
   menuEl.innerHTML = `<div class="cart-empty" style="padding:40px 0;">Cargando la carta...</div>`;
+  pintarTextos();
   loadBar();
   const mesaLista = comprobarMesa();
   try {
@@ -696,6 +715,7 @@ async function init(){
     menuEl.innerHTML = `<div class="cart-empty" style="padding:40px 0;">No se pudo cargar la carta.<br>Comprueba tu conexión y recarga la página.<br><span style="font-size:10px;">${esc(err.message)}</span></div>`;
   }
   await mesaLista;
+  CARTA_LISTA = true;
   updateCartBar();
 }
 init();

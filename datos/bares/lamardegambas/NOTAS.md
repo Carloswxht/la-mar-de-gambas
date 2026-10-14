@@ -18,6 +18,8 @@
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
 - Los estilos de la carta están en `carta/carta.css`: un bloque `THEME` al final anula los estilos heredados de la carta de El Recreo (tema dorado).
 
+- **Fase C (14 oct, carta v12):** su aspecto ya no está en el código sino en `ajustes.aspecto` (aplicado en Supabase y copiado en `bar.json`): azul marino `#14295E`/`#0E1F4D`, naranja `#F08A3E`/`#D9722A`, fondo blanco, texto `#0F1E45`, Oswald + DM Sans, nombre en letras (sin logo) e icono `icono-512.png` de esta carpeta. Se ve idéntica a la v11. Para poner el logo de la gamba: subirlo a Supabase Storage (`logos/lamardegambas.png`) y poner `logo` y `cabecera` en sus ajustes.
+
 ## Pestañas (9)
 **Café y bebidas · Cervezas y copas** · Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.
 - Las dos de bebidas van **primero** porque es lo primero que pide la gente (decisión de Carlos, 11 oct). Se añadieron con `datos/cambios/2026-10-11-bebidas.sql` (ids 106–139):

@@ -261,7 +261,7 @@ footer{ text-align:center; padding:30px 22px 16px; color:var(--ink-soft); font-s
   --paper:#FAF7F2; --paper-2:#F2EDE4; --ink:#141414; --ink-soft:rgba(20,20,20,0.58);
   --stamp:#141414; --stamp-dark:#000; --gold:#B89A5E; --line:rgba(20,20,20,0.13);
 }
-*, button, input{ font-family:'DM Sans',-apple-system,'Segoe UI',Roboto,sans-serif !important; }
+*, button, input{ font-family:var(--font-texto) !important; }
 .serif, .ticket-head .store, .li-name, .panel-head h2, .cart-row .cr-name{ font-family:'Playfair Display',Georgia,'Times New Roman',serif !important; }
 body{ background:var(--paper); color:var(--ink); }
 .paper{ background:var(--paper); }
@@ -358,7 +358,7 @@ footer{ padding:34px 24px 20px; font-size:10.5px; letter-spacing:0.04em; }
 .ticket-head{ padding:12px 22px 4px; }
 .ticket-head .store{ font-size:19px; letter-spacing:0.32em; padding-left:0.32em; }
 .hero-line{ font-size:10px; margin:5px 0 0; letter-spacing:0.24em; }
-.hero-line .mesa-tag{ color:#FAF7F2; font-weight:700; }
+.hero-line .mesa-tag{ color:var(--sobre-principal-crema, #FAF7F2); font-weight:700; }
 .cat-tabs{ padding-top:6px; }
 .cat-tab{ padding:10px 13px 9px; }
 .cat-tab.active{ padding-top:9px; }
@@ -373,8 +373,8 @@ footer{ padding:34px 24px 20px; font-size:10.5px; letter-spacing:0.04em; }
 .li-sub{ font-size:12.5px; color:rgba(20,20,20,0.72); }
 .li-allergens{ font-size:12px; color:rgba(20,20,20,0.75); }
 .li-price{ font-size:14.5px; }
-.ver-btn{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:rgba(20,20,20,0.75); border-bottom:none; border:1px solid rgba(20,20,20,0.28); border-radius:999px; padding:4px 9px 4px 8px; }
-.ver-btn.on{ background:#141414; color:#FAF7F2; border-color:#141414; }
+.ver-btn{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:rgba(var(--ink-rgb, 20,20,20),0.75); border-bottom:none; border:1px solid rgba(var(--ink-rgb, 20,20,20),0.28); border-radius:999px; padding:4px 9px 4px 8px; }
+.ver-btn.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
 .li-pricerow{ gap:12px; align-items:center; }
 
 
@@ -390,42 +390,45 @@ footer{ padding:34px 24px 20px; font-size:10.5px; letter-spacing:0.04em; }
 
 /* ===== La Mar de Gambas ===== */
 .li-connector, .al-info, .al-note, .top-send, .send-btn, .panel-foot .note{ display:none !important; }
-.panel-foot::after{ content:'Enséñale este tique al camarero para pedir.'; display:block; text-align:center; font-size:12px; opacity:.75; margin-top:8px; }
 .cat-head{ display:none !important; }
-.li-sublab{ font-family:'DM Sans',sans-serif; font-size:14.5px; color:rgba(20,20,20,.85); }
-.vgroup{ border-bottom:1px solid rgba(20,20,20,.13); padding-bottom:6px; }
+.li-sublab{ font-family:var(--font-texto); font-size:14.5px; color:var(--ink); }
+.vgroup{ border-bottom:1px solid var(--line); padding-bottom:6px; }
 .vgroup > .vhead{ padding:14px 0 2px; }
-.vgroup > .vhead .li-name{ font-family:'Playfair Display',serif; font-weight:600; font-size:19px; }
+.vgroup > .vhead .li-name{ font-family:var(--font-titulos); font-weight:600; font-size:19px; }
 .vgroup > .vhead .li-sub{ display:block; margin-top:2px; }
 .vgroup .line-item{ border:none !important; padding:6px 0; }
 .vgroup .li-main{ flex-direction:row !important; align-items:baseline; gap:14px !important; flex-wrap:wrap; }
 .vgroup .li-pricerow{ margin-left:auto; padding-right:10px; }
 .vgroup .li-name-row{ min-width:92px; }
-.sec-cap{ font-family:'DM Sans',sans-serif; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#B89A5E; font-weight:600; padding:18px 0 0; }
+.sec-cap{ font-family:var(--font-texto); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:600; padding:18px 0 0; }
 .sec-cap:first-child, .size-toggle + .sec-cap{ padding-top:8px; }
 
-/* ===== v5: colores del local (azul marino + naranja) ===== */
+/* ===== v5: colores del local (azul marino + naranja) =====
+   Desde la Fase C (carta v12) estos valores son solo los de reserva: cada
+   bar pone los suyos (comun/aspecto.js, ajustes.aspecto en la base). Los
+   colores y fuentes de aquí abajo van siempre con var(--…), nunca fijos. */
 :root{ --navy:#14295E; --navy-2:#0E1F4D; --orange:#F08A3E; --orange-d:#D9722A; --paper:#FFFFFF; --paper-2:#F3F6FB;
-       --ink:#0F1E45; --ink-soft:rgba(15,30,69,.64); --stamp:#F08A3E; --line:rgba(15,30,69,.11); --gold:#F08A3E; }
-html,body{ background:#fff; }
-body{ font-family:'DM Sans',-apple-system,'Segoe UI',Roboto,sans-serif; color:var(--ink); }
+       --ink:#0F1E45; --ink-soft:rgba(15,30,69,.64); --stamp:#F08A3E; --line:rgba(15,30,69,.11); --gold:#F08A3E;
+       --sobre-principal:#FFFFFF; --sobre-acento:#FFFFFF; }
+html,body{ background:var(--paper); }
+body{ font-family:var(--font-texto); color:var(--ink); }
 .sticky-top{ background:var(--navy) !important; border-bottom:0 !important; box-shadow:0 6px 18px rgba(10,20,55,.28) !important; }
 .ticket-head{ padding:16px 22px 10px !important; }
-.ticket-head .store{ font-family:'Oswald','DM Sans',sans-serif !important; font-weight:700 !important; font-size:27px !important; letter-spacing:.07em !important; color:#fff !important; padding-left:0 !important; }
-.hero-line{ font-family:'Oswald','DM Sans',sans-serif !important; color:var(--orange) !important; font-size:12px !important; font-weight:500 !important; letter-spacing:.24em !important; margin-top:4px !important; }
+.ticket-head .store{ font-family:var(--font-titulos) !important; font-weight:700 !important; font-size:27px !important; letter-spacing:.07em !important; color:var(--sobre-principal) !important; padding-left:0 !important; }
+.hero-line{ font-family:var(--font-titulos) !important; color:var(--acento-sobre-principal, var(--orange)) !important; font-size:12px !important; font-weight:500 !important; letter-spacing:.24em !important; margin-top:4px !important; }
 .cat-tabs-wrap{ background:var(--navy-2) !important; border-top:0 !important; }
-.cat-tabs{ padding:0 8px !important; gap:2px !important; align-items:stretch !important; border-top:1px solid rgba(255,255,255,.08) !important; }
-.cat-tab{ background:transparent !important; border-radius:0 !important; color:rgba(255,255,255,.68) !important; font-family:'DM Sans',sans-serif !important; font-size:12px !important; font-weight:700 !important; letter-spacing:.09em !important; padding:14px 13px 12px !important; border-top:0 !important; border-bottom:3px solid transparent !important; box-shadow:none !important; }
-.cat-tab.active{ color:#fff !important; border-bottom-color:var(--orange) !important; background:rgba(255,255,255,.07) !important; }
-.cat-tab .tab-badge, .cat-tab.active .tab-badge{ background:var(--orange) !important; color:#fff !important; font-weight:700; }
+.cat-tabs{ padding:0 8px !important; gap:2px !important; align-items:stretch !important; border-top:1px solid rgba(var(--sobre-principal-rgb, 255,255,255),.08) !important; }
+.cat-tab{ background:transparent !important; border-radius:0 !important; color:rgba(var(--sobre-principal-rgb, 255,255,255),.68) !important; font-family:var(--font-texto) !important; font-size:12px !important; font-weight:700 !important; letter-spacing:.09em !important; padding:14px 13px 12px !important; border-top:0 !important; border-bottom:3px solid transparent !important; box-shadow:none !important; }
+.cat-tab.active{ color:var(--sobre-principal) !important; border-bottom-color:var(--orange) !important; background:rgba(var(--sobre-principal-rgb, 255,255,255),.07) !important; }
+.cat-tab .tab-badge, .cat-tab.active .tab-badge{ background:var(--orange) !important; color:var(--sobre-acento) !important; font-weight:700; }
 #menu{ padding:0 20px !important; }
 .cat-panel{ padding:6px 0 4px !important; }
 .line-item{ padding:16px 0 !important; border-bottom:1px solid var(--line) !important; }
-.li-name{ font-family:'DM Sans',sans-serif !important; font-weight:700 !important; font-size:16.5px !important; line-height:1.25; color:var(--ink) !important; letter-spacing:0 !important; }
+.li-name{ font-family:var(--font-texto) !important; font-weight:700 !important; font-size:16.5px !important; line-height:1.25; color:var(--ink) !important; letter-spacing:0 !important; }
 .li-sub{ font-size:13px !important; color:var(--ink-soft) !important; line-height:1.35; }
-.li-sublab{ font-family:'DM Sans',sans-serif !important; font-size:14.5px !important; font-weight:600; color:var(--ink) !important; }
-.li-price{ font-family:'DM Sans',sans-serif !important; font-size:16px !important; font-weight:700 !important; color:var(--navy) !important; letter-spacing:0 !important; font-variant-numeric:tabular-nums; }
-.sec-cap{ font-family:'Oswald','DM Sans',sans-serif !important; font-size:21px !important; font-weight:600 !important; letter-spacing:.05em !important; color:var(--navy) !important; text-transform:uppercase !important; padding:26px 0 10px !important; position:relative; border-bottom:1px solid var(--line); }
+.li-sublab{ font-family:var(--font-texto) !important; font-size:14.5px !important; font-weight:600; color:var(--ink) !important; }
+.li-price{ font-family:var(--font-texto) !important; font-size:16px !important; font-weight:700 !important; color:var(--navy-texto, var(--navy)) !important; letter-spacing:0 !important; font-variant-numeric:tabular-nums; }
+.sec-cap{ font-family:var(--font-titulos) !important; font-size:21px !important; font-weight:600 !important; letter-spacing:.05em !important; color:var(--navy-texto, var(--navy)) !important; text-transform:uppercase !important; padding:26px 0 10px !important; position:relative; border-bottom:1px solid var(--line); }
 .sec-cap::after{ content:""; position:absolute; left:0; bottom:-1px; width:44px; height:3px; background:var(--orange); }
 .cat-panel .sec-cap:first-child{ padding-top:18px !important; }
 .vgroup{ border-bottom:1px solid var(--line) !important; padding-bottom:6px !important; }
@@ -433,70 +436,68 @@ body{ font-family:'DM Sans',-apple-system,'Segoe UI',Roboto,sans-serif; color:va
 .vgroup > .vhead .li-name{ font-size:16.5px !important; }
 .vgroup .line-item{ padding:7px 0 !important; border:0 !important; }
 .vgroup .li-main{ align-items:center !important; }
-.bracket-add{ width:42px !important; height:42px !important; border:0 !important; background:var(--orange) !important; color:#fff !important; font-size:26px !important; font-weight:500 !important; border-radius:50% !important; box-shadow:0 2px 6px rgba(240,138,62,.35); }
+.bracket-add{ width:42px !important; height:42px !important; border:0 !important; background:var(--orange) !important; color:var(--sobre-acento) !important; font-size:26px !important; font-weight:500 !important; border-radius:50% !important; box-shadow:0 2px 6px rgba(var(--acento-rgb, 240,138,62),.35); }
 .bracket-add:active{ background:var(--orange-d) !important; }
-.bracket-stepper .q{ font-size:17px !important; font-weight:700 !important; color:var(--navy); }
+.bracket-stepper .q{ font-size:17px !important; font-weight:700 !important; color:var(--navy-texto, var(--navy)); }
 .bracket-stepper .btn-pair{ border:1.5px solid var(--orange) !important; border-radius:999px !important; }
-.bracket-stepper .btn-pair button{ width:40px !important; height:40px !important; color:var(--orange) !important; background:transparent !important; font-size:22px !important; font-weight:600 !important; }
-.bracket-stepper .btn-pair button.plus{ background:var(--orange) !important; color:#fff !important; }
-.note-input{ font-family:'DM Sans',sans-serif !important; font-size:14px !important; }
+.bracket-stepper .btn-pair button{ width:40px !important; height:40px !important; color:var(--acento-texto, var(--orange)) !important; background:transparent !important; font-size:22px !important; font-weight:600 !important; }
+.bracket-stepper .btn-pair button.plus{ background:var(--orange) !important; color:var(--sobre-acento) !important; }
+.note-input{ font-family:var(--font-texto) !important; font-size:14px !important; }
 .fixed-bottom{ background:transparent !important; }
 .dock{ background:var(--navy) !important; border-top:0 !important; box-shadow:0 -8px 24px rgba(10,20,55,.25); }
 .dock-inner{ padding:12px 20px 16px !important; }
-.dock .lbl{ color:rgba(255,255,255,.7) !important; font-size:11px !important; letter-spacing:.12em !important; }
-.dock .amt{ font-family:'Oswald','DM Sans',sans-serif !important; color:#fff !important; font-size:25px !important; font-weight:600 !important; }
-.dock .cta{ background:var(--orange) !important; color:#fff !important; border:0 !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-weight:700 !important; font-size:13px !important; letter-spacing:.1em !important; padding:15px 24px !important; }
+.dock .lbl{ color:rgba(var(--sobre-principal-rgb, 255,255,255),.7) !important; font-size:11px !important; letter-spacing:.12em !important; }
+.dock .amt{ font-family:var(--font-titulos) !important; color:var(--sobre-principal) !important; font-size:25px !important; font-weight:600 !important; }
+.dock .cta{ background:var(--orange) !important; color:var(--sobre-acento) !important; border:0 !important; border-radius:12px !important; font-family:var(--font-texto) !important; font-weight:700 !important; font-size:13px !important; letter-spacing:.1em !important; padding:15px 24px !important; }
 .dock .cta:active{ background:var(--orange-d) !important; }
-.panel{ background:#fff !important; border-radius:22px 22px 0 0 !important; }
+.panel{ background:var(--paper) !important; border-radius:22px 22px 0 0 !important; }
 .panel-head{ border-bottom:1px solid var(--line) !important; }
-.panel-head h2{ font-family:'Oswald','DM Sans',sans-serif !important; color:var(--navy) !important; font-size:21px !important; font-weight:600 !important; letter-spacing:.1em !important; }
-.panel-close{ border:1.5px solid var(--navy) !important; color:var(--navy) !important; }
+.panel-head h2{ font-family:var(--font-titulos) !important; color:var(--navy-texto, var(--navy)) !important; font-size:21px !important; font-weight:600 !important; letter-spacing:.1em !important; }
+.panel-close{ border:1.5px solid var(--navy-texto, var(--navy)) !important; color:var(--navy-texto, var(--navy)) !important; }
 .panel-foot{ border-top:1px solid var(--line) !important; }
 .panel-foot .barcode{ display:none !important; }
-.total-row{ color:var(--navy); }
-.total-row .amt{ font-family:'Oswald','DM Sans',sans-serif !important; color:var(--navy) !important; font-size:26px !important; }
-.panel-foot::after{ color:var(--ink-soft); opacity:1 !important; }
+.total-row{ color:var(--navy-texto, var(--navy)); }
+.total-row .amt{ font-family:var(--font-titulos) !important; color:var(--navy-texto, var(--navy)) !important; font-size:26px !important; }
 footer{ color:var(--ink-soft) !important; font-size:12px !important; padding-bottom:30px !important; }
 body{ padding-bottom:110px !important; }
-.cart-row .cr-name, .photo-card .pc-name{ font-family:'DM Sans',sans-serif !important; font-weight:600 !important; font-size:14.5px !important; color:var(--ink); min-width:0; overflow-wrap:anywhere; }
+.cart-row .cr-name, .photo-card .pc-name{ font-family:var(--font-texto) !important; font-weight:600 !important; font-size:14.5px !important; color:var(--ink); min-width:0; overflow-wrap:anywhere; }
 .cart-row{ gap:12px; } .cart-row .cr-name{ flex:1; }
 .cart-row > *:last-child{ flex:none; white-space:nowrap; }
-.stamp-mark{ font-family:'Oswald',sans-serif !important; color:var(--navy) !important; border-color:var(--orange) !important; }
+.stamp-mark{ font-family:var(--font-titulos) !important; color:var(--navy-texto, var(--navy)) !important; border-color:var(--orange) !important; }
 
 /* ===== v6: pedidos desde la mesa (Fase 5) =====
    Sin QR válido (modo "solo mirar") los botones de enviar siguen ocultos y
    el tique se enseña al camarero. Con QR de mesa el body lleva .modo-pedir. */
 body.modo-pedir .top-send, body.modo-pedir .send-btn{ display:block !important; }
-body.modo-pedir .panel-foot::after{ content:'El pedido llega directo a la barra.'; }
-.fixed-bottom .top-send{ background:var(--orange) !important; color:#fff !important; border:0 !important; box-shadow:0 -6px 16px rgba(10,20,55,.18) !important; font-family:'DM Sans',sans-serif !important; font-size:13px !important; font-weight:700 !important; letter-spacing:.14em !important; padding:15px !important; cursor:pointer; }
+.fixed-bottom .top-send{ background:var(--orange) !important; color:var(--sobre-acento) !important; border:0 !important; box-shadow:0 -6px 16px rgba(10,20,55,.18) !important; font-family:var(--font-texto) !important; font-size:13px !important; font-weight:700 !important; letter-spacing:.14em !important; padding:15px !important; cursor:pointer; }
 .fixed-bottom .top-send:active{ background:var(--orange-d) !important; }
 .fixed-bottom .top-send.idle{ background:var(--navy) !important; }
-.send-btn{ background:var(--orange) !important; color:#fff !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-size:14px !important; font-weight:700 !important; letter-spacing:.1em !important; padding:16px !important; }
+.send-btn{ background:var(--orange) !important; color:var(--sobre-acento) !important; border-radius:12px !important; font-family:var(--font-texto) !important; font-size:14px !important; font-weight:700 !important; letter-spacing:.1em !important; padding:16px !important; }
 .send-btn:active{ background:var(--orange-d) !important; }
 .send-btn:disabled, .fixed-bottom .top-send:disabled{ opacity:.65; cursor:default; }
 
 /* Estado de cada pedido en el tique */
-.round-label{ font-family:'DM Sans',sans-serif !important; font-size:11.5px !important; font-weight:700 !important; letter-spacing:.1em !important; color:var(--ink-soft) !important; gap:10px; flex-wrap:wrap; }
+.round-label{ font-family:var(--font-texto) !important; font-size:11.5px !important; font-weight:700 !important; letter-spacing:.1em !important; color:var(--ink-soft) !important; gap:10px; flex-wrap:wrap; }
 .round-label.current{ color:#C25E14 !important; }
 .round-label.est-enviado{ color:#C25E14 !important; }
 .round-label.est-prep{ color:#2556A3 !important; }
 .round-label.est-servido{ color:#2E7D4F !important; }
 .round-label .cuenta{ font-weight:500; letter-spacing:.02em; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
-.cart-row.quitado .cr-name, .cart-row.quitado .cr-price{ color:rgba(15,30,69,.35) !important; font-weight:400 !important; text-decoration:line-through; }
+.cart-row.quitado .cr-name, .cart-row.quitado .cr-price{ color:rgba(var(--ink-rgb, 15,30,69),.35) !important; font-weight:400 !important; text-decoration:line-through; }
 .cr-stepper{ border:1.5px solid var(--orange) !important; border-radius:999px !important; overflow:hidden; }
-.cr-stepper button{ width:38px !important; height:36px !important; background:#fff !important; color:var(--orange) !important; font-family:'DM Sans',sans-serif !important; font-size:20px !important; }
-.cr-stepper button.plus{ background:var(--orange) !important; color:#fff !important; }
+.cr-stepper button{ width:38px !important; height:36px !important; background:var(--paper) !important; color:var(--acento-texto, var(--orange)) !important; font-family:var(--font-texto) !important; font-size:20px !important; }
+.cr-stepper button.plus{ background:var(--orange) !important; color:var(--sobre-acento) !important; }
 .cart-row .cr-main, .cart-row .cr-name-row{ min-width:0; }
 .cart-row .cr-name{ white-space:normal !important; }
 .panel-body.ocupado .cr-stepper{ opacity:.45; pointer-events:none; }
 
 /* Agotados (los marca la barra desde el panel) */
-.line-item.agotado .li-name, .line-item.agotado .li-sublab, .line-item.agotado .li-sub, .line-item.agotado .li-price{ color:rgba(15,30,69,.38) !important; }
-.li-agotado{ display:none; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(15,30,69,.55); border:1px solid rgba(15,30,69,.2); border-radius:999px; padding:6px 10px; white-space:nowrap; }
+.line-item.agotado .li-name, .line-item.agotado .li-sublab, .line-item.agotado .li-sub, .line-item.agotado .li-price{ color:rgba(var(--ink-rgb, 15,30,69),.38) !important; }
+.li-agotado{ display:none; font-family:var(--font-texto); font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(var(--ink-rgb, 15,30,69),.55); border:1px solid rgba(var(--ink-rgb, 15,30,69),.2); border-radius:999px; padding:6px 10px; white-space:nowrap; }
 
 /* Avisos (pedido enviado, errores) */
 .confirm-card p{ font-size:14px !important; color:var(--ink) !important; }
-.confirm-card button{ background:var(--orange) !important; color:#fff !important; border:0 !important; border-radius:12px !important; font-family:'DM Sans',sans-serif !important; font-size:14px !important; padding:12px 30px !important; }
+.confirm-card button{ background:var(--orange) !important; color:var(--sobre-acento) !important; border:0 !important; border-radius:12px !important; font-family:var(--font-texto) !important; font-size:14px !important; padding:12px 30px !important; }
 
 footer .version{ margin-top:8px; font-size:11px; opacity:.7; letter-spacing:.06em; }
 
@@ -507,3 +508,12 @@ footer .firma a{ color:inherit; text-decoration:none; font-weight:600; }
 /* Enlace al aviso legal y privacidad (v10) */
 footer .legal-enlace{ margin-top:10px; }
 footer .legal-enlace a{ color:inherit; text-decoration:underline; text-underline-offset:2px; }
+
+/* ===== v12 (Fase C): logo del bar y pie del tique, desde los ajustes del bar ===== */
+.bar-logo{ display:block; margin:0 auto 6px; max-width:70%; max-height:56px; width:auto; height:auto; object-fit:contain; }
+.bar-logo[hidden], .store[hidden]{ display:none !important; }
+.bar-logo:only-child, .ticket-head .bar-logo + .store[hidden]{ margin-bottom:0; }
+.panel-foot .pie-tique{ display:block; text-align:center; font-size:12px; margin:8px 0 0; color:var(--ink-soft); }
+.panel-foot .pie-tique:empty{ display:none; }
+/* Mientras la carta no sabe el aspecto del bar (primera visita), no se enseña. */
+html.mb-cargando body{ visibility:hidden; }

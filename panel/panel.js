@@ -55,6 +55,8 @@ let NOMBRE_BAR = '';
 function pintarBar(info){
   if(!info || !info.nombre) return;
   NOMBRE_BAR = String(info.nombre);
+  // Colores, fuentes y logo del bar (comun/aspecto.js); el diseño del panel es el mismo para todos.
+  Aspecto.aplicar(info, { panel: true });
   $('cLocal').textContent = NOMBRE_BAR;
   $('nvLocal').textContent = NOMBRE_BAR.toUpperCase();
   $('lLocal').textContent = NOMBRE_BAR;

@@ -12,6 +12,11 @@
 <title>Aviso legal y privacidad</title>
 <link rel="stylesheet" href="../comun/estilos.css">
 <link rel="stylesheet" href="legal.css">
+<script src="../comun/aspecto.js"></script>
+<script>
+(function(){ var i = null; try { var b = (new URLSearchParams(location.search).get('bar') || '').trim().toLowerCase(); i = JSON.parse(localStorage.getItem('bar.' + b)); } catch(e) {}
+  if(i && i._v === 2) Aspecto.aplicar(i); })();
+</script>
 </head>
 <body>
 
@@ -21,7 +26,8 @@
      opcionales, telefono y registro. Sin esos datos, la página lo dice. -->
 <header class="cab">
   <a class="volver" id="volver" href="../carta/">← Volver a la carta</a>
-  <div class="local" id="local">&nbsp;</div>
+  <img class="logo" data-logo-bar alt="" hidden>
+  <div class="local" id="local" data-nombre-bar>&nbsp;</div>
   <h1>Aviso legal y privacidad</h1>
   <nav class="indice"><a href="#aviso">Aviso legal</a><a href="#privacidad">Privacidad</a></nav>
 </header>
