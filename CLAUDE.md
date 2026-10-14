@@ -6,6 +6,24 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 
 **Cómo están las notas:** este archivo = la plataforma (reglas, cómo funciona, pendientes generales). Cada bar tiene su ficha en `datos/bares/SLUG/NOTAS.md`. Las notas antiguas están en `archivo/HISTORIAL.md`.
 
+## Dónde lo dejamos (14 oct, para seguir en otra conversación)
+- **En marcha en `https://carta.autonomialab.es`** (GitHub Pages desde `main`, base Supabase `multi-bar`). Último PR fusionado: **#17** (panel instalable). Carta **v11**.
+- Publicado y funcionando:
+  - Carta por bar (`/carta/?bar=SLUG&mesa=N&c=CÓDIGO`) y página de MultiBar en la raíz para cualquier enlace sin bar (PR #16).
+  - Aviso legal y privacidad (`legal/`, v10).
+  - Control de mesas (v11; **apagado** en La Mar de Gambas).
+  - Panel instalable como aplicación (campana naranja, «Panel»; PR #17).
+- **Esperando a Carlos:**
+  1. Probar en su Android la app del panel. Es un Samsung, y antes «Instalar aplicación» no creaba ningún icono. Pasos para probar: borrar el acceso antiguo, abrir `/panel/?bar=lamardegambas`, ⋮ → Instalar aplicación.
+  2. Decir «enciende el control de mesas» → `update bares set ajustes = ajustes || '{"control_mesas": true}' where slug = 'lamardegambas';` con `execute_sql`. Antes hay que avisarle de que el personal tendrá que abrir cada mesa en «Abrir mesas».
+  3. «Dame el contrato» → entregarle el borrador de la rama `borrador-contrato` (ver Pendiente 8).
+  4. Antes de abrir el local, ver la ficha del bar (`datos/bares/lamardegambas/NOTAS.md` → Pendiente).
+- **Ojo al fusionar:** comprobar en `main` que el PR lleva todos los commits de la rama. El 14 oct, Carlos fusionó el #15 antes de que llegara el último commit, y la raíz siguió enseñando la portada vieja hasta el #16.
+- **Lo que Claude puede hacer y lo que no:**
+  - Puede fusionar PRs con `merge_pull_request`, siempre con el OK de Carlos.
+  - No puede subir etiquetas de git.
+  - No llega a supabase.co ni a carta.autonomialab.es desde el contenedor: las pruebas se hacen con la base local y Playwright, con el Chromium en `/opt/pw-browsers` y playwright en `/opt/node-tools/node_modules/playwright`.
+
 ## La idea de la plataforma (Carlos, 12 oct)
 - La Mar de Gambas debe seguir funcionando y viéndose como ahora y salir a operar cuanto antes: es lo más importante.
 - Una sola base para todos los bares; nadie ve los datos de otro. Cada bar: su carta, sus mesas, sus pedidos y su personal.
@@ -14,12 +32,14 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Lo que pida un cliente se añade como **opción para todos, desactivada por defecto**, no como arreglo para uno.
 - No tener en cuenta datos fiscales ni TPV por ahora. No borrar nada: lo antiguo se mueve a una carpeta de archivo.
 - Repositorio renombrado a **`multibar-platform`** (13 oct); el producto se llama **MultiBar**.
+- Modelo de negocio: servicio con cuota mensual sobre la plataforma de Carlos (ver Pendiente 8).
 - Firma pequeña "Carta digital por autonomIA Lab" (enlace a www.autonomialab.es) en el pie de cada carta y "Panel por autonomIA Lab" en la entrada del panel (12 oct).
 
 ## Plan por fases de la plataforma
 - **Fase A (hecha 12–13 oct):** notas separadas (este archivo = plataforma; `datos/bares/SLUG/NOTAS.md` = cada bar; `archivo/HISTORIAL.md` = notas antiguas); `versiones/` y `og-gambas5.jpg` a `archivo/`; `fotos-cartas/` a `datos/bares/lamardegambas/`. Repositorio renombrado a `multibar-platform` el 13 oct.
 - **Fase B (hecha y publicada el 12 oct, PR #11 fusionado por Carlos; base de Neon cambiada y comprobada):** "bar" en la base. Ver "MultiBar: cómo está hecho".
 - **Migración a Supabase (hecha y publicada el 13 oct, PR #12 fusionado por Carlos):** la web usa el proyecto Supabase "multi-bar". Comprobado en real: Carlos entró en el panel y envió pedidos desde la Mesa 1, que llegaron a Supabase (no a Neon). Ver "Base de datos".
+- **Hecho después (13–14 oct, PR #13–#17):** dominio `carta.autonomialab.es`; aviso legal y privacidad (v10); control de mesas (v11); enlaces sin bar → página de MultiBar; panel instalable como aplicación.
 - **Fase C:** el aspecto sale de la ficha del bar (colores, logo, fuentes, textos, funciones activadas, iconos, imagen de WhatsApp); el diseño de La Mar de Gambas pasa a ser la primera plantilla.
 - **Fase D:** panel de autonomIA Lab (alta de bares, casillas, vista previa, publicar) con un rol "plataforma" por encima del admin de cada bar.
 - **Fase E en adelante:** más plantillas (minimalista, fotos grandes…), idiomas, fotos de productos, alérgenos, domicilios… cada una como opción apagada por defecto.
@@ -42,12 +62,12 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 2. **Migración a Supabase (hecha y en marcha desde el 13 oct; PR #12 fusionado):** proyecto `multi-bar` (ref `dorunbacwnkwdatfscri`, Frankfurt, organización de Carlos). Tablas, datos (copiados de Neon y comprobados idénticos: carta, 10 mesas con sus mismos códigos, 3 usuarios con sus contraseñas, 5 pedidos de prueba), zona privada y las 22 funciones (firma idéntica a la copia probada). `comun/datos.js` llama a `https://dorunbacwnkwdatfscri.supabase.co/rest/v1/rpc/…` con la clave **publishable** (pública por diseño) en la cabecera `apikey`; ya no hace falta Neon Auth. Antes de fusionar se comprobó que Neon y Supabase eran idénticos. **Neon queda de reserva** (ya no recibe nada desde el 13 oct); se puede pausar o borrar más adelante con el OK de Carlos. Contraseña de admin: el 13 oct se le puso otra provisional en Supabase y Carlos la cambió por una suya. Pendiente: plan Pro (~25 $/mes, copias diarias) antes de abrir; Supabase Auth (recuperar contraseña por correo) y tiempo real más adelante.
    - **Cómo cargar cosas en Supabase desde Claude:** `execute_sql` funciona; `apply_migration` y cualquier SQL que contenga `DELETE` piden una confirmación que en la app de Carlos se cancela sola. Lo que lleve DELETE se le da a Carlos en una página con botón "Copiar" para pegarlo en Supabase → SQL Editor → Run (así se hizo `datos/cambios/2026-10-13-supabase-ultimo-paso.sql`; el aviso rojo "destructive" se confirma con Run). Enlace directo al editor: https://supabase.com/dashboard/project/dorunbacwnkwdatfscri/sql/new
    - Avisos del asesor de seguridad de Supabase esperados (por diseño): "RLS sin políticas" (las tablas están cerradas a propósito) y "funciones security definer ejecutables por anon" (son las 22 ventanillas).
-3. **Dominio de la plataforma `carta.autonomialab.es`: ACTIVO desde el 13 oct** (GitHub Pages con tic verde; archivo `CNAME` creado por GitHub en `main`; Carlos comprobó que la carta y el panel abren). Comprobar que **Enforce HTTPS** está marcado. Historia: El dominio está en **DonDominio** (Parking & Zona DNS). Carlos: añadir un registro **CNAME** `carta` → `carloswxht.github.io` sin tocar los demás (correo: mail, pop, smtp, imap, webmail, ftp, bbdd, TXT spf). Ojo: `www` y la raíz apuntan al "parking" de DonDominio (la web www.autonomialab.es aún no está publicada) y hay un comodín `*` también al parking; el registro `carta` concreto manda sobre el comodín. Carlos creó el CNAME el 13 oct. Falta: en GitHub (navegador) Settings → Pages → Custom domain `carta.autonomialab.es` → Save y, cuando salga en verde, Enforce HTTPS. Con Supabase no hace falta dar de alta el dominio en ningún sitio más (la clave pública vale desde cualquier web). GitHub Pages admite UN dominio propio por repositorio: si un bar quiere el suyo, redirección en su registrador o, más adelante, Netlify/Vercel (no Cloudflare).
-4. **Hecho (13 oct):** repositorio renombrado a `multibar-platform` y añadido a la sesión de Claude. La web de prueba pasa a `carloswxht.github.io/multibar-platform/` (la de `/la-mar-de-gambas/` deja de abrir) hasta activar `carta.autonomialab.es`.
-5. Carlos: etiquetas `carta-v8-estable` y `carta-v9` desde Releases (el proxy de Claude no deja subir etiquetas).
-6. Vistas que faltan (Fase C o cuando Carlos diga): número de pedido por bar (hoy es el número global); iconos y nombre al instalar la **carta** siguen siendo de La Mar de Gambas (el panel ya tiene los suyos, comunes); vista previa de WhatsApp quitada a petición de Carlos (volverá por bar con una página de entrada por bar); la portada (`index.html`) es la de La Mar de Gambas; colores y fuentes fijos en `comun/estilos.css`; estilos heredados de El Recreo en `carta/carta.css` (bloque THEME los anula).
+3. **Dominio `carta.autonomialab.es`: activo desde el 13 oct.** GitHub Pages tiene el tic verde y `main` tiene el archivo `CNAME`. El registro CNAME `carta` → `carloswxht.github.io` está en DonDominio y no hay que tocar los demás registros (correo, comodín `*`, parking de `www`). Falta que Carlos compruebe que **Enforce HTTPS** está marcado. GitHub Pages admite UN dominio propio por repositorio: si un bar quiere el suyo, se hace con una redirección en su registrador o, más adelante, con Netlify o Vercel (no Cloudflare).
+4. **Hecho (13 oct):** repositorio renombrado a `multibar-platform` y añadido a la sesión de Claude (`carloswxht.github.io/multibar-platform/` redirige a `carta.autonomialab.es`).
+5. Carlos: etiquetas `carta-v8-estable`, `carta-v9`, `carta-v10` y `carta-v11` desde Releases (el proxy de Claude no deja subir etiquetas).
+6. Vistas que faltan (Fase C o cuando Carlos diga): número de pedido por bar (hoy es el número global); iconos y nombre al instalar la **carta** siguen siendo de La Mar de Gambas (el panel ya tiene los suyos, comunes); vista previa de WhatsApp quitada a petición de Carlos (volverá por bar con una página de entrada por bar); colores y fuentes fijos en `comun/estilos.css`; estilos heredados de El Recreo en `carta/carta.css` (bloque THEME los anula).
 7. Otros tipos de negocio (gimnasios…): opinión dada a Carlos el 12 oct: primero hostelería; más adelante un "tipo de negocio" por cliente que active sus funciones.
-8. **Modelo de venta (14 oct):** MultiBar se vende como servicio con cuota mensual (alojamiento, base, dominio de la plataforma, mantenimiento y soporte incluidos); no se vende hosting ni una copia de la aplicación. Un bar con hosting propio sería una instalación aparte a medida. **Borrador de contrato de servicio + anexo de encargo del tratamiento (RGPD art. 28)** preparado y guardado en la rama `borrador-contrato` (`negocio/contrato-servicio-BORRADOR.md`): **no fusionarlo a `main`** (GitHub Pages lo publicaría). Entregárselo a Carlos solo cuando lo pida, para que lo revise un asesor. Con este modelo el punto «Dominio a nombre del cliente» de la lista legal ya no aplica (pendiente de que Carlos lo confirme).
+8. **Modelo de venta (14 oct):** MultiBar se vende como servicio con cuota mensual (alojamiento, base, dominio de la plataforma, mantenimiento y soporte incluidos); no se vende hosting ni una copia de la aplicación. Un bar con hosting propio sería una instalación aparte a medida. **Borrador de contrato de servicio + anexo de encargo del tratamiento (RGPD art. 28)** preparado y guardado en la rama `borrador-contrato` (`negocio/contrato-servicio-BORRADOR.md`): **no fusionarlo a `main`** (GitHub Pages lo publicaría). Entregárselo a Carlos solo cuando lo pida, para que lo revise un asesor.
 
 ## Reglas de trabajo (siempre)
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
@@ -70,7 +90,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - [ ] Alérgenos accesibles en la carta (obligatorio para locales de comida). Pedir la lista al local.
 - [x] Fuentes de Google guardadas dentro del repositorio (no cargarlas desde Google) por RGPD. (Hecho en la Fase 1 del panel: `comun/fuentes/`.)
 - [ ] Aviso legal y política de privacidad sencillos enlazados en el pie. (14 oct: página `legal/` hecha para todos los bares; falta poner los datos del titular de cada bar en `ajustes.legal` y que un asesor revise el texto.)
-- [ ] Dominio a nombre del cliente. Acuerdo por escrito con el local (qué incluye, precio, quién paga dominio y base de datos, mantenimiento mensual).
+- [ ] Acuerdo por escrito con el local: contrato de servicio y encargo del tratamiento (borrador en la rama `borrador-contrato`; debe revisarlo un asesor). El dominio es de la plataforma (de Carlos), no del cliente.
 - [ ] Precios y platos aprobados por escrito por el local antes de publicar.
 - [ ] Probar en iPhone y Android reales, con mala cobertura, y un día de partido (bloqueo de LaLiga).
 - [ ] `.gitignore` con `.env` y secretos; activar en GitHub la protección contra subida de secretos (secret scanning / push protection).
@@ -157,7 +177,8 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - `comun/datos.js` → **único** bloque de acceso a la base de datos y login: `apiRpc` (llama a las funciones de la base), `datosCarta` (menú, mesa, crear/editar pedido, mis pedidos), login del personal (`login`, `logout`, `comprobarSesion`, `cambiarPassword`, `getSesion`), `datosPanel` (pedidos, marcar, agotados, y lo del admin) y `textoError` (mensajes en español). Las funciones antiguas de El Recreo (`apiGet/apiPost/apiPatch/apiDelete`) se quitaron en la Fase 5. Cada llamada se corta a los 20 s (mala cobertura). Desde el 13 oct llama a Supabase con la clave pública; para cambiar de base se cambia solo este archivo.
 - `datos/bares/SLUG/` → todo lo de cada bar: `NOTAS.md` (su ficha), `menu.json` y `bar.json` (copia de reserva), y en La Mar de Gambas `fotos-cartas/`.
 - `datos/esquema.sql` → tablas de la base (con `bares`). `datos/datos-iniciales.sql` → bar nº 1, pestañas, productos y mesas de ejemplo (sale de `datos/bares/lamardegambas/menu.json`). `datos/seguridad.sql` → zona privada y sesiones del login. `datos/funciones.sql` → todas las funciones que usa la web y sus permisos.
-- `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta.
-- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; los últimos, `2026-10-12-multibar.sql` (Neon) y `2026-10-13-supabase-ultimo-paso.sql` (Supabase)).
+- `panel/index.html`, `panel/panel.css`, `panel/panel.js` → panel de barra (diseño v8 aprobado), publicado en `/panel/`. Usa `comun/estilos.css` y `comun/datos.js`; no toca la carta. `panel/manifest.webmanifest` e `icono-*.png` → app instalable.
+- `datos/cambios/` → historial de cambios aplicados a la base después de crearla (un `.sql` por cambio, con fecha; los últimos, `2026-10-13-supabase-ultimo-paso.sql` y `2026-10-14-control-de-mesas.sql`, ambos aplicados en Supabase).
 - `PRUEBAS-FASE-5.md` → lista de pruebas con móviles reales antes de imprimir los QR (y lista de seguridad y legal).
-- `archivo/` → lo antiguo que no se usa (no se borra nada): `versiones/` (carta v5 de un solo archivo), `og-gambas5.jpg`, `HISTORIAL.md` (notas antiguas).
+- `archivo/` → lo antiguo que no se usa (no se borra nada): `versiones/` (carta v5 de un solo archivo), `og-gambas5.jpg`, `portada-lamardegambas.html` (portada antigua de la raíz), `HISTORIAL.md` (notas antiguas).
+- Rama `borrador-contrato` (no fusionar): `negocio/contrato-servicio-BORRADOR.md`.
