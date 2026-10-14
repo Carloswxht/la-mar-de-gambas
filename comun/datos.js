@@ -20,10 +20,9 @@ const CLAVE_PUBLICA = 'sb_publishable_PK12CcvGBEZsFT9lsLpSIA_IsP-v8iS';
 /* ---------------- QUÉ BAR ES ----------------
    El bar va en el enlace de la carta y del QR: /carta/?bar=lamardegambas&mesa=5&c=…
    Si el enlace no lo lleva (o no es válido), BAR queda vacío: la carta y
-   la página legal mandan a www.autonomialab.es (SIN_BAR_IR_A) y nunca
-   abren un bar por su cuenta.
+   la página legal mandan a la página de MultiBar (raíz, "escanea el QR de
+   tu mesa") y nunca abren un bar por su cuenta.
    En el panel, el bar es el del usuario que entra (usarBar). */
-const SIN_BAR_IR_A = 'https://www.autonomialab.es/';
 let BAR = (function(){
   try {
     const b = (new URLSearchParams(window.location.search).get('bar') || '').trim().toLowerCase();
