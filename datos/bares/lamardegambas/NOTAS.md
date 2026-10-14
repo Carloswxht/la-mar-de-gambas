@@ -2,7 +2,7 @@
 
 **La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro). Primer cliente y piloto de la plataforma MultiBar. Aquí va todo lo que es SOLO de este bar; lo común está en el `CLAUDE.md` de la raíz.
 
-- Enlace de la carta: `/carta/?bar=lamardegambas` (sin `bar=` también lleva aquí: es el bar por defecto). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
+- Enlace de la carta: `/carta/?bar=lamardegambas` (siempre con `bar=`: desde el 14 oct ya no hay bar por defecto y un enlace sin `bar=`, o con uno mal escrito, lleva a la página de MultiBar, nunca a este bar). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
 - Copia de reserva: `menu.json` y `bar.json` en esta carpeta. Fotos de las cartas físicas (fuente de verdad de los precios): `fotos-cartas/`.
 - Usuarios de prueba: `carloswxht+admin@gmail.com` (admin; Carlos ya cambió su contraseña), `carloswxht+barra@gmail.com`, `carloswxht+camarero@gmail.com` (contraseña provisional dada por el chat). Son alias de Gmail: llegan al buzón de Carlos.
 - En la base (Supabase) quedan **7 pedidos de prueba** de la Mesa 1 (11–13 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba" (lleva DELETE: dárselo para pegar en el SQL Editor).
