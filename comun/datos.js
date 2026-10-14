@@ -19,15 +19,15 @@ const CLAVE_PUBLICA = 'sb_publishable_PK12CcvGBEZsFT9lsLpSIA_IsP-v8iS';
 
 /* ---------------- QUÉ BAR ES ----------------
    El bar va en el enlace de la carta y del QR: /carta/?bar=lamardegambas&mesa=5&c=…
-   Si el enlace no lo lleva, se usa BAR_POR_DEFECTO (La Mar de Gambas, el
-   primer cliente), para que sigan valiendo los enlaces de antes.
+   Si el enlace no lo lleva (o no es válido), BAR queda vacío: la carta y
+   la página legal mandan a la página de MultiBar (raíz, "escanea el QR de
+   tu mesa") y nunca abren un bar por su cuenta.
    En el panel, el bar es el del usuario que entra (usarBar). */
-const BAR_POR_DEFECTO = 'lamardegambas';
 let BAR = (function(){
   try {
     const b = (new URLSearchParams(window.location.search).get('bar') || '').trim().toLowerCase();
-    return /^[a-z0-9][a-z0-9-]{1,39}$/.test(b) ? b : BAR_POR_DEFECTO;
-  } catch(e) { return BAR_POR_DEFECTO; }
+    return /^[a-z0-9][a-z0-9-]{1,39}$/.test(b) ? b : '';
+  } catch(e) { return ''; }
 })();
 function usarBar(slug){ if(slug) BAR = slug; }
 

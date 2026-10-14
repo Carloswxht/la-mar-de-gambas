@@ -2,6 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Sin el nombre del bar en el enlace (?bar=…) no se abre ninguna carta: se va a la página de MultiBar ("escanea el QR de tu mesa"). */
+(function(){ try { var b = (new URLSearchParams(location.search).get('bar') || '').trim().toLowerCase();
+  if(!/^[a-z0-9][a-z0-9-]{1,39}$/.test(b)) location.replace('../'); } catch(e) {} })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="theme-color" content="#14295E">
 <meta name="apple-mobile-web-app-capable" content="yes">
