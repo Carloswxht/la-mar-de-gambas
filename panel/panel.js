@@ -62,10 +62,17 @@ function pintarBar(info){
   $('lLegal').hidden = $('lLegalSep').hidden = !conLegal;
   $('lLegal').href = '../legal/?bar=' + encodeURIComponent(info.slug || BAR) + '#privacidad';
   document.title = NOMBRE_BAR + ' · Panel';
+  guardarLocal('panel.ultimoBar', { slug: info.slug || BAR, nombre: NOMBRE_BAR, ajustes: info.ajustes || {} });
 }
 // Antes de entrar: el bar del enlace (lo último que se supo, y luego la base).
 async function pintarBarDelEnlace(){
-  if(!BAR) return; // sin ?bar=… la entrada es neutra: el bar sale al entrar, del usuario
+  if(!BAR){
+    // Sin ?bar=… (p. ej. el panel instalado como aplicación): el nombre del
+    // último bar que se usó en este aparato; si no hay, entrada neutra.
+    const u = leerLocal('panel.ultimoBar');
+    if(u && u.nombre) pintarBar(u);
+    return;
+  }
   pintarBar(leerLocal('bar.' + BAR));
   try { const info = await datosCarta.bar(); guardarLocal('bar.' + BAR, info); if(!estado.sesion) pintarBar(info); }
   catch(e) {
