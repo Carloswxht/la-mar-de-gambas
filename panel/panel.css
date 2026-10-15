@@ -343,3 +343,8 @@ html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
 .mesa-abrir .btn{ min-height:48px; min-width:110px; font-size:14px; flex:none; }
 .estado-mesa{ font-weight:700; color:var(--suave); }
 .estado-mesa.si{ color:#1E7A46; }
+
+/* Número de versión del panel (el mismo que el de la carta: sube con cada entrega) */
+.barra-abajo{ position:fixed; }
+.version-panel{ position:absolute; left:16px; bottom:max(16px, env(safe-area-inset-bottom)); line-height:56px; font-size:11px; color:var(--suave); opacity:.75; letter-spacing:.04em; pointer-events:none; }
+.version-panel-login{ text-align:center; font-size:11px; color:var(--suave); opacity:.6; margin:6px 0 0; letter-spacing:.04em; }

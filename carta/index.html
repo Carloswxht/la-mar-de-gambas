@@ -7,6 +7,26 @@
 (function(){ try { var b = (new URLSearchParams(location.search).get('bar') || '').trim().toLowerCase();
   if(!/^[a-z0-9][a-z0-9-]{1,39}$/.test(b)) location.replace('../'); } catch(e) {} })();
 </script>
+<script>
+/* Siempre la última versión: GitHub Pages deja la página guardada en el
+   móvil hasta ~10 min. Al abrir, se pregunta (sin caché) qué versión hay
+   publicada en version.json; si es más nueva que esta, se recarga sola
+   con ?v=N (otra dirección, así que llega la nueva). Al publicar una
+   versión: subir VERSION_WEB aquí, en carta/ y panel/, los ?v= de los
+   archivos y el número de version.json. */
+var VERSION_WEB = 13;
+(function(){ try {
+  fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if(!j || !(Number(j.version) > VERSION_WEB)) return;
+      var u = new URL(location.href);
+      if(u.searchParams.get('v') === String(j.version)) return; // ya se intentó: no dar vueltas
+      u.searchParams.set('v', String(j.version));
+      location.replace(u.href);
+    }).catch(function(){ /* sin conexión: se sigue con esta */ });
+} catch(e) {} })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="theme-color" content="#22262E" data-bar>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +39,7 @@
      recordó la última vez; si es la primera, la carta espera a saberlo
      para no enseñar un momento colores que no son del bar. El icono y el
      nombre para instalar la carta en el móvil también son de cada bar. -->
-<script src="../comun/aspecto.js"></script>
+<script src="../comun/aspecto.js?v=13"></script>
 <script>
 (function(){
   var info = null;
@@ -29,8 +49,8 @@
 </script>
 
 <title>Carta digital</title>
-<link rel="stylesheet" href="../comun/estilos.css">
-<link rel="stylesheet" href="carta.css">
+<link rel="stylesheet" href="../comun/estilos.css?v=13">
+<link rel="stylesheet" href="carta.css?v=13">
 </head>
 <body>
 
@@ -56,7 +76,7 @@
     <!-- Líneas del pie de cada bar (ajustes.pie en la base) -->
     <div id="barPie"></div>
     <div class="legal-enlace" id="legalEnlace" hidden><a id="legalLink" href="../legal/">Aviso legal y privacidad</a></div>
-    <div class="version">Carta v12</div>
+    <div class="version">Carta v13</div>
     <div class="firma">Carta digital por <a href="https://www.autonomialab.es" target="_blank" rel="noopener">autonomIA Lab</a></div>
   </footer>
 </div>
@@ -101,7 +121,7 @@
   </div>
 </div>
 
-<script src="../comun/datos.js"></script>
-<script src="carta.js"></script>
+<script src="../comun/datos.js?v=13"></script>
+<script src="carta.js?v=13"></script>
 </body>
 </html>
