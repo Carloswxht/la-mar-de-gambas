@@ -27,6 +27,9 @@
       "cabecera": "nombre",
       "icono": "datos/bares/lamardegambas/icono-512.png",
       "nombre_corto": "La Mar de Gambas"
-    }
+    },
+    "barra_cocina": true,
+    "avisos_mesa": true,
+    "cuentas_mesa": true
   }
 }
