@@ -73,7 +73,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
 - Carlos solo tiene móvil, sin ordenador. Dar los pasos uno a uno y explicarlos para alguien que no programa.
 - Debe verse y funcionar igual en iPhone (Safari) y Android (Chrome). Avisar de cualquier cosa sensible a Safari.
-- Cada entrega con número de versión: etiqueta de git `carta-vN` y número visible en el pie (desde que la carta se separó en archivos). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
+- Cada entrega con número de versión visible: «Carta vN» en el pie de la carta y «Panel vN» abajo a la izquierda del panel y en su pantalla de entrar (desde el 15 oct, a petición de Carlos; **el mismo número en los dos**: al subir uno, subir el otro en `carta/index.html` y `panel/index.html`). Etiqueta de git (Releases) solo antes de cambios grandes, con el nombre `carta-vN-estable` (Carlos la crea; el proxy de Claude no deja subir etiquetas). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
 - Si Carlos pide "opina" o "analicemos", dar solo opinión, sin ejecutar cambios.
 - No reproducir logos, personajes ni marcas de terceros tal cual. El nombre del local va en texto.
 - Probar en pantalla de móvil (390 px) con capturas antes de entregar.
