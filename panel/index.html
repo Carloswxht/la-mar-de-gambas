@@ -9,7 +9,7 @@
    con ?v=N (otra dirección, así que llega la nueva). Al publicar una
    versión: subir VERSION_WEB aquí, en carta/ y panel/, los ?v= de los
    archivos y el número de version.json. */
-var VERSION_WEB = 14;
+var VERSION_WEB = 15;
 (function(){ try {
   fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function(r){ return r.ok ? r.json() : null; })
@@ -33,10 +33,10 @@ var VERSION_WEB = 14;
 <link rel="manifest" id="manifiesto" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icono-192.png">
 <link rel="apple-touch-icon" href="icono-180.png">
-<link rel="stylesheet" href="../comun/estilos.css?v=14">
+<link rel="stylesheet" href="../comun/estilos.css?v=15">
 <!-- Colores, fuentes y logo del bar (comun/aspecto.js): se pintan ya con lo
      último que se supo en este aparato (sesión, enlace o último bar). -->
-<script src="../comun/aspecto.js?v=14"></script>
+<script src="../comun/aspecto.js?v=15"></script>
 <script>
 (function(){
   function leer(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
@@ -45,7 +45,7 @@ var VERSION_WEB = 14;
   Aspecto.aplicar(info, { panel: true });
 })();
 </script>
-<link rel="stylesheet" href="panel.css?v=14">
+<link rel="stylesheet" href="panel.css?v=15">
 </head>
 <body>
 
@@ -73,7 +73,7 @@ var VERSION_WEB = 14;
     <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">Entrar</button>
     <p class="texto-suave pie-login">Acceso reservado al personal de <span id="lLocal">este bar</span>.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
     <p class="texto-suave firma-plataforma"><a id="lLegal" href="../legal/#privacidad" hidden>Privacidad</a><span id="lLegalSep" hidden> · </span><a class="enlace-firma" href="https://www.autonomialab.es" target="_blank" rel="noopener">Panel por <b>autonomIA Lab</b></a></p>
-    <p class="version-panel-login">Panel v14</p>
+    <p class="version-panel-login">Panel v15</p>
   </form>
 </section>
 
@@ -103,8 +103,17 @@ var VERSION_WEB = 14;
 <!-- ============ PANEL ============ -->
 <div id="vPanel" hidden>
 
+  <!-- Avisos de las mesas: «Llama al camarero» / «Pide la cuenta» (v15, opción avisos_mesa) -->
+  <div class="avisos-mesa" id="avisosMesa" hidden></div>
+
   <!-- PEDIDOS -->
   <main id="sPedidos" class="vista">
+    <!-- Qué ve este aparato cuando el bar separa barra y cocina (v15, opción barra_cocina) -->
+    <div class="filtro-destino" id="filtroDestino" role="group" aria-label="Qué pedidos ver en este aparato" hidden>
+      <button type="button" data-destino="todo">Todo</button>
+      <button type="button" data-destino="barra">Solo barra</button>
+      <button type="button" data-destino="cocina">Solo cocina</button>
+    </div>
     <div class="fila-stats">
       <div class="stat"><div class="num" id="nPendientes">0</div><div class="lbl">PENDIENTES</div></div>
       <div class="stat"><div class="num" id="nServidos">0</div><div class="lbl">SERVIDOS</div></div>
@@ -149,6 +158,13 @@ var VERSION_WEB = 14;
     <div id="rArticulos"></div>
   </main>
 
+  <!-- CUENTAS DE LAS MESAS (v15, opción cuentas_mesa, todo el personal) -->
+  <main id="sCuentas" class="vista" hidden>
+    <div class="titulo-seccion">CUENTAS DE LAS MESAS</div>
+    <p class="sub-seccion">Todo lo que ha pedido cada mesa hoy y aún no se ha cobrado. Al cobrar, pulsa «Cobrada»: lo siguiente que pida esa mesa empieza una cuenta nueva.</p>
+    <div id="listaCuentas"></div>
+  </main>
+
   <!-- ABRIR MESAS (control de mesas, todo el personal) -->
   <main id="sAbrir" class="vista" hidden>
     <div class="titulo-seccion">ABRIR MESAS</div>
@@ -176,7 +192,7 @@ var VERSION_WEB = 14;
 
   <!-- Barra de abajo con el botón de menú -->
   <div class="barra-abajo">
-    <span class="version-panel">Panel v14</span>
+    <span class="version-panel">Panel v15</span>
     <button class="boton-menu" id="abrirMenu" type="button" aria-label="Menú" aria-expanded="false">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
     </button>
@@ -226,7 +242,7 @@ var VERSION_WEB = 14;
 
 <div id="toast" class="toast" role="status" hidden></div>
 
-<script src="../comun/datos.js?v=14"></script>
-<script src="panel.js?v=14"></script>
+<script src="../comun/datos.js?v=15"></script>
+<script src="panel.js?v=15"></script>
 </body>
 </html>

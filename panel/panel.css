@@ -352,3 +352,25 @@ html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
 .barra-abajo{ position:fixed; }
 .version-panel{ position:absolute; left:16px; bottom:max(16px, env(safe-area-inset-bottom)); line-height:56px; font-size:11px; color:var(--suave); opacity:.75; letter-spacing:.04em; pointer-events:none; }
 .version-panel-login{ text-align:center; font-size:11px; color:var(--suave); opacity:.6; margin:6px 0 0; letter-spacing:.04em; }
+
+/* ---------------- v15: AVISOS DE LAS MESAS ---------------- */
+.avisos-mesa{ max-width:760px; margin:0 auto; padding:12px 16px 0; display:flex; flex-direction:column; gap:8px; }
+.aviso-mesa{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; border:1.5px solid var(--rosa-borde); background:var(--rosa-claro); border-radius:12px; padding:10px 12px; }
+.aviso-mesa.cuenta{ border-color:var(--prep-borde); background:var(--prep-fondo); }
+.am-texto{ font-size:15px; color:var(--texto); min-width:0; }
+.am-texto b{ font-family:var(--font-titulos); font-size:17px; letter-spacing:.04em; color:var(--navy); }
+.am-hora{ display:block; font-size:12px; color:var(--suave); margin-top:2px; }
+.am-botones{ display:flex; gap:8px; margin-left:auto; }
+
+/* ---------------- v15: BARRA Y COCINA ---------------- */
+.filtro-destino{ display:flex; gap:6px; margin:0 0 16px; background:var(--fondo-2); border:1px solid var(--linea); border-radius:12px; padding:4px; }
+.filtro-destino button{ flex:1; min-height:44px; border:0; border-radius:9px; background:transparent; font-weight:700; font-size:14px; color:var(--suave); cursor:pointer; }
+.filtro-destino button.activo{ background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(20,41,94,.15); }
+.destino-etq{ float:right; margin-top:3px; font-family:var(--font-texto); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; border-radius:6px; padding:3px 9px; }
+.destino-etq.barra{ background:var(--prep-fondo); color:var(--prep-texto); border:1px solid var(--prep-borde); }
+.destino-etq.cocina{ background:#FFF1E6; color:var(--naranja-osc); border:1px solid #F4C9A6; }
+
+/* ---------------- v15: CUENTAS DE LAS MESAS ---------------- */
+.cuenta-aviso{ font-size:13px; font-weight:700; color:var(--naranja-osc); margin:0 0 8px; }
+.tarjeta.destacada{ border-color:var(--azul); box-shadow:0 0 0 2px var(--prep-borde); }
+.am-botones .btn{ min-height:44px; padding:0 14px; font-size:14px; }

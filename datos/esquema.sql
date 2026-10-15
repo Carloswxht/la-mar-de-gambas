@@ -53,6 +53,8 @@ create table categories (
   multi       boolean not null default false,  -- agrupa varias secciones de la carta física
   fam         text not null default '',        -- 'tp' = Tapa/Plato, 'cb' = Copa/Botella
   labs        text[] not null default '{}',    -- tamaños que usa la pestaña
+  destino     text not null default 'cocina'   -- a quién van sus pedidos con «barra y cocina» (v15)
+              check (destino in ('barra','cocina')),
   primary key (bar_id, id)
 );
 
@@ -109,6 +111,10 @@ create table orders (
   mesa_id       integer not null,
   round_number  integer not null default 1,     -- "Pedido 1, 2…" de ese móvil
   numero        integer,                        -- "Pedido nº N" del panel: cuenta propia de cada bar (la pone la base)
+  destino       text check (destino in ('barra','cocina')), -- con «barra y cocina»: a quién va esta parte (v15)
+  parte_de      bigint,                         -- 2.ª parte de un pedido dividido: id de la 1.ª (mismo número)
+  cobrado_at    timestamptz,                    -- cuenta de la mesa cobrada (v15)
+  cobrado_por   text,
   status        text not null default 'enviado'
                 check (status in ('enviado','en_preparacion','servido')),
   total         numeric(8,2) not null default 0 check (total >= 0),
@@ -143,6 +149,23 @@ create table order_items (
 );
 create index order_items_order_idx on order_items (order_id);
 
+-- ---------------- AVISOS DE LA MESA (v15) ----------------
+-- «Llamar al camarero» y «Pedir la cuenta» desde la carta (opción del bar
+-- ajustes.avisos_mesa). Salen en el panel hasta que alguien pulsa
+-- «Atendido». No llevan datos personales (solo mesa, tipo y hora); el
+-- panel solo enseña los de las últimas 12 h.
+create table avisos (
+  id            bigint generated always as identity primary key,
+  bar_id        integer not null references bares(id),
+  mesa_id       integer not null,
+  tipo          text not null check (tipo in ('camarero','cuenta')),
+  created_at    timestamptz not null default now(),
+  atendido_at   timestamptz,
+  atendido_por  text,
+  foreign key (bar_id, mesa_id) references mesas(bar_id, id)
+);
+create index avisos_bar_idx on avisos (bar_id, created_at);
+
 -- ---------------- PERSONAL (usuarios y roles) ----------------
 -- Camareros, barra y administradores. La contraseña se guarda cifrada
 -- (bcrypt, nunca en claro). Un usuario con active = false no puede entrar.
@@ -175,8 +198,9 @@ alter table mesas       enable row level security;
 alter table orders      enable row level security;
 alter table order_items enable row level security;
 alter table staff       enable row level security;
+alter table avisos      enable row level security;
 
-revoke all on bares, categories, products, mesas, orders, order_items, staff
+revoke all on bares, categories, products, mesas, orders, order_items, staff, avisos
   from public, anon, authenticated;
 -- Supabase da por defecto permisos a anon/authenticated en todo lo nuevo
 -- del esquema public: se quitan (tablas, secuencias y funciones).

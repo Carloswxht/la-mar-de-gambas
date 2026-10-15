@@ -6,23 +6,12 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 
 **Cómo están las notas:** este archivo = la plataforma (reglas, cómo funciona, pendientes generales). Cada bar tiene su ficha en `datos/bares/SLUG/NOTAS.md`. Las notas antiguas están en `archivo/HISTORIAL.md`.
 
-## Dónde lo dejamos (14 oct, para seguir en otra conversación)
-- **En marcha en `https://carta.autonomialab.es`** (GitHub Pages desde `main`, base Supabase `multi-bar`). Último PR fusionado: **#17** (panel instalable). Carta **v11**.
-- Publicado y funcionando:
-  - Carta por bar (`/carta/?bar=SLUG&mesa=N&c=CÓDIGO`) y página de MultiBar en la raíz para cualquier enlace sin bar (PR #16).
-  - Aviso legal y privacidad (`legal/`, v10).
-  - Control de mesas (v11; **apagado** en La Mar de Gambas).
-  - Panel instalable como aplicación (campana naranja, «Panel»; PR #17).
-- **Esperando a Carlos:**
-  1. Probar en su Android la app del panel. Es un Samsung, y antes «Instalar aplicación» no creaba ningún icono. Pasos para probar: borrar el acceso antiguo, abrir `/panel/?bar=lamardegambas`, ⋮ → Instalar aplicación.
-  2. Decir «enciende el control de mesas» → `update bares set ajustes = ajustes || '{"control_mesas": true}' where slug = 'lamardegambas';` con `execute_sql`. Antes hay que avisarle de que el personal tendrá que abrir cada mesa en «Abrir mesas».
-  3. «Dame el contrato» → entregarle el borrador de la rama `borrador-contrato` (ver Pendiente 8).
-  4. Antes de abrir el local, ver la ficha del bar (`datos/bares/lamardegambas/NOTAS.md` → Pendiente).
-- **Ojo al fusionar:** comprobar en `main` que el PR lleva todos los commits de la rama. El 14 oct, Carlos fusionó el #15 antes de que llegara el último commit, y la raíz siguió enseñando la portada vieja hasta el #16.
-- **Lo que Claude puede hacer y lo que no:**
-  - Puede fusionar PRs con `merge_pull_request`, siempre con el OK de Carlos.
-  - No puede subir etiquetas de git.
-  - No llega a supabase.co ni a carta.autonomialab.es desde el contenedor: las pruebas se hacen con la base local y Playwright, con el Chromium en `/opt/pw-browsers` y playwright en `/opt/node-tools/node_modules/playwright`.
+## Dónde lo dejamos (15 oct, para seguir en otra conversación)
+- **En marcha en `https://carta.autonomialab.es`** (GitHub Pages desde `main`, base Supabase `multi-bar`). Último PR fusionado: **#21** (v14). PR de la **v15** (barra y cocina, avisos de la mesa y cuentas) pendiente de que Carlos lo fusione; la parte de la base ya está aplicada en Supabase.
+- **Al fusionar la v15:** encender las tres opciones en La Mar de Gambas con `execute_sql` (con el OK de Carlos, que ya lo pidió): `update bares set ajustes = ajustes || '{"barra_cocina": true, "avisos_mesa": true, "cuentas_mesa": true}' where slug = 'lamardegambas';`. Antes de fusionar NO (la carta v14 no sabe enseñar un pedido dividido).
+- **Esperando a Carlos:** decir «sí» al plan de recuperar contraseña por correo (Resend + DonDominio) y al panel de plataforma (Fase D); plan Pro de Supabase; datos del local (alérgenos, precios de bebidas, datos legales, mesas reales); pruebas con móviles reales; «enciende el control de mesas»; «dame el contrato» (rama `borrador-contrato`).
+- **Ojo al fusionar:** comprobar en `main` que el PR lleva todos los commits de la rama.
+- **Lo que Claude puede hacer y lo que no:** puede fusionar PRs con el OK de Carlos; no puede subir etiquetas de git (Carlos las crea con el enlace `https://github.com/Carloswxht/multibar-platform/releases/new?tag=NOMBRE&target=main`, que debe pegar en Chrome: los enlaces que abre desde el chat se le abren dentro de Claude); no llega a supabase.co ni a carta.autonomialab.es desde el contenedor: las pruebas se hacen con Postgres local (`/usr/lib/postgresql/16/bin`, datos en `/var/tmp/mbpg`, puerto 5433) y Playwright.
 
 ## La idea de la plataforma (Carlos, 12 oct)
 - La Mar de Gambas debe seguir funcionando y viéndose como ahora y salir a operar cuanto antes: es lo más importante.
@@ -73,7 +62,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
 - Carlos solo tiene móvil, sin ordenador. Dar los pasos uno a uno y explicarlos para alguien que no programa.
 - Debe verse y funcionar igual en iPhone (Safari) y Android (Chrome). Avisar de cualquier cosa sensible a Safari.
-- Cada entrega con número de versión visible: «Carta vN» en el pie de la carta y «Panel vN» abajo a la izquierda del panel y en su pantalla de entrar (desde el 15 oct, a petición de Carlos; **el mismo número en los dos**; lista de sitios donde subirlo en «Web y dominios»). v13 (15 oct): número de versión en el panel y recarga sola a la última versión. v14 (15 oct): firmas de autonomIA Lab enlazadas y número de pedido propio de cada bar. Etiqueta de git (Releases) solo antes de cambios grandes, con el nombre `carta-vN-estable` (Carlos la crea; el proxy de Claude no deja subir etiquetas). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
+- Cada entrega con número de versión visible: «Carta vN» en el pie de la carta y «Panel vN» abajo a la izquierda del panel y en su pantalla de entrar (desde el 15 oct, a petición de Carlos; **el mismo número en los dos**; lista de sitios donde subirlo en «Web y dominios»). v13 (15 oct): número de versión en el panel y recarga sola a la última versión. v14 (15 oct): firmas de autonomIA Lab enlazadas y número de pedido propio de cada bar. v15 (15 oct): barra y cocina, avisos de la mesa y cuentas. Etiqueta de git (Releases) solo antes de cambios grandes, con el nombre `carta-vN-estable` (Carlos la crea; el proxy de Claude no deja subir etiquetas). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
 - Si Carlos pide "opina" o "analicemos", dar solo opinión, sin ejecutar cambios.
 - No reproducir logos, personajes ni marcas de terceros tal cual. El nombre del local va en texto.
 - Probar en pantalla de móvil (390 px) con capturas antes de entregar.
@@ -124,6 +113,13 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Cambio en la base: `datos/cambios/2026-10-14-aspecto-por-bar.sql` (crea la carpeta `logos` y pone a La Mar de Gambas su aspecto de siempre; sin DELETE). **Aplicado en Supabase el 14 oct** con el OK de Carlos (antes de fusionar, para que la carta v12 salga ya con sus colores; la v11 lo ignora).
 - Para cambiar el aspecto de un bar (hasta la Fase D, lo hace Claude con `execute_sql` y el OK de Carlos): `update bares set ajustes = jsonb_set(ajustes, '{aspecto,colores,acento}', '"#2F7D5B"') where slug = '…';` y copiarlo en `datos/bares/SLUG/bar.json`.
 - **Probado (14 oct)** en Chromium a 390 px contra una base local: La Mar de Gambas idéntica píxel a píxel a la v11 (carta, pestañas, tique, mesa, pedido enviado, QR falso, legal, panel), salvo «Carta v12»; un bar de prueba con colores claros, Playfair/Nunito, logo y textos propios («MI PEDIDO», «Enviar a cocina») cambia en carta, panel y legal sin tocar código; un bar sin aspecto sale neutro. Sin errores en consola.
+
+## Barra y cocina, avisos de la mesa y cuentas (15 oct, v15) — a petición de Carlos
+Tres opciones de la plataforma en `bares.ajustes`, apagadas por defecto (encendidas en La Mar de Gambas al publicar la v15):
+- **`barra_cocina`:** cada pestaña tiene `categories.destino` (`barra` | `cocina`, por defecto cocina; en La Mar de Gambas, barra = Café y bebidas, Cervezas y copas y Bodega, decidido por Carlos). Un pedido con las dos cosas se divide en dos partes (`privado.crear_partes`): misma ronda y mismo número (`orders.parte_de` apunta a la 1.ª; el trigger copia el número), cada una con su estado. `crear_pedido` y `panel_crear_pedido` devuelven la 1.ª parte (como antes) y todas en `partes`. Las 2.ª partes no cuentan en los límites anti-spam ni en el resumen del día. Carta: el tique enseña «PEDIDO 1 · BARRA · …» y «PEDIDO 1 · COCINA · …». Panel: etiqueta Barra/Cocina en cada tarjeta y filtro «Todo / Solo barra / Solo cocina» que recuerda cada aparato (`panel.destino`) y con el que solo suena lo suyo.
+- **`avisos_mesa`:** botón «CAMARERO» (campana) en la barra de abajo de la carta, solo con el QR de la mesa → «Llamar al camarero» o «Pedir la cuenta» (`carta_aviso`; tabla `avisos`; no repite un aviso igual sin atender; máx. 1 cada 30 s y 20/h por mesa; respeta el control de mesas). En el panel salen arriba en todas las vistas, con pitido propio, hasta «Atendido». El panel pregunta con `panel_estado` (pedidos + avisos en una llamada; `panel_pedidos` sigue para la v14). Los avisos no llevan datos personales; no se borran solos (pendiente: limpieza, lleva DELETE).
+- **`cuentas_mesa`:** vista «Cuentas de mesas» del panel (todo el personal): por mesa, lo pedido hoy sin cobrar (de todos los móviles, barra y cocina) con líneas agrupadas, total y aviso de pedidos sin servir; «Cobrada» (dos toques) marca `orders.cobrado_at` y atiende sus avisos. Desde el aviso «Pide la cuenta», «Ver cuenta» abre esa mesa.
+- Cambio: `datos/cambios/2026-10-15-barra-cocina-avisos-cuentas.sql` (sin DELETE). **Aplicado en Supabase el 15 oct** (13 funciones con firma idéntica a la copia probada). Probado: por SQL (división, número y ronda, producto malo deshace todo, avisos y límites, otro bar no ve nada, cobrar) y en Chromium a 390 px (con las opciones apagadas, La Mar de Gambas idéntica a la v14 salvo el número de versión; con ellas, carta y panel completos sin errores).
 
 ## Número de pedido por bar (15 oct, v14) — a petición de Carlos
 - «Pedido nº N» del panel es ahora la cuenta propia de cada bar (antes era el id común a todos). Por defecto **empieza en 1 cada día** según la hora del bar (`zona_horaria`); con `bares.ajustes.numeracion = 'continua'` no se reinicia nunca.

@@ -101,6 +101,7 @@ function textoError(codigo){
     ROL_NO_VALIDO: 'Rol no válido.',
     USUARIO_NO_VALIDO: 'No se encuentra el usuario.',
     ULTIMO_ADMIN: 'Tiene que quedar al menos un administrador activo.',
+    FUNCION_NO_ACTIVA: 'Esta opción no está disponible en este local.',
   };
   return textos[base] || ('Algo ha fallado (' + c + '). Inténtalo otra vez.');
 }
@@ -149,6 +150,8 @@ const datosCarta = {
     p_pedido: pedidoId, p_dispositivo: dispositivoId(), p_lineas: lineas,
   }),
   misPedidos: () => apiRpc('mis_pedidos', { p_bar: BAR, p_dispositivo: dispositivoId() }),
+  // «Llamar al camarero» (tipo 'camarero') o «Pedir la cuenta» ('cuenta'), v15.
+  aviso: (mesa, codigo, tipo) => apiRpc('carta_aviso', { p_bar: BAR, p_mesa: Number(mesa), p_codigo: String(codigo || ''), p_tipo: tipo }),
 };
 
 /* ---------------- LOGIN DEL PERSONAL ----------------
@@ -208,6 +211,12 @@ async function rpcPersonal(nombre, params){
 /* ---------------- PANEL (camarero, barra y admin) ---------------- */
 const datosPanel = {
   pedidos: (desde) => rpcPersonal('panel_pedidos', desde ? { p_desde: desde } : {}),
+  // Pedidos del día + avisos de las mesas sin atender (v15): { pedidos, avisos }
+  estado: () => rpcPersonal('panel_estado'),
+  atenderAviso: (avisoId) => rpcPersonal('panel_atender_aviso', { p_aviso: avisoId }),
+  // Cuentas de las mesas: lo de hoy sin cobrar, mesa por mesa (v15).
+  cuentas: () => rpcPersonal('panel_cuentas'),
+  cobrarMesa: (mesa) => rpcPersonal('panel_cobrar_mesa', { p_mesa: Number(mesa) }),
   // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
   // cambios: { lineas: [{ id, cantidad }] } (una línea a 0 queda en el pedido,

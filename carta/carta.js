@@ -46,6 +46,7 @@ function pintarBar(info){
   // Colores, fuentes, logo, icono para instalar y textos del bar (comun/aspecto.js).
   Aspecto.aplicar(info, { instalable: true });
   pintarTextos();
+  pintarLlamar();
   barNombreEl.textContent = String(info.nombre).toUpperCase();
   if(!document.body.classList.contains("modo-pedir") && !QR_INVALIDO) heroLine.textContent = info.subtitulo || "";
   const pie = (info.ajustes && Array.isArray(info.ajustes.pie)) ? info.ajustes.pie : [info.nombre];
@@ -299,6 +300,7 @@ function aRonda(p, ahora){
   return {
     num: p.ronda,
     orderId: p.id,
+    destino: p.destino || null,   // 'barra' | 'cocina' si el bar los separa (v15)
     status: p.estado,
     editableHasta: (ahora || Date.now()) + (Number(p.editable_seg) || 0) * 1000,
     lines: (p.lineas || []).map(l => ({
@@ -421,7 +423,7 @@ function appendRound(round, withDivider){
   const label = document.createElement("div");
   const est = round.status === 'servido' ? "est-servido" : (round.status === 'en_preparacion' ? "est-prep" : "est-enviado");
   label.className = "round-label " + est + (editable ? " editable" : "");
-  label.innerHTML = `<span>PEDIDO ${round.num} · ${roundLabel(round)}</span>`
+  label.innerHTML = `<span>PEDIDO ${round.num}${round.destino ? " · " + round.destino.toUpperCase() : ""} · ${roundLabel(round)}</span>`
     + (editable ? `<span class="cuenta" data-pedido="${round.orderId}">puedes cambiarlo ${cuentaAtras(round)}</span>` : "");
   panelBody.appendChild(label);
   round.lines.forEach(l => panelBody.appendChild(buildCartRow(l, l.qty === 0 ? "quitado" : (editable ? "sent" : "locked"), round)));
@@ -587,6 +589,35 @@ document.getElementById("confirmClose").addEventListener("click", () => {
   confirmEl.classList.remove("show");
 });
 
+/* ---------------- LLAMAR AL CAMARERO / PEDIR LA CUENTA (v15) ----------------
+   Opción del bar (ajustes.avisos_mesa). Solo con el QR de la mesa: el aviso
+   sale en el panel hasta que el personal pulsa «Atendido». La base no
+   repite un aviso igual sin atender y limita los avisos por mesa. */
+const llamarBtn = document.getElementById("llamarBtn");
+const llamarHoja = document.getElementById("llamarHoja");
+function pintarLlamar(){
+  const activo = !!(BAR_INFO && BAR_INFO.ajustes && BAR_INFO.ajustes.avisos_mesa);
+  llamarBtn.hidden = !(activo && MESA);
+}
+llamarBtn.addEventListener("click", () => llamarHoja.classList.add("show"));
+document.getElementById("llamarCancelar").addEventListener("click", () => llamarHoja.classList.remove("show"));
+llamarHoja.addEventListener("click", (ev) => { if(ev.target === llamarHoja) llamarHoja.classList.remove("show"); });
+let llamando = false;
+llamarHoja.querySelectorAll(".ll-op").forEach(b => b.addEventListener("click", async () => {
+  if(llamando || !MESA) return;
+  llamando = true;
+  const tipo = b.dataset.tipo;
+  try {
+    await datosCarta.aviso(MESA.id, MESA_CODIGO, tipo);
+    llamarHoja.classList.remove("show");
+    aviso("AVISO ENVIADO", tipo === "cuenta" ? "Te llevamos la cuenta enseguida (" + MESA.nombre + ")." : "El camarero viene enseguida (" + MESA.nombre + ").", true);
+  } catch(err) {
+    llamarHoja.classList.remove("show");
+    if(err.codigo === 'MESA_CERRADA'){ MESA.cerrada = true; pintarMesa(); }
+    aviso("NO SE HA ENVIADO", err.message);
+  } finally { llamando = false; }
+}));
+
 /* ---------------- ENVIAR EL PEDIDO ---------------- */
 function vaciarCarrito(){
   Object.keys(cart).forEach(k => { delete cart[k]; delete notes[k]; });
@@ -616,11 +647,15 @@ async function sendOrder(){
   enviando = false;
   if(p){
     if(MESA.cerrada){ MESA.cerrada = false; pintarMesa(); }
-    if(p.id) rounds.push(aRonda(p));
+    // Con barra y cocina separadas, el pedido llega en dos partes (v15).
+    const partes = Array.isArray(p.partes) && p.partes.length ? p.partes : (p.id ? [p] : []);
+    partes.forEach(x => rounds.push(aRonda(x)));
+    const destinos = partes.map(x => x.destino).filter(Boolean);
+    const aQuien = destinos.length > 1 ? "a la barra y a la cocina" : (destinos[0] === "cocina" ? "a la cocina" : "a la barra");
     vaciarCarrito();
     closePanel();
     updateCartBar();
-    aviso("PEDIDO ENVIADO", "Pedido " + p.ronda + " enviado a la barra (" + MESA.nombre + "). Durante 3 minutos puedes cambiarlo desde «Ver tique».", true);
+    aviso("PEDIDO ENVIADO", "Pedido " + p.ronda + " enviado " + aQuien + " (" + MESA.nombre + "). Durante 3 minutos puedes cambiarlo desde «Ver tique».", true);
     return;
   }
   if(fallo.codigo === 'AGOTADO'){ ultimaCarta = 0; await refrescarCarta(); }
@@ -660,6 +695,7 @@ function activarPedidos(m){
   MESA = m;
   document.body.classList.add("modo-pedir");
   pintarTextos();
+  pintarLlamar();
   pintarMesa();
 }
 // Control de mesas (opción del bar): si el camarero no ha abierto la mesa,
@@ -684,6 +720,7 @@ function desactivarPedidos(){
   rounds.length = 0;
   document.body.classList.remove("modo-pedir");
   pintarTextos();
+  pintarLlamar();
   QR_INVALIDO = true;
   heroLine.innerHTML = '<b class="mesa-tag">QR no válido</b> · Avisa al camarero';
 }

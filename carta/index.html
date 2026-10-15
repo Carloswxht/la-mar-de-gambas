@@ -14,7 +14,7 @@
    con ?v=N (otra dirección, así que llega la nueva). Al publicar una
    versión: subir VERSION_WEB aquí, en carta/ y panel/, los ?v= de los
    archivos y el número de version.json. */
-var VERSION_WEB = 14;
+var VERSION_WEB = 15;
 (function(){ try {
   fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function(r){ return r.ok ? r.json() : null; })
@@ -39,7 +39,7 @@ var VERSION_WEB = 14;
      recordó la última vez; si es la primera, la carta espera a saberlo
      para no enseñar un momento colores que no son del bar. El icono y el
      nombre para instalar la carta en el móvil también son de cada bar. -->
-<script src="../comun/aspecto.js?v=14"></script>
+<script src="../comun/aspecto.js?v=15"></script>
 <script>
 (function(){
   var info = null;
@@ -49,8 +49,8 @@ var VERSION_WEB = 14;
 </script>
 
 <title>Carta digital</title>
-<link rel="stylesheet" href="../comun/estilos.css?v=14">
-<link rel="stylesheet" href="carta.css?v=14">
+<link rel="stylesheet" href="../comun/estilos.css?v=15">
+<link rel="stylesheet" href="carta.css?v=15">
 </head>
 <body>
 
@@ -76,7 +76,7 @@ var VERSION_WEB = 14;
     <!-- Líneas del pie de cada bar (ajustes.pie en la base) -->
     <div id="barPie"></div>
     <div class="legal-enlace" id="legalEnlace" hidden><a id="legalLink" href="../legal/">Aviso legal y privacidad</a></div>
-    <div class="version">Carta v14</div>
+    <div class="version">Carta v15</div>
     <div class="firma"><a href="https://www.autonomialab.es" target="_blank" rel="noopener">Carta digital por <b>autonomIA Lab</b></a></div>
   </footer>
 </div>
@@ -91,6 +91,8 @@ var VERSION_WEB = 14;
         <div class="lbl" id="cartCountLbl">0 líneas</div>
         <div class="amt" id="cartTotalLbl">0,00€</div>
       </div>
+      <!-- «Llamar al camarero» / «Pedir la cuenta» (opción del bar avisos_mesa, solo con el QR de la mesa) -->
+      <button class="llamar" id="llamarBtn" type="button" hidden aria-label="Llamar al camarero o pedir la cuenta"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>CAMARERO</span></button>
       <button class="cta" id="openCartBtn">VER TIQUE</button>
     </div>
   </div>
@@ -113,6 +115,15 @@ var VERSION_WEB = 14;
   </div>
 </div>
 
+<div class="confirm" id="llamarHoja">
+  <div class="confirm-card hoja-llamar">
+    <div class="stamp-mark">¿QUÉ NECESITAS?</div>
+    <button type="button" class="ll-op" data-tipo="camarero">Llamar al camarero</button>
+    <button type="button" class="ll-op" data-tipo="cuenta">Pedir la cuenta</button>
+    <button type="button" class="ll-cancelar" id="llamarCancelar">Cancelar</button>
+  </div>
+</div>
+
 <div class="confirm" id="confirm">
   <div class="confirm-card">
     <div class="stamp-mark">PEDIDO ENVIADO</div>
@@ -121,7 +132,7 @@ var VERSION_WEB = 14;
   </div>
 </div>
 
-<script src="../comun/datos.js?v=14"></script>
-<script src="carta.js?v=14"></script>
+<script src="../comun/datos.js?v=15"></script>
+<script src="carta.js?v=15"></script>
 </body>
 </html>
