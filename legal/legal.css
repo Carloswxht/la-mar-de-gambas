@@ -16,7 +16,8 @@ main ul{ padding-left:20px; }
 .nota{ color:#55607A; font-size:14px; }
 .cargando, .vacio{ color:#55607A; text-align:center; padding:40px 0; }
 .pie{ text-align:center; color:#55607A; font-size:12px; padding:0 16px 28px; }
-.pie a{ color:inherit; font-weight:600; text-decoration:none; }
+.pie a{ display:inline-block; padding:6px 8px; color:inherit; text-decoration:none; }
+.pie b{ font-weight:600; text-decoration:underline; text-underline-offset:2px; }
 a{ color:var(--navy); }
 .cab .logo{ display:block; margin:0 auto 6px; max-width:60%; max-height:48px; width:auto; height:auto; object-fit:contain; }
 .cab .logo[hidden]{ display:none; }

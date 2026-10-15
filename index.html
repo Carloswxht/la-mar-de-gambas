@@ -30,7 +30,8 @@
   p.ayuda{ color:var(--suave); font-size:16px; line-height:1.55; margin:0; max-width:32ch; }
   footer{ border-top:1px solid var(--linea); padding:18px 16px calc(22px + env(safe-area-inset-bottom, 0px));
           text-align:center; color:var(--suave); font-size:13px; line-height:1.6; }
-  footer a{ color:var(--tinta); font-weight:700; text-decoration:none; }
+  footer a{ display:inline-block; padding:4px 8px; color:inherit; text-decoration:none; }
+  footer b{ color:var(--tinta); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
   footer a:focus-visible{ outline:2px solid var(--acento); outline-offset:3px; }
 </style>
 </head>
@@ -46,8 +47,8 @@
     <p class="ayuda">Lo encontrarás en la mesa. Si no lo ves o no funciona, pide ayuda al personal del local.</p>
   </main>
   <footer>
-    MultiBar · Cartas digitales y pedidos para bares<br>
-    de <a href="https://www.autonomialab.es" target="_blank" rel="noopener">autonomIA Lab</a>
+    <a href="https://www.autonomialab.es" target="_blank" rel="noopener">MultiBar · Cartas digitales y pedidos para bares<br>
+    de <b>autonomIA Lab</b></a>
   </footer>
 </body>
 </html>

@@ -366,7 +366,7 @@ function tarjeta(p){
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
     <div class="tarjeta ${clase}">
-      <div class="pedido-num">Pedido nº ${esc(p.id)}</div>
+      <div class="pedido-num">Pedido nº ${esc(p.numero || p.id)}</div>
       <div class="t-arriba"><span class="t-mesa">${esc(p.mesa_nombre || ('Mesa ' + p.mesa))}</span><span class="t-hora">${hora(p.creado)}</span></div>
       ${servido ? '' : `<div class="t-estado"><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
       ${lineas}
@@ -649,14 +649,14 @@ function abrirModificar(p){
     pintar();
   };
 
-  abrirModalLibre('Modificar pedido nº ' + p.id, pintar, async () => {
+  abrirModalLibre('Modificar pedido nº ' + (p.numero || p.id), pintar, async () => {
     const lineas = (p.lineas || []).filter(l => cant[l.id] !== l.cantidad).map(l => ({ id: l.id, cantidad: cant[l.id] }));
     if(!lineas.length) return;
     const r = await datosPanel.modificar(p.id, { lineas });
     const i = estado.pedidos.findIndex(x => x.id === p.id);
     if(i >= 0 && r) estado.pedidos[i] = r;
     pintarPedidos();
-    toast('Pedido nº ' + p.id + ' modificado');
+    toast('Pedido nº ' + (p.numero || p.id) + ' modificado');
   });
 }
 
