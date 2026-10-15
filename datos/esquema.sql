@@ -108,6 +108,7 @@ create table orders (
   bar_id        integer not null references bares(id),
   mesa_id       integer not null,
   round_number  integer not null default 1,     -- "Pedido 1, 2…" de ese móvil
+  numero        integer,                        -- "Pedido nº N" del panel: cuenta propia de cada bar (la pone la base)
   status        text not null default 'enviado'
                 check (status in ('enviado','en_preparacion','servido')),
   total         numeric(8,2) not null default 0 check (total >= 0),
