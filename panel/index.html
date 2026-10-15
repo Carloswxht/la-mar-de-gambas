@@ -2,6 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Siempre la última versión: GitHub Pages deja la página guardada en el
+   móvil hasta ~10 min. Al abrir, se pregunta (sin caché) qué versión hay
+   publicada en version.json; si es más nueva que esta, se recarga sola
+   con ?v=N (otra dirección, así que llega la nueva). Al publicar una
+   versión: subir VERSION_WEB aquí, en carta/ y panel/, los ?v= de los
+   archivos y el número de version.json. */
+var VERSION_WEB = 13;
+(function(){ try {
+  fetch('../version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if(!j || !(Number(j.version) > VERSION_WEB)) return;
+      var u = new URL(location.href);
+      if(u.searchParams.get('v') === String(j.version)) return; // ya se intentó: no dar vueltas
+      u.searchParams.set('v', String(j.version));
+      location.replace(u.href);
+    }).catch(function(){ /* sin conexión: se sigue con esta */ });
+} catch(e) {} })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#FFFFFF">
 <meta name="robots" content="noindex, nofollow">
@@ -13,10 +33,10 @@
 <link rel="manifest" id="manifiesto" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icono-192.png">
 <link rel="apple-touch-icon" href="icono-180.png">
-<link rel="stylesheet" href="../comun/estilos.css">
+<link rel="stylesheet" href="../comun/estilos.css?v=13">
 <!-- Colores, fuentes y logo del bar (comun/aspecto.js): se pintan ya con lo
      último que se supo en este aparato (sesión, enlace o último bar). -->
-<script src="../comun/aspecto.js"></script>
+<script src="../comun/aspecto.js?v=13"></script>
 <script>
 (function(){
   function leer(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
@@ -25,7 +45,7 @@
   Aspecto.aplicar(info, { panel: true });
 })();
 </script>
-<link rel="stylesheet" href="panel.css">
+<link rel="stylesheet" href="panel.css?v=13">
 </head>
 <body>
 
@@ -53,7 +73,7 @@
     <button id="lBoton" class="btn btn-naranja btn-ancho" type="submit">Entrar</button>
     <p class="texto-suave pie-login">Acceso reservado al personal de <span id="lLocal">este bar</span>.<br>Si has olvidado tu contraseña, pídesela al encargado.</p>
     <p class="texto-suave firma-plataforma"><a id="lLegal" href="../legal/#privacidad" hidden>Privacidad</a><span id="lLegalSep" hidden> · </span>Panel por <a href="https://www.autonomialab.es" target="_blank" rel="noopener">autonomIA Lab</a></p>
-    <p class="version-panel-login">Panel v12</p>
+    <p class="version-panel-login">Panel v13</p>
   </form>
 </section>
 
@@ -156,7 +176,7 @@
 
   <!-- Barra de abajo con el botón de menú -->
   <div class="barra-abajo">
-    <span class="version-panel">Panel v12</span>
+    <span class="version-panel">Panel v13</span>
     <button class="boton-menu" id="abrirMenu" type="button" aria-label="Menú" aria-expanded="false">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
     </button>
@@ -205,7 +225,7 @@
 
 <div id="toast" class="toast" role="status" hidden></div>
 
-<script src="../comun/datos.js"></script>
-<script src="panel.js"></script>
+<script src="../comun/datos.js?v=13"></script>
+<script src="panel.js?v=13"></script>
 </body>
 </html>
