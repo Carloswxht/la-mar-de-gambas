@@ -8,7 +8,7 @@
 - En la base (Supabase) quedan **7 pedidos de prueba** de la Mesa 1 (11–13 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba" (lleva DELETE: dárselo para pegar en el SQL Editor).
 - Mesas: 1–10 de ejemplo hasta tener las reales del local.
 
-## Aspecto y versiones (última versión publicada: v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = MultiBar, publicada el 12 oct, se ve igual salvo "Carta v9" y la firma de autonomIA Lab**)
+## Aspecto y versiones (última publicada: **v11**, 14 oct = control de mesas, apagado aquí; v10 = aviso legal y privacidad; v8 — cada pestaña empieza arriba, 11 oct; v7 = bebidas; v6 = pedidos desde la mesa. **v9 = MultiBar, publicada el 12 oct, se ve igual salvo "Carta v9" y la firma de autonomIA Lab**)
 - Desde la Fase 1 del panel la carta ya no es un archivo único: `carta/index.html` (estructura) + `carta/carta.css` (estilos propios) + `carta/carta.js` (funcionamiento), y usa los archivos compartidos de `comun/`. Se ve exactamente igual que la v5 (comprobado píxel a píxel a 390 px y en tablet).
 - El original de un solo archivo está guardado en `archivo/versiones/carta-digital-la-mar-de-gambas-v5.html`, y en git con la etiqueta `carta-v5-estable` (ver "Panel de barra").
 - El menú se lee de la **base** (`carta_menu`: precios y agotados al día). Si la base no responde en 6 s se usa la copia de reserva `datos/bares/lamardegambas/menu.json` (antes `datos/menu-datos.json`) (139 productos, 9 pestañas; comprobado el 11 oct que coincide exactamente con la base). Si se cambia un producto en el panel, la copia de reserva queda desfasada: actualizarla de vez en cuando.
@@ -39,6 +39,8 @@ Dentro de las pestañas que juntan varias secciones, los nombres originales de l
 - Pimentada de gambas con huevos fritos, Patatas para dipear (4,00 €) y Zamburiñas (2,50 €/ud) están como una línea cada una.
 
 ## Pendiente de este bar
+- **Control de mesas:** instalado y **apagado**. Encenderlo cuando Carlos diga «enciende el control de mesas» (SQL en el `CLAUDE.md`). Desde ese momento el personal abre cada mesa en el panel → «Abrir mesas».
+- **Panel como app:** probar la instalación en el Android de Carlos y en la tablet del local.
 0. **Datos legales del titular** para el aviso legal y la privacidad (14 oct): razón social o nombre, NIF/CIF, domicilio, correo de contacto (y teléfono y datos registrales si es sociedad). Hasta tenerlos, la carta no enseña el enlace.
 1. Generar los **QR** de las mesas reales (con el dominio `carta.autonomialab.es`, nunca github.io), cuando el local dé sus mesas.
 8. Pruebas con móviles reales (`PRUEBAS-FASE-5.md`), sobre todo **iPhone/Safari** y con dos aparatos (panel y carta).
