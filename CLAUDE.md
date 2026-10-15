@@ -33,7 +33,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - No tener en cuenta datos fiscales ni TPV por ahora. No borrar nada: lo antiguo se mueve a una carpeta de archivo.
 - Repositorio renombrado a **`multibar-platform`** (13 oct); el producto se llama **MultiBar**.
 - Modelo de negocio: servicio con cuota mensual sobre la plataforma de Carlos (ver Pendiente 8).
-- Firma pequeña "Carta digital por autonomIA Lab" (enlace a www.autonomialab.es) en el pie de cada carta y "Panel por autonomIA Lab" en la entrada del panel (12 oct).
+- Firma pequeña "Carta digital por autonomIA Lab" en el pie de cada carta y "Panel por autonomIA Lab" en la entrada del panel (12 oct). Desde la v14 (15 oct, a petición de Carlos) **toda la frase es un enlace** a www.autonomialab.es (se abre en otra pestaña; «autonomIA Lab» subrayado) en la carta, la entrada del panel, el menú del panel, la página legal y la página de MultiBar de la raíz. Ojo: www.autonomialab.es sigue en el «parking» de DonDominio hasta que Carlos publique su web.
 
 ## Plan por fases de la plataforma
 - **Fase A (hecha 12–13 oct):** notas separadas (este archivo = plataforma; `datos/bares/SLUG/NOTAS.md` = cada bar; `archivo/HISTORIAL.md` = notas antiguas); `versiones/` y `og-gambas5.jpg` a `archivo/`; `fotos-cartas/` a `datos/bares/lamardegambas/`. Repositorio renombrado a `multibar-platform` el 13 oct.
@@ -73,7 +73,7 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - Responder en español. Carlos dicta por voz: interpretar la intención, no el literal.
 - Carlos solo tiene móvil, sin ordenador. Dar los pasos uno a uno y explicarlos para alguien que no programa.
 - Debe verse y funcionar igual en iPhone (Safari) y Android (Chrome). Avisar de cualquier cosa sensible a Safari.
-- Cada entrega con número de versión visible: «Carta vN» en el pie de la carta y «Panel vN» abajo a la izquierda del panel y en su pantalla de entrar (desde el 15 oct, a petición de Carlos; **el mismo número en los dos**; lista de sitios donde subirlo en «Web y dominios»). v13 (15 oct): número de versión en el panel y recarga sola a la última versión. Etiqueta de git (Releases) solo antes de cambios grandes, con el nombre `carta-vN-estable` (Carlos la crea; el proxy de Claude no deja subir etiquetas). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
+- Cada entrega con número de versión visible: «Carta vN» en el pie de la carta y «Panel vN» abajo a la izquierda del panel y en su pantalla de entrar (desde el 15 oct, a petición de Carlos; **el mismo número en los dos**; lista de sitios donde subirlo en «Web y dominios»). v13 (15 oct): número de versión en el panel y recarga sola a la última versión. v14 (15 oct): firmas de autonomIA Lab enlazadas. Etiqueta de git (Releases) solo antes de cambios grandes, con el nombre `carta-vN-estable` (Carlos la crea; el proxy de Claude no deja subir etiquetas). Las versiones antiguas de un solo archivo están en `archivo/versiones/`.
 - Si Carlos pide "opina" o "analicemos", dar solo opinión, sin ejecutar cambios.
 - No reproducir logos, personajes ni marcas de terceros tal cual. El nombre del local va en texto.
 - Probar en pantalla de móvil (390 px) con capturas antes de entregar.

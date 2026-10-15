@@ -337,6 +337,10 @@ html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
 /* Firma de la plataforma (autonomIA Lab) en la pantalla de entrar */
 .firma-plataforma{ text-align:center; font-size:11px; margin-top:18px; opacity:.7; letter-spacing:.04em; }
 .firma-plataforma a{ color:inherit; text-decoration:none; font-weight:600; }
+.enlace-firma{ display:inline-block; padding:6px 4px; font-weight:400 !important; }
+.enlace-firma b{ font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+.hoja-firma{ text-align:center; font-size:11px; color:var(--suave); opacity:.8; margin-top:10px; letter-spacing:.04em; }
+.hoja-firma a{ color:inherit; text-decoration:none; }
 
 /* Abrir mesas (control de mesas) */
 .mesa-abrir{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
