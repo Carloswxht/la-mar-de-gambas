@@ -39,6 +39,9 @@ insert into categories (bar_id, id, name, sort_order, multi, fam, labs) values
   (1, 'bodega', 'BODEGA', 9, false, 'cb', ARRAY['Copa','Botella']);
 
 -- ---------------- PRODUCTOS (139) ----------------
+-- Barra y cocina (v15): las pestañas de bebida van a la barra; el resto, a cocina.
+update categories set destino = 'barra' where bar_id = 1 and id in ('cafe', 'cervezas', 'bodega');
+
 insert into products (bar_id, id, category_id, name, display_name, description, size, only_size, section, price, featured, allergens, photo, sort_order) overriding system value values
   (1, 1, 'mar', 'Media mariscada', NULL, '550 g aprox. · gambas, patas rusas, langostinos, cigalas y mejillones', NULL, false, 'MARISCO COCIDO', 20.00, false, NULL, '', 1),
   (1, 2, 'mar', 'Gambas', NULL, '200 gr', NULL, false, 'MARISCO COCIDO', 7.50, false, NULL, '', 2),

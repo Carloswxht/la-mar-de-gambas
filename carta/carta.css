@@ -518,3 +518,12 @@ footer .legal-enlace a{ color:inherit; text-decoration:underline; text-underline
 .panel-foot .pie-tique:empty{ display:none; }
 /* Mientras la carta no sabe el aspecto del bar (primera visita), no se enseña. */
 html.mb-cargando body{ visibility:hidden; }
+
+/* ===== v15: «Llamar al camarero» / «Pedir la cuenta» (opción del bar avisos_mesa) ===== */
+.dock .llamar{ display:flex; flex-direction:column; align-items:center; gap:2px; margin-left:auto; margin-right:12px; background:transparent; color:var(--sobre-principal); border:1.5px solid rgba(var(--sobre-principal-rgb, 255,255,255),.45); border-radius:12px; padding:7px 10px; font-family:var(--font-texto) !important; font-size:9.5px; font-weight:700; letter-spacing:.08em; cursor:pointer; }
+.dock .llamar:active{ background:rgba(var(--sobre-principal-rgb, 255,255,255),.12); }
+.dock .llamar[hidden]{ display:none !important; }
+.hoja-llamar{ display:flex; flex-direction:column; gap:10px; min-width:260px; }
+.hoja-llamar .stamp-mark{ align-self:center; }
+.hoja-llamar .ll-op{ width:100%; font-size:15px !important; padding:15px !important; }
+.hoja-llamar .ll-cancelar{ width:100%; background:transparent !important; color:var(--ink) !important; border:1px solid var(--line) !important; }

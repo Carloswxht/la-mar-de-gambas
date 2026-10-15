@@ -20,8 +20,9 @@ const TAMANOS = ['Tapa', 'Plato', 'Copa', 'Botella'];
 // Vistas del menú y quién las ve.
 const VISTAS = {
   pedidos:  { nombre: 'Pedidos',          cab: 'PEDIDOS',          roles: ['camarero', 'barra', 'admin'], icono: 'M7 4h10v16H7zM9.5 8h5M9.5 12h5M9.5 16h3' },
-  // Solo si el bar tiene encendido el "control de mesas" (ajustes.control_mesas).
-  abrir:    { nombre: 'Abrir mesas',      cab: 'ABRIR MESAS',      roles: ['camarero', 'barra', 'admin'], icono: 'M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3', control: true },
+  // Solo si el bar tiene encendida la opción (ajustes.cuentas_mesa / ajustes.control_mesas).
+  cuentas:  { nombre: 'Cuentas de mesas', cab: 'CUENTAS',          roles: ['camarero', 'barra', 'admin'], icono: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4', opcion: 'cuentas_mesa' },
+  abrir:    { nombre: 'Abrir mesas',      cab: 'ABRIR MESAS',      roles: ['camarero', 'barra', 'admin'], icono: 'M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3', opcion: 'control_mesas' },
   precios:  { nombre: 'Lista de precios', cab: 'LISTA DE PRECIOS', roles: ['barra', 'admin'],             icono: 'M4 6h16M4 12h16M4 18h10M18 16v4' },
   resumen:  { nombre: 'Resumen del día',  cab: 'RESUMEN DEL DÍA',  roles: ['barra', 'admin'],             icono: 'M5 20V11M12 20V5M19 20v-7' },
   mesas:    { nombre: 'Mesas',            cab: 'MESAS',            roles: ['admin'],                      icono: 'M4 9h16M6 9v10M18 9v10M9 5h6' },
@@ -32,6 +33,10 @@ const estado = {
   sesion: null,
   vista: 'pedidos',
   pedidos: [],
+  avisos: [],              // avisos de las mesas sin atender (v15)
+  avisosVistos: null,      // ids de avisos ya avisados
+  cuentas: [],             // cuentas de las mesas (v15)
+  destino: leerLocal('panel.destino') || 'todo', // qué ve este aparato: todo | barra | cocina
   vistos: null,            // ids de pedidos nuevos ya avisados
   modificados: {},         // id -> fecha de la última edición del cliente
   ocupado: new Set(),      // pedidos con un botón en marcha
@@ -213,8 +218,10 @@ $('pSalir').addEventListener('click', salir);
 $('bSalir').addEventListener('click', salir);
 
 /* ---------------- MENÚ DE ABAJO ---------------- */
-function controlMesas(){ const b = estado.sesion && estado.sesion.bar; return !!(b && b.ajustes && b.ajustes.control_mesas); }
-function vistasDelRol(rol){ return Object.keys(VISTAS).filter(v => VISTAS[v].roles.includes(rol) && (!VISTAS[v].control || controlMesas())); }
+// Opciones de la plataforma encendidas en el bar de la sesión (ajustes del bar).
+function opcionBar(k){ const b = estado.sesion && estado.sesion.bar; return !!(b && b.ajustes && b.ajustes[k]); }
+function controlMesas(){ return opcionBar('control_mesas'); }
+function vistasDelRol(rol){ return Object.keys(VISTAS).filter(v => VISTAS[v].roles.includes(rol) && (!VISTAS[v].opcion || opcionBar(VISTAS[v].opcion))); }
 
 function pintarMenu(){
   const nuevos = estado.pedidos.filter(p => p.estado === 'enviado').length;
@@ -248,6 +255,7 @@ function irA(vista){
   estado.vista = vista;
   $('cVista').textContent = VISTAS[vista].cab;
   $('sPedidos').hidden = vista !== 'pedidos';
+  $('sCuentas').hidden = vista !== 'cuentas';
   $('sAbrir').hidden = vista !== 'abrir';
   $('sPrecios').hidden = vista !== 'precios';
   $('sResumen').hidden = vista !== 'resumen';
@@ -255,6 +263,7 @@ function irA(vista){
   $('sUsuarios').hidden = vista !== 'usuarios';
   window.scrollTo(0, 0);
   if(vista === 'pedidos') pintarPedidos();
+  if(vista === 'cuentas') cargarCuentas();
   if(vista === 'abrir') cargarAbrir();
   if(vista === 'precios') cargarProductos();
   if(vista === 'resumen') pintarResumen();
@@ -280,12 +289,17 @@ async function cargarPedidos(){
   if(cargando || !estado.sesion) return;
   cargando = true;
   try {
-    const lista = await datosPanel.pedidos();
-    estado.pedidos = Array.isArray(lista) ? lista : [];
+    // Pedidos del día y avisos de las mesas, en una sola llamada (v15).
+    const r = await datosPanel.estado();
+    estado.pedidos = (r && Array.isArray(r.pedidos)) ? r.pedidos : [];
+    estado.avisos = (r && Array.isArray(r.avisos)) ? r.avisos : [];
     estado.ultimaCarga = new Date(); estado.sinConexion = false;
     detectarNovedades();
+    detectarAvisos();
+    pintarAvisos();
     if(estado.vista === 'pedidos') pintarPedidos();
     if(estado.vista === 'resumen') pintarResumen();
+    if(estado.vista === 'cuentas') cargarCuentas();
   } catch(e) {
     if(e.codigo === 'SESION_CADUCADA') return volverAlLogin(e.message);
     estado.sinConexion = true;
@@ -297,7 +311,8 @@ async function cargarPedidos(){
 
 // Avisa (sonido, vibración y destello) de pedidos nuevos o editados.
 function detectarNovedades(){
-  const nuevos = estado.pedidos.filter(p => p.estado === 'enviado');
+  // Con barra y cocina separadas, cada aparato solo suena con lo suyo.
+  const nuevos = estado.pedidos.filter(p => p.estado === 'enviado' && delFiltro(p));
   if(estado.vistos === null){
     // Primera carga: lo que ya había no suena.
     estado.vistos = new Set(nuevos.map(p => p.id));
@@ -307,7 +322,7 @@ function detectarNovedades(){
   let hayNuevo = false, hayEditado = false;
   nuevos.forEach(p => { if(!estado.vistos.has(p.id)){ estado.vistos.add(p.id); hayNuevo = true; } });
   estado.pedidos.forEach(p => {
-    if(p.modificado && estado.modificados[p.id] !== p.modificado && p.estado !== 'servido') hayEditado = true;
+    if(p.modificado && estado.modificados[p.id] !== p.modificado && p.estado !== 'servido' && delFiltro(p)) hayEditado = true;
     estado.modificados[p.id] = p.modificado;
   });
   if(hayNuevo) avisar('nuevo');
@@ -316,15 +331,40 @@ function detectarNovedades(){
 
 const porCreacion = (a, b) => new Date(a.creado) - new Date(b.creado);
 
+/* ---------------- BARRA Y COCINA (v15, opción barra_cocina) ----------------
+   Un pedido con bebida y comida llega en dos partes (mismo número), cada
+   una con su estado. Cada aparato elige qué ver: todo, solo barra o solo
+   cocina (se recuerda en ese aparato). */
+function separaDestinos(){ return opcionBar('barra_cocina'); }
+function delFiltro(p){
+  if(!separaDestinos() || estado.destino === 'todo' || !p.destino) return true;
+  return p.destino === estado.destino;
+}
+function pintarFiltro(){
+  const f = $('filtroDestino');
+  f.hidden = !separaDestinos();
+  f.querySelectorAll('button').forEach(b => b.classList.toggle('activo', b.dataset.destino === estado.destino));
+}
+$('filtroDestino').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-destino]');
+  if(!b) return;
+  estado.destino = b.dataset.destino;
+  guardarLocal('panel.destino', estado.destino);
+  // Lo que ya estaba pendiente no debe sonar al cambiar de filtro.
+  estado.pedidos.filter(p => p.estado === 'enviado').forEach(p => estado.vistos && estado.vistos.add(p.id));
+  pintarPedidos();
+});
+
 function pintarPedidos(){
-  const ps = estado.pedidos;
+  pintarFiltro();
+  const ps = estado.pedidos.filter(delFiltro);
   const nuevos = ps.filter(p => p.estado === 'enviado').sort(porCreacion);
   const prep = ps.filter(p => p.estado === 'en_preparacion').sort(porCreacion);
   const servidos = ps.filter(p => p.estado === 'servido').sort((a, b) => new Date(b.servido || b.creado) - new Date(a.servido || a.creado));
 
   $('nPendientes').textContent = nuevos.length + prep.length;
   $('nServidos').textContent = servidos.filter(deHoy).length;
-  $('nTotalHoy').textContent = euros(ps.filter(deHoy).reduce((s, p) => s + Number(p.total || 0), 0));
+  $('nTotalHoy').textContent = euros(estado.pedidos.filter(deHoy).reduce((s, p) => s + Number(p.total || 0), 0));
   document.title = (nuevos.length ? '(' + nuevos.length + ') ' : '') + (NOMBRE_BAR ? NOMBRE_BAR + ' · ' : '') + 'Panel';
 
   const pendientes = nuevos.concat(prep);
@@ -366,7 +406,7 @@ function tarjeta(p){
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
   return `<div class="pedido ${servido ? 'servido' : ''}">
     <div class="tarjeta ${clase}">
-      <div class="pedido-num">Pedido nº ${esc(p.numero || p.id)}</div>
+      <div class="pedido-num">Pedido nº ${esc(p.numero || p.id)}${p.destino ? `<span class="destino-etq ${p.destino === 'barra' ? 'barra' : 'cocina'}">${p.destino === 'barra' ? 'Barra' : 'Cocina'}</span>` : ''}</div>
       <div class="t-arriba"><span class="t-mesa">${esc(p.mesa_nombre || ('Mesa ' + p.mesa))}</span><span class="t-hora">${hora(p.creado)}</span></div>
       ${servido ? '' : `<div class="t-estado"><span class="t-espera ${min >= 10 ? 'tarde' : ''}">${textoEspera(min)}</span></div>`}
       ${lineas}
@@ -406,6 +446,112 @@ async function alTocarPedido(ev){
 $('listaPendientes').addEventListener('click', alTocarPedido);
 $('listaServidos').addEventListener('click', alTocarPedido);
 
+/* =====================================================================
+   AVISOS DE LAS MESAS (v15, opción avisos_mesa)
+   «Llama al camarero» y «Pide la cuenta» desde la carta. Salen arriba, en
+   cualquier pantalla del panel, con pitido, hasta que alguien pulsa
+   «Atendido». Lo da la misma llamada que los pedidos (panel_estado).
+   ===================================================================== */
+function detectarAvisos(){
+  if(estado.avisosVistos === null){ estado.avisosVistos = new Set(estado.avisos.map(a => a.id)); return; }
+  const nuevos = estado.avisos.filter(a => !estado.avisosVistos.has(a.id));
+  nuevos.forEach(a => estado.avisosVistos.add(a.id));
+  if(nuevos.length){
+    avisar('aviso');
+    const a = nuevos[nuevos.length - 1];
+    toast((a.mesa_nombre || 'Mesa ' + a.mesa) + (a.tipo === 'cuenta' ? ' · pide la cuenta' : ' · llama al camarero'));
+  }
+}
+function pintarAvisos(){
+  const caja = $('avisosMesa');
+  if(!estado.avisos.length){ caja.hidden = true; caja.innerHTML = ''; return; }
+  caja.hidden = false;
+  caja.innerHTML = estado.avisos.map(a => `
+    <div class="aviso-mesa ${a.tipo === 'cuenta' ? 'cuenta' : 'camarero'}">
+      <div class="am-texto"><b>${esc(a.mesa_nombre || 'Mesa ' + a.mesa)}</b> · ${a.tipo === 'cuenta' ? 'Pide la cuenta' : 'Llama al camarero'}
+        <span class="am-hora">${textoEspera(minutosDesde(a.creado))}</span></div>
+      <div class="am-botones">
+        ${a.tipo === 'cuenta' && opcionBar('cuentas_mesa') ? `<button class="btn btn-borde" type="button" data-ver-cuenta="${a.mesa}">Ver cuenta</button>` : ''}
+        <button class="btn btn-azul" type="button" data-atender="${a.id}">Atendido</button>
+      </div>
+    </div>`).join('');
+}
+$('avisosMesa').addEventListener('click', async (ev) => {
+  const v = ev.target.closest('button[data-ver-cuenta]');
+  if(v){ estado.cuentaDestacada = Number(v.dataset.verCuenta); irA('cuentas'); return; }
+  const b = ev.target.closest('button[data-atender]');
+  if(!b || b.disabled) return;
+  b.disabled = true;
+  try {
+    const r = await datosPanel.atenderAviso(Number(b.dataset.atender));
+    if(Array.isArray(r)) estado.avisos = r;
+    pintarAvisos();
+  } catch(e) { b.disabled = false; tratarError(e); }
+});
+
+/* =====================================================================
+   CUENTAS DE LAS MESAS (v15, opción cuentas_mesa)
+   Todo lo pedido hoy por cada mesa y aún sin cobrar (de todos los móviles
+   y de barra y cocina), con el total. «Cobrada» (dos toques) la cierra.
+   ===================================================================== */
+let cargandoCuentas = false;
+async function cargarCuentas(){
+  if(cargandoCuentas) return;
+  cargandoCuentas = true;
+  try {
+    const r = await datosPanel.cuentas();
+    estado.cuentas = Array.isArray(r) ? r : [];
+    pintarCuentas();
+  } catch(e) { tratarError(e); }
+  finally { cargandoCuentas = false; }
+}
+let cobrarPendiente = { mesa: null, hasta: 0 };
+function pintarCuentas(){
+  const cs = estado.cuentas;
+  $('listaCuentas').innerHTML = cs.length ? cs.map(c => {
+    const pidiendo = cobrarPendiente.mesa === c.mesa && Date.now() < cobrarPendiente.hasta;
+    const lineas = (c.lineas || []).map(l => `
+      <div class="linea"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.importe)}</span></div>`).join('');
+    return `<div class="pedido" id="cuenta-${c.mesa}">
+      <div class="tarjeta ${estado.cuentaDestacada === c.mesa ? 'destacada' : ''}">
+        <div class="pedido-num">${esc(c.mesa_nombre || 'Mesa ' + c.mesa)}</div>
+        <div class="t-arriba"><span class="t-hora">${c.pedidos} pedido${c.pedidos === 1 ? '' : 's'} · desde las ${hora(c.desde)}</span></div>
+        ${c.sin_servir ? `<div class="cuenta-aviso">⚠ Hay ${c.sin_servir} pedido${c.sin_servir === 1 ? '' : 's'} sin servir</div>` : ''}
+        ${lineas}
+        <div class="t-total"><span>TOTAL</span><span>${euros(c.total)}</span></div>
+        <div class="t-botones"><button class="btn ${pidiendo ? 'btn-rosa' : 'btn-azul'}" type="button" data-cobrar="${c.mesa}">${pidiendo ? '¿Seguro? Toca otra vez' : 'Cobrada'}</button></div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="vacio">No hay cuentas abiertas: todas las mesas están cobradas.</div>';
+  if(estado.cuentaDestacada != null){
+    const el = $('cuenta-' + estado.cuentaDestacada);
+    if(el) el.scrollIntoView({ block: 'center' });
+    estado.cuentaDestacada = null;
+  }
+}
+$('listaCuentas').addEventListener('click', async (ev) => {
+  const b = ev.target.closest('button[data-cobrar]');
+  if(!b || b.disabled) return;
+  const mesa = Number(b.dataset.cobrar);
+  // Primer toque: pide confirmación; segundo (en 4 s): cobra.
+  if(cobrarPendiente.mesa !== mesa || Date.now() > cobrarPendiente.hasta){
+    cobrarPendiente = { mesa, hasta: Date.now() + 4000 };
+    pintarCuentas();
+    setTimeout(() => { if(cobrarPendiente.mesa === mesa && Date.now() > cobrarPendiente.hasta && estado.vista === 'cuentas') pintarCuentas(); }, 4100);
+    return;
+  }
+  cobrarPendiente = { mesa: null, hasta: 0 };
+  b.disabled = true;
+  try {
+    await datosPanel.cobrarMesa(mesa);
+    const c = estado.cuentas.find(x => x.mesa === mesa);
+    toast((c ? c.mesa_nombre : 'Mesa ' + mesa) + ' · cuenta cobrada');
+    estado.avisos = estado.avisos.filter(a => a.mesa !== mesa);
+    pintarAvisos();
+    await cargarCuentas();
+  } catch(e) { tratarError(e); pintarCuentas(); }
+});
+
 /* ---------------- AVISOS: SONIDO, VIBRACIÓN, PANTALLA ENCENDIDA ----------------
    Safari (iPhone) no deja sonar nada hasta que la persona toca la pantalla,
    y no permite vibrar desde una web. El primer toque en cualquier sitio
@@ -429,7 +575,9 @@ function activarSonido(){
 function pitar(tipo){
   if(!audio) return;
   try {
-    const notas = tipo === 'nuevo' ? [[880, 0], [1175, .18], [880, .36], [1175, .54]] : [[660, 0], [880, .18]];
+    const notas = tipo === 'nuevo' ? [[880, 0], [1175, .18], [880, .36], [1175, .54]]
+                : tipo === 'aviso' ? [[1320, 0], [990, .2], [1320, .4]]   // aviso de una mesa (v15)
+                : [[660, 0], [880, .18]];
     notas.forEach(([f, t]) => {
       const o = audio.createOscillator(), g = audio.createGain();
       o.type = 'sine'; o.frequency.value = f;
@@ -444,7 +592,7 @@ function pitar(tipo){
 
 function avisar(tipo){
   pitar(tipo);
-  if(navigator.vibrate) navigator.vibrate(tipo === 'nuevo' ? [300, 150, 300, 150, 300] : [200]);
+  if(navigator.vibrate) navigator.vibrate(tipo === 'nuevo' || tipo === 'aviso' ? [300, 150, 300, 150, 300] : [200]);
   document.body.classList.remove('destello'); void document.body.offsetWidth;
   document.body.classList.add('destello');
   setTimeout(() => document.body.classList.remove('destello'), 3000);
@@ -807,7 +955,9 @@ $('nvEnviar').addEventListener('click', async () => {
   nuevo.enviando = true; $('nvEnviar').textContent = 'Enviando…'; pintarDockNuevo();
   try {
     const p = await datosPanel.crearPedido(nuevo.mesa, ls.map(l => ({ producto: l.producto, cantidad: l.cantidad, nota: l.nota })));
-    if(p){ estado.pedidos.push(p); if(estado.vistos) estado.vistos.add(p.id); }
+    // Con barra y cocina separadas llega en dos partes (v15).
+    const partes = p && Array.isArray(p.partes) && p.partes.length ? p.partes : (p ? [p] : []);
+    partes.forEach(x => { estado.pedidos.push(x); if(estado.vistos) estado.vistos.add(x.id); });
     cerrarNuevo();
     if(estado.vista !== 'pedidos') irA('pedidos'); else pintarPedidos();
     toast(nuevo.mesaNombre + ' · pedido enviado a barra');
@@ -835,9 +985,11 @@ function pintarResumen(){
     });
   });
   $('rFecha').textContent = fechaLarga();
-  $('rPedidos').textContent = hoy.length;
+  // Las 2.ª partes (barra y cocina) no cuentan como otro pedido.
+  const nPedidos = hoy.filter(p => !p.parte_de).length;
+  $('rPedidos').textContent = nPedidos;
   $('rUnidades').textContent = unidades;
-  $('rMedio').textContent = euros(hoy.length ? total / hoy.length : 0);
+  $('rMedio').textContent = euros(nPedidos ? total / nPedidos : 0);
   $('rTotal').textContent = euros(total);
   const filas = Object.entries(porArticulo).sort((a, b) => b[1].cant - a[1].cant || b[1].importe - a[1].importe);
   $('rArticulos').innerHTML = filas.length
