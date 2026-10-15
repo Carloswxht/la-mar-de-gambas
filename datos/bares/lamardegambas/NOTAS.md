@@ -2,7 +2,7 @@
 
 **La Mar de Gambas Cervecerías** (Sevilla, desde 2007; grupo Puerto Seguro). Primer cliente y piloto de la plataforma MultiBar. Aquí va todo lo que es SOLO de este bar; lo común está en el `CLAUDE.md` de la raíz.
 
-- Enlace de la carta: `/carta/?bar=lamardegambas` (desde el 14 oct, sin `bar=` ya NO lleva aquí: sale la página de MultiBar). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
+- Enlace de la carta: `/carta/?bar=lamardegambas` (siempre con `bar=`: desde el 14 oct ya no hay bar por defecto y un enlace sin `bar=`, o con uno mal escrito, lleva a la página de MultiBar, nunca a este bar). QR de mesa: `/carta/?bar=lamardegambas&mesa=N&c=CÓDIGO` (panel → Mesas → Copiar enlace).
 - Copia de reserva: `menu.json` y `bar.json` en esta carpeta. Fotos de las cartas físicas (fuente de verdad de los precios): `fotos-cartas/`.
 - Usuarios de prueba: `carloswxht+admin@gmail.com` (admin; Carlos ya cambió su contraseña), `carloswxht+barra@gmail.com`, `carloswxht+camarero@gmail.com` (contraseña provisional dada por el chat). Son alias de Gmail: llegan al buzón de Carlos.
 - En la base (Supabase) quedan **7 pedidos de prueba** de la Mesa 1 (11–13 oct): borrarlos cuando Carlos diga "borra los pedidos de prueba" (lleva DELETE: dárselo para pegar en el SQL Editor).
@@ -17,6 +17,8 @@
 - Colores del local, sacados de sus cartas físicas (`fotos-cartas/`): azul marino `#14295E` (fondo oscuro `#0E1F4D`), naranja `#F08A3E`, blanco. Tipografía: Oswald para títulos y totales, DM Sans para el resto. Variables comunes en `comun/estilos.css`.
 - Cabecera fija azul con "LA MAR DE GAMBAS" y "Cervecerías · Desde 2007"; pestañas con raya naranja en la activa; botón + naranja; barra inferior azul con total y botón "VER TIQUE" naranja.
 - Los estilos de la carta están en `carta/carta.css`: un bloque `THEME` al final anula los estilos heredados de la carta de El Recreo (tema dorado).
+
+- **Fase C (14 oct, carta v12):** su aspecto ya no está en el código sino en `ajustes.aspecto` (aplicado en Supabase y copiado en `bar.json`): azul marino `#14295E`/`#0E1F4D`, naranja `#F08A3E`/`#D9722A`, fondo blanco, texto `#0F1E45`, Oswald + DM Sans, nombre en letras (sin logo) e icono `icono-512.png` de esta carpeta. Se ve idéntica a la v11. Para poner el logo de la gamba: subirlo a Supabase Storage (`logos/lamardegambas.png`) y poner `logo` y `cabecera` en sus ajustes.
 
 ## Pestañas (9)
 **Café y bebidas · Cervezas y copas** · Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.

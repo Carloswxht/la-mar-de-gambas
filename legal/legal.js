@@ -27,7 +27,8 @@ async function leerBar(){
 
 function pintar(bar){
   const main = document.getElementById('contenido');
-  if(!bar){ main.innerHTML = '<p class="vacio">No se encuentra este bar.</p>'; return; }
+  if(!bar){ Aspecto.aplicar(null); main.innerHTML = '<p class="vacio">No se encuentra este bar.</p>'; return; }
+  Aspecto.aplicar(bar); // colores, fuentes y logo del bar (comun/aspecto.js)
   document.getElementById('local').textContent = bar.nombre;
   document.getElementById('volver').href = '../carta/?bar=' + encodeURIComponent(bar.slug || BAR);
   document.title = 'Aviso legal y privacidad · ' + bar.nombre;
@@ -95,7 +96,7 @@ function pintar(bar){
   <p>No vendemos ni cedemos tus datos a nadie, salvo obligación legal.</p>
 
   <h3>Cookies y almacenamiento en tu navegador</h3>
-  <p>No usamos cookies de publicidad ni de analítica. La web solo guarda en tu navegador lo imprescindible para funcionar: el número al azar de tu móvil, el nombre del local y, si eres del personal, tu sesión. Al ser técnico y necesario, no requiere tu consentimiento.</p>
+  <p>No usamos cookies de publicidad ni de analítica. La web solo guarda en tu navegador lo imprescindible para funcionar: el número al azar de tu móvil, el nombre y el aspecto del local (colores y logo) y, si eres del personal, tu sesión. Al ser técnico y necesario, no requiere tu consentimiento.</p>
 
   <h3>Tus derechos</h3>
   <p>Puedes pedir el acceso, la rectificación, la supresión, la oposición, la limitación o la portabilidad de tus datos escribiendo a <a href="mailto:${esc(L.email)}">${esc(L.email)}</a>. Si crees que no hemos atendido bien tu petición, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">www.aepd.es</a>).</p>

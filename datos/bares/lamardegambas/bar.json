@@ -8,6 +8,25 @@
       "Picos 0,90€ por persona · Extra de salsa 0,50€",
       "Salsas: mojo picón, brava, BBQ, ali-oli, cheddar, whisky, crema de queso, césar o salsa verde",
       "La Mar de Gambas · Cervecerías"
-    ]
+    ],
+    "aspecto": {
+      "plantilla": "clasica",
+      "colores": {
+        "principal": "#14295E",
+        "principal_oscuro": "#0E1F4D",
+        "acento": "#F08A3E",
+        "acento_oscuro": "#D9722A",
+        "fondo": "#FFFFFF",
+        "fondo_2": "#F3F6FB",
+        "texto": "#0F1E45"
+      },
+      "fuentes": {
+        "titulos": "oswald",
+        "texto": "dmsans"
+      },
+      "cabecera": "nombre",
+      "icono": "datos/bares/lamardegambas/icono-512.png",
+      "nombre_corto": "La Mar de Gambas"
+    }
   }
 }

@@ -1,11 +1,11 @@
 /* Página legal de cada bar: texto largo, fácil de leer en el móvil */
 body{ margin:0; background:#FFFFFF; color:#1C2333; font-family:var(--font-texto); font-size:16px; line-height:1.6; }
-.cab{ background:var(--navy); color:#FFFFFF; padding:18px 16px 14px; text-align:center; }
-.volver{ display:block; text-align:left; color:#FFFFFF; opacity:.85; font-size:14px; text-decoration:none; margin-bottom:10px; }
+.cab{ background:var(--navy); color:var(--sobre-principal, #FFFFFF); padding:18px 16px 14px; text-align:center; }
+.volver{ display:block; text-align:left; color:inherit; opacity:.85; font-size:14px; text-decoration:none; margin-bottom:10px; }
 .local{ font-family:var(--font-titulos); font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:22px; }
 .cab h1{ font-family:var(--font-titulos); font-weight:500; color:var(--orange); text-transform:uppercase; letter-spacing:.14em; font-size:13px; margin:4px 0 12px; }
 .indice{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-.indice a{ color:#FFFFFF; border:1px solid rgba(255,255,255,.45); border-radius:999px; padding:6px 14px; font-size:14px; text-decoration:none; }
+.indice a{ color:inherit; border:1px solid rgba(var(--sobre-principal-rgb, 255,255,255),.45); border-radius:999px; padding:6px 14px; font-size:14px; text-decoration:none; }
 main{ max-width:680px; margin:0 auto; padding:8px 16px 32px; }
 main h2{ font-family:var(--font-titulos); color:var(--navy); text-transform:uppercase; letter-spacing:.05em; font-size:21px; margin:28px 0 6px; scroll-margin-top:12px; }
 main h3{ color:var(--navy); font-size:16px; margin:20px 0 4px; }
@@ -18,3 +18,5 @@ main ul{ padding-left:20px; }
 .pie{ text-align:center; color:#55607A; font-size:12px; padding:0 16px 28px; }
 .pie a{ color:inherit; font-weight:600; text-decoration:none; }
 a{ color:var(--navy); }
+.cab .logo{ display:block; margin:0 auto 6px; max-width:60%; max-height:48px; width:auto; height:auto; object-fit:contain; }
+.cab .logo[hidden]{ display:none; }
