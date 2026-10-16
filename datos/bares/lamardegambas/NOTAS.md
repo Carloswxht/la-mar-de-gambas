@@ -20,7 +20,7 @@
 
 - **Fase C (14 oct, carta v12):** su aspecto ya no está en el código sino en `ajustes.aspecto` (aplicado en Supabase y copiado en `bar.json`): azul marino `#14295E`/`#0E1F4D`, naranja `#F08A3E`/`#D9722A`, fondo blanco, texto `#0F1E45`, Oswald + DM Sans, nombre en letras (sin logo) e icono `icono-512.png` de esta carpeta. Se ve idéntica a la v11. Para poner el logo de la gamba: subirlo a Supabase Storage (`logos/lamardegambas.png`) y poner `logo` y `cabecera` en sus ajustes.
 
-- **v15 (15 oct):** barra y cocina separadas (barra = Café y bebidas, Cervezas y copas y Bodega; el resto, cocina), botón «Camarero» en la carta (llamar al camarero / pedir la cuenta) y «Cuentas de mesas» en el panel. Opciones `barra_cocina`, `avisos_mesa` y `cuentas_mesa`: se encienden en este bar al publicar la v15. Para el día a día: una tablet en barra con «Solo barra» y otra en cocina con «Solo cocina».
+- **v15 (15 oct):** barra y cocina separadas (barra = Café y bebidas, Cervezas y copas y Bodega; el resto, cocina), botón «Camarero» en la carta (llamar al camarero / pedir la cuenta) y «Cuentas de mesas» en el panel. Opciones `barra_cocina`, `avisos_mesa` y `cuentas_mesa`: **encendidas el 15 oct** (también en `bar.json`). Para el día a día: una tablet en barra con «Solo barra» y otra en cocina con «Solo cocina».
 
 ## Pestañas (9)
 **Café y bebidas · Cervezas y copas** · Marisco y mar · Para picar · Fritos y croquetas · Carne y arroces · Panes · Postres · Bodega.
