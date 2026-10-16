@@ -599,7 +599,12 @@ function pintarLlamar(){
   const activo = !!(BAR_INFO && BAR_INFO.ajustes && BAR_INFO.ajustes.avisos_mesa);
   llamarBtn.hidden = !(activo && MESA);
 }
-llamarBtn.addEventListener("click", () => llamarHoja.classList.add("show"));
+// «Pedir la cuenta» solo si este móvil ya ha hecho algún pedido (v17):
+// sin pedidos no hay nada que cobrar, solo se puede llamar al camarero.
+llamarBtn.addEventListener("click", () => {
+  llamarHoja.querySelector('.ll-op[data-tipo="cuenta"]').hidden = rounds.length === 0;
+  llamarHoja.classList.add("show");
+});
 document.getElementById("llamarCancelar").addEventListener("click", () => llamarHoja.classList.remove("show"));
 llamarHoja.addEventListener("click", (ev) => { if(ev.target === llamarHoja) llamarHoja.classList.remove("show"); });
 let llamando = false;

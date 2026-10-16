@@ -102,6 +102,7 @@ function textoError(codigo){
     USUARIO_NO_VALIDO: 'No se encuentra el usuario.',
     ULTIMO_ADMIN: 'Tiene que quedar al menos un administrador activo.',
     FUNCION_NO_ACTIVA: 'Esta opción no está disponible en este local.',
+    SIN_PEDIDOS: 'Todavía no hay ningún pedido en esta mesa: no hay cuenta que pedir.',
     NADA_QUE_COBRAR: 'No hay nada servido que cobrar en esta mesa (o ya se ha cobrado).',
     YA_COBRADO: 'Este pedido ya está cobrado. Para cambiarlo, reabre antes su cuenta en «Cuentas de mesas».',
   };

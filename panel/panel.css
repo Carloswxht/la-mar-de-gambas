@@ -385,3 +385,4 @@ html.sin-scroll, html.sin-scroll body{ overflow:hidden; }
 .fila-cobrada b{ font-family:var(--font-titulos); letter-spacing:.04em; color:var(--navy); }
 .cobrada-info{ display:block; font-size:12px; color:var(--suave); }
 .fila-cobrada .btn{ min-height:44px; font-size:14px; flex:none; }
+.confirmar-importe{ font-family:var(--font-titulos); font-size:34px; font-weight:600; color:var(--navy); margin:0; }

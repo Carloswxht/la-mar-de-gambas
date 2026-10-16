@@ -508,9 +508,6 @@ async function cargarCuentas(){
   } catch(e) { tratarError(e); }
   finally { cargandoCuentas = false; }
 }
-// Botones que piden un segundo toque para confirmar (Cobrada / Reabrir).
-let confirmando = { clave: null, hasta: 0 };
-const confirmandoAhora = (clave) => confirmando.clave === clave && Date.now() < confirmando.hasta;
 function lineasCuenta(ls, clase){
   return (ls || []).map(l => `
     <div class="linea ${clase || ''}"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.importe)}</span></div>`).join('');
@@ -521,10 +518,8 @@ function pintarCuentas(){
   const cs = estado.cuentas;
   const abiertas = cs.length ? cs.map(c => {
     const total = Number(c.total || 0), pendiente = Number(c.pendiente || 0);
-    const clave = 'cobrar-' + c.mesa;
-    const pidiendo = confirmandoAhora(clave);
     const boton = total > 0
-      ? `<button class="btn ${pidiendo ? 'btn-rosa' : 'btn-azul'}" type="button" data-cobrar="${c.mesa}">${pidiendo ? '¿Seguro? Toca otra vez' : 'Cobrada · ' + euros(total)}</button>`
+      ? `<button class="btn btn-azul" type="button" data-cobrar="${c.mesa}">Cobrada · ${euros(total)}</button>`
       : `<button class="btn btn-borde" type="button" disabled>Nada servido todavía</button>`;
     return `<div class="pedido" id="cuenta-${c.mesa}">
       <div class="tarjeta ${estado.cuentaDestacada === c.mesa ? 'destacada' : ''}">
@@ -543,10 +538,9 @@ function pintarCuentas(){
     </div>`;
   }).join('') : '<div class="vacio">No hay cuentas abiertas: todas las mesas están cobradas.</div>';
   const cobradas = (estado.cobradas || []).map(k => {
-    const clave = 'reabrir-' + k.mesa + '-' + k.cuando;
     return `<div class="fila-cobrada">
       <div><b>${esc(k.mesa_nombre || 'Mesa ' + k.mesa)}</b> · ${euros(k.total)}<span class="cobrada-info">${hora(k.cuando)}${k.por ? ' · ' + esc(k.por) : ''}</span></div>
-      <button class="btn btn-borde" type="button" data-reabrir="${k.mesa}" data-cuando="${esc(k.cuando)}">${confirmandoAhora(clave) ? '¿Reabrir? Toca otra vez' : 'Reabrir'}</button>
+      <button class="btn btn-borde" type="button" data-reabrir="${k.mesa}" data-cuando="${esc(k.cuando)}">Reabrir</button>
     </div>`;
   }).join('');
   $('listaCuentas').innerHTML = abiertas + (cobradas ? `<div class="titulo-seccion separado">COBRADAS HOY</div>
@@ -557,42 +551,42 @@ function pintarCuentas(){
     estado.cuentaDestacada = null;
   }
 }
-// Primer toque: pide confirmación (4 s); segundo: lo hace.
-function pedirConfirmacion(clave){
-  if(confirmandoAhora(clave)){ confirmando = { clave: null, hasta: 0 }; return true; }
-  confirmando = { clave, hasta: Date.now() + 4000 };
-  pintarCuentas();
-  setTimeout(() => { if(confirmando.clave === clave && !confirmandoAhora(clave) && estado.vista === 'cuentas') pintarCuentas(); }, 4100);
-  return false;
-}
-$('listaCuentas').addEventListener('click', async (ev) => {
+// Cobrar y reabrir piden confirmación en una ventana con el importe
+// (v17, a petición de Carlos: el doble toque no se entendía).
+$('listaCuentas').addEventListener('click', (ev) => {
   const b = ev.target.closest('button[data-cobrar], button[data-reabrir]');
   if(!b || b.disabled) return;
   if(b.dataset.cobrar){
     const mesa = Number(b.dataset.cobrar);
     const c = estado.cuentas.find(x => x.mesa === mesa);
-    if(!c || !pedirConfirmacion('cobrar-' + mesa)) return;
-    b.disabled = true;
-    try {
-      // Solo los pedidos servidos que el camarero tiene en pantalla.
-      const r = await datosPanel.cobrar(mesa, c.ids || []);
-      toast((c.mesa_nombre || 'Mesa ' + mesa) + ' · cobrada ' + euros(r && r.total));
-      estado.avisos = estado.avisos.filter(a => a.mesa !== mesa);
-      pintarAvisos();
-    } catch(e) { tratarError(e); }
-    await cargarCuentas();
-    cargarPedidos(); // las tarjetas de esos pedidos pasan a «Cobrado» al momento
+    if(!c) return;
+    const nombre = c.mesa_nombre || 'Mesa ' + mesa;
+    confirmarAccion('¿Cobrar ' + nombre + '?',
+      `<p class="confirmar-importe">${euros(c.total)}</p>
+       <p class="texto-suave">Se cobra solo lo servido.${c.sin_servir ? ' Lo que falta por servir (' + euros(c.pendiente) + ') se queda en la cuenta.' : ''}</p>`,
+      'Sí, cobrar', async () => {
+        // Solo los pedidos servidos que el camarero tiene en pantalla.
+        const r = await datosPanel.cobrar(mesa, c.ids || []);
+        toast(nombre + ' · cobrada ' + euros(r && r.total));
+        estado.avisos = estado.avisos.filter(a => a.mesa !== mesa);
+        pintarAvisos();
+        await cargarCuentas();
+        cargarPedidos(); // las tarjetas de esos pedidos pasan a «Cobrado» al momento
+      });
     return;
   }
   const mesa = Number(b.dataset.reabrir), cuando = b.dataset.cuando;
-  if(!pedirConfirmacion('reabrir-' + mesa + '-' + cuando)) return;
-  b.disabled = true;
-  try {
-    await datosPanel.reabrirCuenta(mesa, cuando);
-    toast('Cuenta reabierta');
-  } catch(e) { tratarError(e); }
-  await cargarCuentas();
-  cargarPedidos();
+  const k = (estado.cobradas || []).find(x => x.mesa === mesa && x.cuando === cuando) || {};
+  const nombre = k.mesa_nombre || 'Mesa ' + mesa;
+  confirmarAccion('¿Reabrir la cuenta de ' + nombre + '?',
+    `<p class="confirmar-importe">${euros(k.total)}</p>
+     <p class="texto-suave">Cobrada a las ${hora(cuando)}. Vuelve a quedar sin cobrar.</p>`,
+    'Sí, reabrir', async () => {
+      await datosPanel.reabrirCuenta(mesa, cuando);
+      toast('Cuenta reabierta');
+      await cargarCuentas();
+      cargarPedidos();
+    });
 });
 
 /* ---------------- AVISOS: SONIDO, VIBRACIÓN, PANTALLA ENCENDIDA ----------------
@@ -1224,7 +1218,15 @@ function abrirModalLibre(titulo, pintar, guardar){
   $('modal').hidden = false;
 }
 $('modalCampos').addEventListener('click', (ev) => { if(estado.alTocarModal) estado.alTocarModal(ev); });
-function cerrarModal(){ $('modal').hidden = true; alGuardar = null; estado.alTocarModal = null; }
+function cerrarModal(){
+  $('modal').hidden = true; alGuardar = null; estado.alTocarModal = null;
+  $('modalForm').querySelector('[type=submit]').textContent = 'Guardar';
+}
+// Ventana de confirmación (cobrar, reabrir): título, texto, botón y lo que hace.
+function confirmarAccion(titulo, html, textoBoton, accion){
+  abrirModalLibre(titulo, () => { $('modalCampos').innerHTML = html; }, accion);
+  $('modalForm').querySelector('[type=submit]').textContent = textoBoton;
+}
 $('modalCancelar').addEventListener('click', cerrarModal);
 $('modal').addEventListener('click', (ev) => { if(ev.target === $('modal')) cerrarModal(); });
 $('modalForm').addEventListener('submit', async (ev) => {

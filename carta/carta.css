@@ -527,3 +527,4 @@ html.mb-cargando body{ visibility:hidden; }
 .hoja-llamar .stamp-mark{ align-self:center; }
 .hoja-llamar .ll-op{ width:100%; font-size:15px !important; padding:15px !important; }
 .hoja-llamar .ll-cancelar{ width:100%; background:transparent !important; color:var(--ink) !important; border:1px solid var(--line) !important; }
+.hoja-llamar [hidden]{ display:none !important; }
