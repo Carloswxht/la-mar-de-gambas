@@ -11,7 +11,7 @@
 //
 // Secretos (Supabase → Edge Functions → Secrets; nunca en el repositorio):
 //   RESEND_API_KEY  clave de Resend (la pone Carlos)
-//   REMITENTE       opcional; por defecto "MultiBar <avisos@autonomialab.es>"
+//   REMITENTE       opcional; por defecto "MultiBar <avisos@autonomialab.com>"
 // SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los pone Supabase solo.
 // Desplegar con verify_jwt = false (la web no tiene sesión de Supabase).
 // =====================================================================
@@ -53,7 +53,7 @@ async function crearEnlace(email: string): Promise<Enlace | null> {
 async function mandarCorreo(e: Enlace) {
   const clave = Deno.env.get('RESEND_API_KEY');
   if (!clave) { console.error('Falta el secreto RESEND_API_KEY'); return; }
-  const remitente = Deno.env.get('REMITENTE') || 'MultiBar <avisos@autonomialab.es>';
+  const remitente = Deno.env.get('REMITENTE') || 'MultiBar <avisos@autonomialab.com>';
   const enlace = `${WEB}/panel/?bar=${encodeURIComponent(e.bar_slug)}#recuperar=${e.token}`;
   const bar = esc(e.bar_nombre), nombre = esc(e.nombre);
   const html = `<!doctype html><html lang="es"><body style="margin:0;background:#f4f4f6;font-family:Arial,Helvetica,sans-serif;color:#1f2430">
