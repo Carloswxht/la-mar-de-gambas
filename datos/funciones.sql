@@ -1169,6 +1169,76 @@ begin
 end $$;
 
 -- =====================================================================
+-- RECUPERAR LA CONTRASEÑA POR CORREO (v18)
+-- La pide el propio usuario en la entrada del panel. La Edge Function
+-- «recuperar-contrasena» (servidor de Supabase, con la clave secreta que
+-- solo vive allí) llama a recuperar_crear y manda el correo con Resend.
+-- La web nunca sabe si un correo existe: siempre contesta lo mismo.
+-- =====================================================================
+
+-- Crea un enlace de recuperación para ese correo (o null si no es de un
+-- usuario activo de un bar activo, o si ya pidió 3 en la última hora).
+-- Anula los enlaces anteriores sin usar. SOLO para el servidor (service_role).
+create or replace function public.recuperar_crear(p_email text)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff; b bares; v_token text;
+begin
+  select * into s from staff where lower(email) = lower(btrim(coalesce(p_email, ''))) and active;
+  if not found then
+    return null;
+  end if;
+  select * into b from bares where id = s.bar_id and activo;
+  if not found then
+    return null;
+  end if;
+  if (select count(*) from privado.recuperaciones
+       where staff_id = s.id and created_at > now() - interval '1 hour') >= 3 then
+    return null;
+  end if;
+  update privado.recuperaciones set usado_at = now() where staff_id = s.id and usado_at is null;
+  v_token := encode(privado.gen_random_bytes(32), 'hex');
+  insert into privado.recuperaciones (token_hash, staff_id, expires_at)
+  values (privado.digest(v_token, 'sha256'), s.id, now() + interval '30 minutes');
+  return jsonb_build_object('token', v_token, 'email', s.email, 'nombre', s.name,
+                            'bar_nombre', b.nombre, 'bar_slug', b.slug);
+end $$;
+
+-- Poner una contraseña nueva con el enlace del correo. Cierra las
+-- sesiones abiertas de ese usuario y le quita el bloqueo por fallos.
+create or replace function public.personal_restablecer(p_token text, p_nueva text)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare r privado.recuperaciones; v_email text;
+begin
+  if p_token is null or p_token !~ '^[0-9a-f]{64}$' then
+    raise exception 'ENLACE_NO_VALIDO';
+  end if;
+  select * into r from privado.recuperaciones
+   where token_hash = privado.digest(p_token, 'sha256') for update;
+  if not found or r.usado_at is not null or r.expires_at < now() then
+    raise exception 'ENLACE_NO_VALIDO';
+  end if;
+  if length(coalesce(p_nueva, '')) < 8 then
+    raise exception 'PASSWORD_CORTA';
+  end if;
+  update staff set password_hash = privado.crypt(p_nueva, privado.gen_salt('bf', 10)),
+                   must_change_password = false, failed_attempts = 0, locked_until = null
+   where id = r.staff_id and active
+  returning email into v_email;
+  if v_email is null then
+    raise exception 'ENLACE_NO_VALIDO';
+  end if;
+  update privado.recuperaciones set usado_at = now() where token_hash = r.token_hash;
+  update privado.sesiones set expires_at = now() where staff_id = r.staff_id and expires_at > now();
+  return jsonb_build_object('email', v_email);
+end $$;
+
+-- =====================================================================
 -- PERMISOS: la web solo puede usar estas ventanillas
 -- =====================================================================
 revoke execute on all functions in schema public from public, anon, authenticated;
@@ -1207,8 +1277,17 @@ grant execute on function
   public.panel_cobrar_mesa(text, integer),
   public.panel_cobrar(text, integer, jsonb),
   public.panel_cobradas(text),
-  public.panel_reabrir_cuenta(text, integer, timestamptz)
+  public.panel_reabrir_cuenta(text, integer, timestamptz),
+  public.personal_restablecer(text, text)
 to anon, authenticated;
+
+-- Solo el servidor de Supabase (Edge Function con la clave secreta) puede
+-- crear enlaces de recuperación. Fuera de Supabase el rol no existe.
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant execute on function public.recuperar_crear(text) to service_role;
+  end if;
+end $$;
 
 -- Las tablas siguen cerradas a la web (ver esquema.sql): ni lectura ni escritura.
 revoke all on all tables in schema public from public, anon, authenticated;

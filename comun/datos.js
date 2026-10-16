@@ -16,6 +16,9 @@
 /* ---------------- DIRECCIÓN Y CLAVE PÚBLICA DE LA BASE ---------------- */
 const DATA_API = 'https://dorunbacwnkwdatfscri.supabase.co/rest/v1';
 const CLAVE_PUBLICA = 'sb_publishable_PK12CcvGBEZsFT9lsLpSIA_IsP-v8iS';
+// Pequeños programas del servidor de Supabase (Edge Functions): hoy solo
+// «recuperar-contrasena», que manda el correo para recuperar la contraseña.
+const FUNCIONES_API = 'https://dorunbacwnkwdatfscri.supabase.co/functions/v1';
 
 /* ---------------- QUÉ BAR ES ----------------
    El bar va en el enlace de la carta y del QR: /carta/?bar=lamardegambas&mesa=5&c=…
@@ -95,6 +98,7 @@ function textoError(codigo){
     SESION_CADUCADA: 'Tu sesión ha caducado. Vuelve a entrar.',
     SIN_PERMISO: 'Tu usuario no tiene permiso para esto.',
     PASSWORD_CORTA: 'La contraseña debe tener al menos 8 caracteres.',
+    ENLACE_NO_VALIDO: 'Este enlace ya no vale (caduca a los 30 minutos y sirve una sola vez). Pide otro desde «¿Has olvidado tu contraseña?».',
     CAMBIO_NO_VALIDO: 'Ese cambio de estado no es posible.',
     LINEA_NO_VALIDA: 'Esa línea ya no está en el pedido. Recarga e inténtalo otra vez.',
     FALTAN_DATOS: 'Faltan datos obligatorios.',
@@ -199,6 +203,28 @@ async function cambiarPassword(actual, nueva){
   await apiRpc('personal_cambiar_password', { p_token: getAuthTokenPersonal(), p_actual: actual, p_nueva: nueva });
   const s = getSesion();
   if(s){ s.cambiarPassword = false; guardarLocal(CLAVE_SESION, s); }
+}
+
+/* Recuperar la contraseña por correo (v18). El servidor contesta siempre
+   lo mismo, exista o no el correo, para no desvelar quién trabaja dónde. */
+async function pedirEnlaceRecuperar(email){
+  const corte = window.AbortController ? new AbortController() : null;
+  const reloj = corte ? setTimeout(() => corte.abort(), 20000) : null;
+  let r;
+  try {
+    r = await fetch(FUNCIONES_API + '/recuperar-contrasena', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, cache: 'no-store',
+      body: JSON.stringify({ email: String(email || '').trim() }),
+      signal: corte ? corte.signal : undefined,
+    });
+  } catch(e) {
+    throw new ErrorDatos('SIN_CONEXION');
+  } finally { if(reloj) clearTimeout(reloj); }
+  if(!r.ok) throw new ErrorDatos('HTTP_' + r.status);
+}
+// Poner la contraseña nueva con el código del enlace del correo. Devuelve { email }.
+function restablecerPassword(token, nueva){
+  return apiRpc('personal_restablecer', { p_token: String(token || ''), p_nueva: nueva });
 }
 
 // Llamada del panel con el token de la sesión. Si caduca, se borra la sesión.

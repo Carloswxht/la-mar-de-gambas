@@ -7,7 +7,7 @@
    Plantilla: revisar con un asesor antes de usarla con clientes reales.
    ===================================================================== */
 
-const ACTUALIZADO = '14 de octubre de 2026';
+const ACTUALIZADO = '16 de octubre de 2026';
 
 function esc(t){
   return String(t == null ? '' : t)
@@ -85,12 +85,14 @@ function pintar(bar){
   <h3>Si eres del personal del local</h3>
   <ul>
     <li>Guardamos tu nombre, tu correo, tu función (camarero, barra o encargado) y tu contraseña cifrada (nunca en claro), para darte acceso al panel y registrar qué pedidos atiendes.</li>
+    <li>Si pides recuperar tu contraseña, usamos tu correo solo para mandarte el enlace (vale 30 minutos y una sola vez).</li>
     <li>Base legal: tu relación con el local (art. 6.1.b del RGPD). Se conservan mientras tengas acceso al panel.</li>
   </ul>
 
   <h3>Proveedores</h3>
   <ul>
     <li><b>Supabase</b>: base de datos, con servidores en la Unión Europea (Fráncfort, Alemania).</li>
+    <li><b>Resend</b> (EE. UU., envío desde la Unión Europea): manda los correos para recuperar la contraseña del personal. Solo recibe el correo, el nombre y el enlace.</li>
     <li><b>GitHub Pages</b> (GitHub Inc., EE. UU.): aloja las páginas de la web y, como cualquier servidor, registra datos técnicos de la conexión, como la dirección IP. Estas transferencias cuentan con las garantías previstas en el RGPD.</li>
   </ul>
   <p>No vendemos ni cedemos tus datos a nadie, salvo obligación legal.</p>
