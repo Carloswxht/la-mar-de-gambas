@@ -125,14 +125,30 @@ function toast(texto, error){
 
 /* ---------------- PANTALLAS ---------------- */
 function mostrar(vista){
-  ['vLogin', 'vPass', 'vPanel'].forEach(v => { $(v).hidden = (v !== vista); });
+  ['vLogin', 'vOlvido', 'vNueva', 'vPass', 'vPanel'].forEach(v => { $(v).hidden = (v !== vista); });
   $('cVivo').hidden = vista !== 'vPanel';
   if(vista === 'vLogin') $('cVista').textContent = 'PANEL DE BARRA';
-  if(vista === 'vPass') $('cVista').textContent = 'TU CONTRASEÑA';
+  if(vista === 'vPass' || vista === 'vOlvido' || vista === 'vNueva') $('cVista').textContent = 'TU CONTRASEÑA';
   window.scrollTo(0, 0);
 }
 
+// Enlace del correo para recuperar la contraseña: /panel/?bar=…#recuperar=CÓDIGO.
+// El código va tras «#» (no viaja a GitHub) y se quita de la dirección al leerlo.
+function leerEnlaceRecuperar(){
+  const m = /[#&]recuperar=([0-9a-f]{64})/.exec(location.hash || '');
+  if(!location.hash.includes('recuperar=')) return null;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch(e) {}
+  return m ? m[1] : '';
+}
+
 async function arrancar(){
+  const rec = leerEnlaceRecuperar();
+  if(rec !== null){
+    estado.recuperar = rec;
+    mostrar('vNueva');
+    if(!rec){ $('nError').textContent = textoError('ENLACE_NO_VALIDO'); $('nError').hidden = false; }
+    return;
+  }
   let s = getSesion();
   if(s){
     try { s = await comprobarSesion(); }
@@ -210,6 +226,64 @@ $('fPass').addEventListener('submit', async (ev) => {
     err(e.codigo === 'CREDENCIALES' ? 'La contraseña actual no es correcta.' : e.message);
   }
 });
+
+/* ---------------- HE OLVIDADO MI CONTRASEÑA (v18) ---------------- */
+$('lOlvido').addEventListener('click', () => {
+  $('oEmail').value = $('lEmail').value.trim();
+  $('oError').hidden = true; $('oPedir').hidden = false; $('oHecho').hidden = true;
+  mostrar('vOlvido');
+});
+$('fOlvido').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const email = $('oEmail').value.trim();
+  $('oError').hidden = true;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $('oError').textContent = 'Escribe bien tu correo.'; $('oError').hidden = false; return; }
+  $('oBoton').disabled = true; $('oBoton').textContent = 'Enviando…';
+  try {
+    await pedirEnlaceRecuperar(email);
+    $('oPedir').hidden = true; $('oHecho').hidden = false;
+  } catch(e) {
+    $('oError').textContent = e.codigo === 'SIN_CONEXION' ? e.message : 'No se ha podido enviar ahora. Inténtalo dentro de un rato o pídesela al encargado.';
+    $('oError').hidden = false;
+  } finally {
+    $('oBoton').disabled = false; $('oBoton').textContent = 'Enviarme el enlace';
+  }
+});
+$('fNueva').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const nueva = $('nNueva').value, rep = $('nRepite').value;
+  const err = (t) => { $('nError').textContent = t; $('nError').hidden = false; };
+  $('nError').hidden = true;
+  if(!estado.recuperar) return err(textoError('ENLACE_NO_VALIDO'));
+  if(nueva.length < 8) return err('La contraseña nueva debe tener al menos 8 caracteres.');
+  if(nueva !== rep) return err('Las dos contraseñas no coinciden.');
+  $('nBoton').disabled = true; $('nBoton').textContent = 'Guardando…';
+  try {
+    const r = await restablecerPassword(estado.recuperar, nueva);
+    estado.recuperar = null;
+    ['nNueva', 'nRepite'].forEach(id => { $(id).value = ''; });
+    guardarLocal(CLAVE_SESION, null);   // las sesiones de ese usuario se han cerrado
+    $('lEmail').value = (r && r.email) || '';
+    $('lPass').value = '';
+    $('lError').hidden = true;
+    mostrar('vLogin');
+    toast('Contraseña guardada. Ya puedes entrar.');
+  } catch(e) {
+    err(e.message);
+  } finally {
+    $('nBoton').disabled = false; $('nBoton').textContent = 'Guardar contraseña';
+  }
+});
+// Si el enlace del correo se abre con el panel ya abierto en esa pestaña,
+// el navegador no recarga la página: solo cambia lo de detrás de «#».
+window.addEventListener('hashchange', () => {
+  if(!location.hash.includes('recuperar=')) return;
+  clearInterval(estado.temporizador); cerrarNuevo(); cerrarMenu();
+  arrancar();
+});
+function volverDeRecuperar(){ estado.recuperar = null; arrancar(); }
+$('oVolver').addEventListener('click', volverDeRecuperar);
+$('nVolver').addEventListener('click', volverDeRecuperar);
 
 async function salir(){
   await logout();

@@ -66,6 +66,19 @@ create table privado.sesiones (
 );
 create index sesiones_staff_idx on privado.sesiones (staff_id);
 
+-- Enlaces para recuperar la contraseña por correo (v18). Se guarda solo la
+-- huella (hash) del enlace; vale 30 minutos y una sola vez.
+create table privado.recuperaciones (
+  token_hash  bytea primary key,
+  staff_id    integer not null references public.staff(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  expires_at  timestamptz not null,
+  usado_at    timestamptz
+);
+create index recuperaciones_staff_idx on privado.recuperaciones (staff_id, created_at);
+alter table privado.recuperaciones enable row level security;
+revoke all on privado.recuperaciones from public, anon, authenticated;
+
 -- Las funciones nuevas no se pueden ejecutar desde la web salvo que se
 -- diga expresamente (por defecto Postgres deja a todo el mundo).
 alter default privileges revoke execute on functions from public;
