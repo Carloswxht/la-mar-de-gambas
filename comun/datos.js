@@ -102,6 +102,8 @@ function textoError(codigo){
     USUARIO_NO_VALIDO: 'No se encuentra el usuario.',
     ULTIMO_ADMIN: 'Tiene que quedar al menos un administrador activo.',
     FUNCION_NO_ACTIVA: 'Esta opción no está disponible en este local.',
+    NADA_QUE_COBRAR: 'No hay nada servido que cobrar en esta mesa (o ya se ha cobrado).',
+    YA_COBRADO: 'Este pedido ya está cobrado. Para cambiarlo, reabre antes su cuenta en «Cuentas de mesas».',
   };
   return textos[base] || ('Algo ha fallado (' + c + '). Inténtalo otra vez.');
 }
@@ -216,7 +218,10 @@ const datosPanel = {
   atenderAviso: (avisoId) => rpcPersonal('panel_atender_aviso', { p_aviso: avisoId }),
   // Cuentas de las mesas: lo de hoy sin cobrar, mesa por mesa (v15).
   cuentas: () => rpcPersonal('panel_cuentas'),
-  cobrarMesa: (mesa) => rpcPersonal('panel_cobrar_mesa', { p_mesa: Number(mesa) }),
+  // Cobra SOLO los pedidos servidos que se ven en pantalla (ids), nada más.
+  cobrar: (mesa, pedidos) => rpcPersonal('panel_cobrar', { p_mesa: Number(mesa), p_pedidos: (pedidos || []).map(Number) }),
+  cobradas: () => rpcPersonal('panel_cobradas'),
+  reabrirCuenta: (mesa, cuando) => rpcPersonal('panel_reabrir_cuenta', { p_mesa: Number(mesa), p_cuando: cuando }),
   // estado: 'en_preparacion' (aceptar) | 'servido' | 'enviado' (deshacer a nuevo)
   marcar: (pedidoId, estado) => rpcPersonal('panel_marcar', { p_pedido: pedidoId, p_estado: estado }),
   // cambios: { lineas: [{ id, cantidad }] } (una línea a 0 queda en el pedido,

@@ -35,7 +35,8 @@ const estado = {
   pedidos: [],
   avisos: [],              // avisos de las mesas sin atender (v15)
   avisosVistos: null,      // ids de avisos ya avisados
-  cuentas: [],             // cuentas de las mesas (v15)
+  cuentas: [],             // cuentas de las mesas sin cobrar (v15)
+  cobradas: [],            // cuentas cobradas hoy, para poder reabrir (v16)
   destino: leerLocal('panel.destino') || 'todo', // qué ve este aparato: todo | barra | cocina
   vistos: null,            // ids de pedidos nuevos ya avisados
   modificados: {},         // id -> fecha de la última edición del cliente
@@ -395,12 +396,13 @@ function tarjeta(p){
       <button class="btn btn-azul" data-accion="servido" data-id="${p.id}" ${ocupado}>Marcar como servido</button>
       <button class="btn btn-borde ajustado" data-accion="enviado" data-id="${p.id}" ${ocupado}>Deshacer</button></div>`;
   } else {
+    // Cobrado (v16): ya no se puede deshacer ni modificar (antes hay que reabrir la cuenta).
     pie = `<div class="t-servido">
-      <span class="marca">✓ Servido${p.servido ? ' ' + hora(p.servido) : ''}${p.servido_por ? ' · ' + esc(p.servido_por) : ''}</span>
-      <button class="btn btn-peq" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Deshacer</button></div>`;
+      <span class="marca">✓ Servido${p.servido ? ' ' + hora(p.servido) : ''}${p.servido_por ? ' · ' + esc(p.servido_por) : ''}${p.cobrado ? ' · Cobrado' : ''}</span>
+      ${p.cobrado ? '' : `<button class="btn btn-peq" data-accion="en_preparacion" data-id="${p.id}" ${ocupado}>Deshacer</button>`}</div>`;
   }
   pie += `<div class="t-enlaces">
-      <button class="btn-modificar" type="button" data-modificar="${p.id}" ${ocupado}>✎ Modificar pedido</button>
+      ${p.cobrado ? '<span></span>' : `<button class="btn-modificar" type="button" data-modificar="${p.id}" ${ocupado}>✎ Modificar pedido</button>`}
       <button class="btn-modificar" type="button" data-nuevo-mesa="${p.mesa}">+ Nuevo pedido</button></div>`;
 
   const clase = { enviado: 'nuevo', en_preparacion: 'prep', servido: 'servido' }[p.estado] || '';
@@ -499,57 +501,98 @@ async function cargarCuentas(){
   if(cargandoCuentas) return;
   cargandoCuentas = true;
   try {
-    const r = await datosPanel.cuentas();
-    estado.cuentas = Array.isArray(r) ? r : [];
+    const [abiertas, cobradas] = await Promise.all([datosPanel.cuentas(), datosPanel.cobradas()]);
+    estado.cuentas = Array.isArray(abiertas) ? abiertas : [];
+    estado.cobradas = Array.isArray(cobradas) ? cobradas : [];
     pintarCuentas();
   } catch(e) { tratarError(e); }
   finally { cargandoCuentas = false; }
 }
-let cobrarPendiente = { mesa: null, hasta: 0 };
+// Botones que piden un segundo toque para confirmar (Cobrada / Reabrir).
+let confirmando = { clave: null, hasta: 0 };
+const confirmandoAhora = (clave) => confirmando.clave === clave && Date.now() < confirmando.hasta;
+function lineasCuenta(ls, clase){
+  return (ls || []).map(l => `
+    <div class="linea ${clase || ''}"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.importe)}</span></div>`).join('');
+}
+// Solo se cobra lo SERVIDO: lo que aún no se ha servido sale aparte, en
+// gris, y no entra en el total ni en «Cobrada».
 function pintarCuentas(){
   const cs = estado.cuentas;
-  $('listaCuentas').innerHTML = cs.length ? cs.map(c => {
-    const pidiendo = cobrarPendiente.mesa === c.mesa && Date.now() < cobrarPendiente.hasta;
-    const lineas = (c.lineas || []).map(l => `
-      <div class="linea"><span class="cant">${l.cantidad}×</span><span class="nombre">${esc(l.nombre)}</span><span class="puntos"></span><span class="precio">${euros(l.importe)}</span></div>`).join('');
+  const abiertas = cs.length ? cs.map(c => {
+    const total = Number(c.total || 0), pendiente = Number(c.pendiente || 0);
+    const clave = 'cobrar-' + c.mesa;
+    const pidiendo = confirmandoAhora(clave);
+    const boton = total > 0
+      ? `<button class="btn ${pidiendo ? 'btn-rosa' : 'btn-azul'}" type="button" data-cobrar="${c.mesa}">${pidiendo ? '¿Seguro? Toca otra vez' : 'Cobrada · ' + euros(total)}</button>`
+      : `<button class="btn btn-borde" type="button" disabled>Nada servido todavía</button>`;
     return `<div class="pedido" id="cuenta-${c.mesa}">
       <div class="tarjeta ${estado.cuentaDestacada === c.mesa ? 'destacada' : ''}">
         <div class="pedido-num">${esc(c.mesa_nombre || 'Mesa ' + c.mesa)}</div>
         <div class="t-arriba"><span class="t-hora">${c.pedidos} pedido${c.pedidos === 1 ? '' : 's'} · desde las ${hora(c.desde)}</span></div>
-        ${c.sin_servir ? `<div class="cuenta-aviso">⚠ Hay ${c.sin_servir} pedido${c.sin_servir === 1 ? '' : 's'} sin servir</div>` : ''}
-        ${lineas}
-        <div class="t-total"><span>TOTAL</span><span>${euros(c.total)}</span></div>
-        <div class="t-botones"><button class="btn ${pidiendo ? 'btn-rosa' : 'btn-azul'}" type="button" data-cobrar="${c.mesa}">${pidiendo ? '¿Seguro? Toca otra vez' : 'Cobrada'}</button></div>
+        ${total > 0 ? lineasCuenta(c.lineas) : ''}
+        <div class="t-total"><span>A COBRAR</span><span>${euros(total)}</span></div>
+        ${c.sin_servir ? `
+          <div class="cuenta-pendiente">
+            <div class="cuenta-aviso">⚠ Sin servir: no se cobra hasta que se sirva</div>
+            ${lineasCuenta(c.lineas_pendientes, 'cero')}
+            <div class="cuenta-sub"><span>Pendiente de servir</span><span>${euros(pendiente)}</span></div>
+          </div>` : ''}
+        <div class="t-botones">${boton}</div>
       </div>
     </div>`;
   }).join('') : '<div class="vacio">No hay cuentas abiertas: todas las mesas están cobradas.</div>';
+  const cobradas = (estado.cobradas || []).map(k => {
+    const clave = 'reabrir-' + k.mesa + '-' + k.cuando;
+    return `<div class="fila-cobrada">
+      <div><b>${esc(k.mesa_nombre || 'Mesa ' + k.mesa)}</b> · ${euros(k.total)}<span class="cobrada-info">${hora(k.cuando)}${k.por ? ' · ' + esc(k.por) : ''}</span></div>
+      <button class="btn btn-borde" type="button" data-reabrir="${k.mesa}" data-cuando="${esc(k.cuando)}">${confirmandoAhora(clave) ? '¿Reabrir? Toca otra vez' : 'Reabrir'}</button>
+    </div>`;
+  }).join('');
+  $('listaCuentas').innerHTML = abiertas + (cobradas ? `<div class="titulo-seccion separado">COBRADAS HOY</div>
+    <p class="sub-seccion">Si una se cobró por error, «Reabrir» la vuelve a poner arriba.</p>${cobradas}` : '');
   if(estado.cuentaDestacada != null){
     const el = $('cuenta-' + estado.cuentaDestacada);
     if(el) el.scrollIntoView({ block: 'center' });
     estado.cuentaDestacada = null;
   }
 }
+// Primer toque: pide confirmación (4 s); segundo: lo hace.
+function pedirConfirmacion(clave){
+  if(confirmandoAhora(clave)){ confirmando = { clave: null, hasta: 0 }; return true; }
+  confirmando = { clave, hasta: Date.now() + 4000 };
+  pintarCuentas();
+  setTimeout(() => { if(confirmando.clave === clave && !confirmandoAhora(clave) && estado.vista === 'cuentas') pintarCuentas(); }, 4100);
+  return false;
+}
 $('listaCuentas').addEventListener('click', async (ev) => {
-  const b = ev.target.closest('button[data-cobrar]');
+  const b = ev.target.closest('button[data-cobrar], button[data-reabrir]');
   if(!b || b.disabled) return;
-  const mesa = Number(b.dataset.cobrar);
-  // Primer toque: pide confirmación; segundo (en 4 s): cobra.
-  if(cobrarPendiente.mesa !== mesa || Date.now() > cobrarPendiente.hasta){
-    cobrarPendiente = { mesa, hasta: Date.now() + 4000 };
-    pintarCuentas();
-    setTimeout(() => { if(cobrarPendiente.mesa === mesa && Date.now() > cobrarPendiente.hasta && estado.vista === 'cuentas') pintarCuentas(); }, 4100);
+  if(b.dataset.cobrar){
+    const mesa = Number(b.dataset.cobrar);
+    const c = estado.cuentas.find(x => x.mesa === mesa);
+    if(!c || !pedirConfirmacion('cobrar-' + mesa)) return;
+    b.disabled = true;
+    try {
+      // Solo los pedidos servidos que el camarero tiene en pantalla.
+      const r = await datosPanel.cobrar(mesa, c.ids || []);
+      toast((c.mesa_nombre || 'Mesa ' + mesa) + ' · cobrada ' + euros(r && r.total));
+      estado.avisos = estado.avisos.filter(a => a.mesa !== mesa);
+      pintarAvisos();
+    } catch(e) { tratarError(e); }
+    await cargarCuentas();
+    cargarPedidos(); // las tarjetas de esos pedidos pasan a «Cobrado» al momento
     return;
   }
-  cobrarPendiente = { mesa: null, hasta: 0 };
+  const mesa = Number(b.dataset.reabrir), cuando = b.dataset.cuando;
+  if(!pedirConfirmacion('reabrir-' + mesa + '-' + cuando)) return;
   b.disabled = true;
   try {
-    await datosPanel.cobrarMesa(mesa);
-    const c = estado.cuentas.find(x => x.mesa === mesa);
-    toast((c ? c.mesa_nombre : 'Mesa ' + mesa) + ' · cuenta cobrada');
-    estado.avisos = estado.avisos.filter(a => a.mesa !== mesa);
-    pintarAvisos();
-    await cargarCuentas();
-  } catch(e) { tratarError(e); pintarCuentas(); }
+    await datosPanel.reabrirCuenta(mesa, cuando);
+    toast('Cuenta reabierta');
+  } catch(e) { tratarError(e); }
+  await cargarCuentas();
+  cargarPedidos();
 });
 
 /* ---------------- AVISOS: SONIDO, VIBRACIÓN, PANTALLA ENCENDIDA ----------------
