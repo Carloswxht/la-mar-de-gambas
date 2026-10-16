@@ -567,6 +567,10 @@ begin
   if p_estado = o.status then
     return privado.pedido_json(o.id);
   end if;
+  -- Un pedido ya cobrado no vuelve atrás (primero hay que reabrir su cuenta).
+  if o.cobrado_at is not null then
+    raise exception 'YA_COBRADO';
+  end if;
   if (o.status, p_estado) in (('enviado','en_preparacion'), ('enviado','servido')) then
     update orders set status = p_estado, auto_aceptado = false,
            received_at = coalesce(received_at, now()), received_by = coalesce(received_by, s.name),
@@ -663,6 +667,10 @@ begin
   select * into o from orders where id = p_pedido and bar_id = s.bar_id for update;
   if not found then
     raise exception 'PEDIDO_NO_ENCONTRADO';
+  end if;
+  -- Un pedido ya cobrado no se cambia (primero hay que reabrir su cuenta).
+  if o.cobrado_at is not null then
+    raise exception 'YA_COBRADO';
   end if;
 
   -- Cambiar cantidades de líneas que ya están en el pedido.
@@ -1013,58 +1021,146 @@ begin
   return privado.avisos_json(s.bar_id);
 end $$;
 
+-- Desde cuándo cuentan las cuentas de hoy (00:00 en la hora del bar, o
+-- las últimas 12 horas si eso es más), igual que los pedidos del panel.
+create or replace function privado.desde_hoy(p_bar integer)
+returns timestamptz
+language sql stable security definer
+set search_path = public, privado, pg_temp
+as $$
+  select least(date_trunc('day', now() at time zone zona_horaria) at time zone zona_horaria,
+               now() - interval '12 hours')
+    from bares where id = p_bar
+$$;
+
+-- Líneas de unos pedidos, juntando las del mismo producto y precio.
+create or replace function privado.lineas_juntas(p_pedidos bigint[])
+returns jsonb
+language sql stable security definer
+set search_path = public, privado, pg_temp
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object('nombre', x.nombre, 'cantidad', x.cant,
+                    'precio', x.precio, 'importe', x.importe) order by x.primera), '[]'::jsonb)
+    from (select i.product_name as nombre, i.unit_price as precio, sum(i.quantity) as cant,
+                 sum(i.quantity * i.unit_price) as importe, min(i.id) as primera
+            from order_items i
+           where i.order_id = any(p_pedidos) and i.quantity > 0
+           group by i.product_name, i.unit_price) x
+$$;
+
 -- Cuentas de las mesas: lo pedido hoy y sin cobrar, mesa por mesa, con
 -- todos los pedidos juntos (de todos los móviles, de barra y de cocina).
+-- Solo se cobra lo SERVIDO: "total" y "lineas" son lo servido (con "ids",
+-- los pedidos que se cobrarán); lo que aún no se ha servido va aparte en
+-- "pendiente" y "lineas_pendientes" y no se cobra todavía.
 create or replace function public.panel_cuentas(p_token text)
 returns jsonb
 language plpgsql security definer
 set search_path = public, privado, pg_temp
 as $$
-declare s staff; v_desde timestamptz; v_zona text;
+declare s staff; v_desde timestamptz;
 begin
   s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
-  select zona_horaria into v_zona from bares where id = s.bar_id;
-  v_desde := least(date_trunc('day', now() at time zone v_zona) at time zone v_zona,
-                   now() - interval '12 hours');
+  v_desde := privado.desde_hoy(s.bar_id);
   return (select coalesce(jsonb_agg(c order by c->>'desde'), '[]'::jsonb) from (
     select jsonb_build_object(
-      'mesa', o.mesa_id, 'mesa_nombre', min(m.name),
-      'total', sum(o.total), 'pedidos', count(*) filter (where o.parte_de is null),
-      'sin_servir', count(*) filter (where o.status <> 'servido'),
-      'desde', min(o.created_at),
-      'lineas', (select coalesce(jsonb_agg(jsonb_build_object('nombre', x.nombre, 'cantidad', x.cant,
-                          'precio', x.precio, 'importe', x.importe) order by x.primera), '[]'::jsonb)
-                   from (select i.product_name as nombre, i.unit_price as precio, sum(i.quantity) as cant,
-                                sum(i.quantity * i.unit_price) as importe, min(i.id) as primera
-                           from order_items i join orders o2 on o2.id = i.order_id
-                          where o2.bar_id = s.bar_id and o2.mesa_id = o.mesa_id
-                            and o2.cobrado_at is null and o2.created_at > v_desde and i.quantity > 0
-                          group by i.product_name, i.unit_price) x)
-    ) as c
-      from orders o join mesas m on m.bar_id = o.bar_id and m.id = o.mesa_id
-     where o.bar_id = s.bar_id and o.cobrado_at is null and o.created_at > v_desde
-     group by o.mesa_id) t);
+      'mesa', t.mesa_id, 'mesa_nombre', t.nombre,
+      'total', t.total, 'pendiente', t.pendiente,
+      'pedidos', t.pedidos, 'sin_servir', t.sin_servir, 'desde', t.desde,
+      'ids', to_jsonb(t.servidos),
+      'lineas', privado.lineas_juntas(t.servidos),
+      'lineas_pendientes', privado.lineas_juntas(t.no_servidos)) as c
+      from (select o.mesa_id, min(m.name) as nombre, min(o.created_at) as desde,
+                   coalesce(sum(o.total) filter (where o.status = 'servido'), 0) as total,
+                   coalesce(sum(o.total) filter (where o.status <> 'servido'), 0) as pendiente,
+                   count(distinct coalesce(o.parte_de, o.id)) as pedidos,
+                   count(*) filter (where o.status <> 'servido') as sin_servir,
+                   coalesce(array_agg(o.id order by o.id) filter (where o.status = 'servido'), '{}') as servidos,
+                   coalesce(array_agg(o.id order by o.id) filter (where o.status <> 'servido'), '{}') as no_servidos
+              from orders o join mesas m on m.bar_id = o.bar_id and m.id = o.mesa_id
+             where o.bar_id = s.bar_id and o.cobrado_at is null and o.created_at > v_desde
+             group by o.mesa_id) t) u);
 end $$;
 
--- Cobrar la cuenta de una mesa: sus pedidos de hoy sin cobrar quedan
--- cobrados (los siguientes empiezan una cuenta nueva) y sus avisos, atendidos.
+-- Cobrar la cuenta de una mesa: SOLO los pedidos que el camarero tenía en
+-- pantalla (p_pedidos), que sigan servidos y sin cobrar. Así no se cobra
+-- nada sin servir ni un pedido que acaba de llegar. Atiende los avisos de
+-- la mesa. Todos quedan con la misma hora de cobro (para poder reabrir).
+-- p_pedidos: lista JSON de ids, p. ej. [71, 72].
+create or replace function public.panel_cobrar(p_token text, p_mesa integer, p_pedidos jsonb)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff; v_n int; v_total numeric; v_ids bigint[];
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  select coalesce(array_agg(x::bigint), '{}') into v_ids
+    from jsonb_array_elements_text(case when jsonb_typeof(p_pedidos) = 'array' then p_pedidos else '[]'::jsonb end) x
+   where x ~ '^[0-9]{1,18}$';
+  update orders set cobrado_at = now(), cobrado_por = s.name
+   where bar_id = s.bar_id and mesa_id = p_mesa and id = any(v_ids)
+     and status = 'servido' and cobrado_at is null;
+  get diagnostics v_n = row_count;
+  if v_n = 0 then
+    raise exception 'NADA_QUE_COBRAR';
+  end if;
+  select sum(total) into v_total from orders
+   where bar_id = s.bar_id and mesa_id = p_mesa and cobrado_at = now();
+  update avisos set atendido_at = now(), atendido_por = s.name
+   where bar_id = s.bar_id and mesa_id = p_mesa and atendido_at is null;
+  return jsonb_build_object('cobrados', v_n, 'total', v_total);
+end $$;
+
+-- Versión anterior (panel v15): ahora también cobra solo lo servido.
 create or replace function public.panel_cobrar_mesa(p_token text, p_mesa integer)
 returns jsonb
 language plpgsql security definer
 set search_path = public, privado, pg_temp
 as $$
-declare s staff; v_desde timestamptz; v_zona text; v_n int;
+declare s staff;
 begin
   s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
-  select zona_horaria into v_zona from bares where id = s.bar_id;
-  v_desde := least(date_trunc('day', now() at time zone v_zona) at time zone v_zona,
-                   now() - interval '12 hours');
-  update orders set cobrado_at = now(), cobrado_por = s.name
-   where bar_id = s.bar_id and mesa_id = p_mesa and cobrado_at is null and created_at > v_desde;
+  return public.panel_cobrar(p_token, p_mesa, (select coalesce(jsonb_agg(id), '[]'::jsonb) from orders
+           where bar_id = s.bar_id and mesa_id = p_mesa and cobrado_at is null
+             and status = 'servido' and created_at > privado.desde_hoy(s.bar_id)));
+end $$;
+
+-- Cuentas cobradas hoy (las últimas primero), para poder reabrir una por error.
+create or replace function public.panel_cobradas(p_token text)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff;
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  return (select coalesce(jsonb_agg(jsonb_build_object('mesa', t.mesa_id, 'mesa_nombre', t.nombre,
+                    'cuando', t.cobrado_at, 'por', t.por, 'total', t.total, 'pedidos', t.pedidos)
+                    order by t.cobrado_at desc), '[]'::jsonb)
+            from (select o.mesa_id, o.cobrado_at, min(m.name) as nombre, min(o.cobrado_por) as por,
+                         sum(o.total) as total, count(distinct coalesce(o.parte_de, o.id)) as pedidos
+                    from orders o join mesas m on m.bar_id = o.bar_id and m.id = o.mesa_id
+                   where o.bar_id = s.bar_id and o.cobrado_at > privado.desde_hoy(s.bar_id)
+                   group by o.mesa_id, o.cobrado_at) t);
+end $$;
+
+-- Reabrir una cuenta cobrada por error: sus pedidos vuelven a estar sin cobrar.
+create or replace function public.panel_reabrir_cuenta(p_token text, p_mesa integer, p_cuando timestamptz)
+returns jsonb
+language plpgsql security definer
+set search_path = public, privado, pg_temp
+as $$
+declare s staff; v_n int;
+begin
+  s := privado.exigir_rol(p_token, array['camarero','barra','admin']);
+  update orders set cobrado_at = null, cobrado_por = null
+   where bar_id = s.bar_id and mesa_id = p_mesa and cobrado_at = p_cuando;
   get diagnostics v_n = row_count;
-  update avisos set atendido_at = now(), atendido_por = s.name
-   where bar_id = s.bar_id and mesa_id = p_mesa and atendido_at is null;
-  return jsonb_build_object('cobrados', v_n);
+  if v_n = 0 then
+    raise exception 'PEDIDO_NO_ENCONTRADO';
+  end if;
+  return jsonb_build_object('reabiertos', v_n);
 end $$;
 
 -- =====================================================================
@@ -1103,7 +1199,10 @@ grant execute on function
   public.panel_estado(text, timestamptz),
   public.panel_atender_aviso(text, bigint),
   public.panel_cuentas(text),
-  public.panel_cobrar_mesa(text, integer)
+  public.panel_cobrar_mesa(text, integer),
+  public.panel_cobrar(text, integer, jsonb),
+  public.panel_cobradas(text),
+  public.panel_reabrir_cuenta(text, integer, timestamptz)
 to anon, authenticated;
 
 -- Las tablas siguen cerradas a la web (ver esquema.sql): ni lectura ni escritura.
