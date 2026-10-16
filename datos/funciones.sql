@@ -966,6 +966,11 @@ begin
      and (v_hasta is null or v_hasta <= now()) then
     raise exception 'MESA_CERRADA';
   end if;
+  -- «Pedir la cuenta» solo si la mesa tiene pedidos de hoy sin cobrar (v17).
+  if p_tipo = 'cuenta' and not exists (select 1 from orders where bar_id = b.id and mesa_id = p_mesa
+              and cobrado_at is null and created_at > privado.desde_hoy(b.id)) then
+    raise exception 'SIN_PEDIDOS';
+  end if;
   if exists (select 1 from avisos where bar_id = b.id and mesa_id = p_mesa
               and tipo = p_tipo and atendido_at is null) then
     return jsonb_build_object('ok', true, 'repetido', true);
