@@ -20,14 +20,14 @@ Proyecto de Carlos (autonomIA Lab): **una plataforma para muchos bares**, con un
 - **Qué va en `comun`** (lista revisada con Carlos el 17 oct; regla: solo lo que necesitan todos los productos y significa lo mismo en todos):
   - **Negocio:** id, nombre comercial, `slug`, `tipo`, activo/de baja, fechas de alta y baja, zona horaria, idioma, moneda, país, teléfono, correo, dirección física, ciudad, código postal, provincia, ubicación (latitud/longitud), web, redes sociales, descripción corta.
   - **Titular:** nombre, razón social, NIF/CIF, domicilio fiscal, correo legal, teléfono, datos registrales.
-  - **Aspecto básico:** logo, icono, imagen para compartir, colores, fuentes, nombre corto.
+  - **Identidad mínima:** nombre y logo (para el panel de plataforma, los correos y la página legal; cada producto parte de ellos y puede cambiarlos).
   - **Usuarios y acceso** (solo quién es la persona; **un solo login para todos los productos**): id, nombre, correo, teléfono, contraseña cifrada, activo, debe cambiar la contraseña, intentos fallidos, bloqueado hasta, último acceso, fecha de alta, idioma preferido; a qué negocios pertenece (usuario ↔ negocio, activo en ese negocio); sesiones; enlaces de recuperación; el único rol común es **«plataforma»** (Carlos).
   - **Productos contratados** por cada negocio.
   - **Legal:** versión y fecha del aviso legal y de la privacidad.
-  - **Archivos:** logos e iconos.
+  - **Archivos:** el logo de la identidad mínima.
   - **Registro de actividad general:** entradas, altas y bajas de usuarios, cambios del negocio (aún no existe).
   - **Copias:** última copia de cada negocio y exportaciones.
-- **Va en el esquema de cada producto:** roles, permisos y rol de cada usuario (cada app tiene roles distintos: camarero/barra/admin en MultiBar, monitor/recepción en un gimnasio…); opciones de cada módulo (`barra_cocina`, cuentas…) y límites del plan; plantilla y textos propios; horario; fotos; consentimientos; avisos de la app; registro de sus propias acciones (cobros, precios…); y todo lo propio (catálogo, precios, mesas, pedidos, cuentas, socios, clases, presupuestos…).
+- **Va en el esquema de cada producto — TODA la personalización** (decisión de Carlos, 17 oct: «cada cliente debe sentir que es una aplicación a medida»): colores, fuentes, logo propio si quiere, icono, imagen para compartir, plantilla, textos, organización de pantallas, qué funciones se ven; además roles, permisos y rol de cada usuario (cada app tiene roles distintos: camarero/barra/admin en MultiBar, monitor/recepción en un gimnasio…); opciones de cada módulo (`barra_cocina`, cuentas…) y límites del plan; horario; fotos; consentimientos; avisos de la app; registro de sus propias acciones (cobros, precios…); y todo lo propio (catálogo, precios, mesas, pedidos, cuentas, socios, clases, presupuestos…).
 - **Va en `autonomialab`** (empresa de Carlos): suscripción (plan, cuota, fechas, estado de pago, método de pago, contrato y encargo del tratamiento firmados), persona de contacto y cargo, notas internas sobre el cliente, contratos y facturas, avisos de Carlos al cliente (cuota, renovación), clientes potenciales. Si un cliente deja de pagar, se pone de baja en `comun` y se apaga en todos los productos.
 - **Reglas para no mezclarse:**
   1. **Una base, un dueño por esquema.** Cada repositorio solo cambia su propio esquema; `comun` solo lo cambia el panel de plataforma. Los demás pueden leerlo.
