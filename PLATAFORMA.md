@@ -1,8 +1,15 @@
 # PLATAFORMA · las bases de todo el plan de autonomIA Lab
 
-> **Versión de las bases: 2 (17 oct 2026).** Al empezar una sesión, comparar este número con la copia maestra (`Carloswxht/autonomialab`, archivo `PLATAFORMA.md`); si la de aquí es más antigua, avisar a Carlos y copiar la maestra antes de trabajar. Cada cambio en este archivo sube el número.
+> **Versión de las bases: 3 (17 oct 2026).** Al empezar una sesión, comparar este número con la copia maestra (`Carloswxht/autonomialab`, archivo `PLATAFORMA.md`); si la de aquí es más antigua, avisar a Carlos y copiar la maestra antes de trabajar. Cada cambio en este archivo sube el número.
 >
 > **Archivo común a todos los repositorios de autonomIA Lab.** Es idéntico en cada uno (`autonomialab`, `multibar-platform` y los que vengan). La **copia maestra** está en el repositorio `autonomialab`. Si cambias algo aquí, cópialo igual en todos los repositorios y avisa a Carlos. Lo propio de cada producto va en el `CLAUDE.md` de su repositorio, no aquí.
+
+## Cómo se actualiza este archivo (para que todos los repositorios tengan lo mismo)
+1. **Solo se cambia la copia maestra, desde la sesión de `autonomialab`.** Si otra sesión decide algo que afecta a todos, no toca su copia: lo apunta en su `CLAUDE.md` y le dice a Carlos «hay que llevarlo a las bases desde `autonomialab`».
+2. Al cambiarla se sube el **número de versión** de arriba.
+3. Esa sesión añade los demás repositorios (`add_repo`) y deja la **misma copia** en cada uno, con un PR por repositorio; Carlos los fusiona.
+4. **Red de seguridad:** toda sesión, al empezar, compara su versión con la maestra y avisa si la suya es más vieja.
+5. **Cuando haya 5 o más repositorios:** poner en `autonomialab` una GitHub Action que, al cambiar `PLATAFORMA.md` en `main`, abra sola un PR con la copia en todos los repositorios del registro (necesita una llave de GitHub que crea Carlos una vez, con pasos guiados, guardada como secreto del repositorio).
 
 ## Quién es Carlos y cómo se trabaja con él (en todos los repositorios)
 - **autonomIA Lab** es la empresa de Carlos: vende aplicaciones a medida como servicio con cuota mensual (alojamiento, base, dominio, mantenimiento y soporte incluidos). Primer producto: **MultiBar** (cartas digitales y pedidos para bares; piloto: La Mar de Gambas, en marcha). Después vendrán otros productos (gimnasios, soldadura…), cada uno pensado para su mercado.
