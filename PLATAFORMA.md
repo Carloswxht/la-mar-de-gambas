@@ -1,5 +1,7 @@
 # PLATAFORMA · las bases de todo el plan de autonomIA Lab
 
+> **Versión de las bases: 1 (17 oct 2026).** Al empezar una sesión, comparar este número con la copia maestra (`Carloswxht/autonomialab`, archivo `PLATAFORMA.md`); si la de aquí es más antigua, avisar a Carlos y copiar la maestra antes de trabajar. Cada cambio en este archivo sube el número.
+>
 > **Archivo común a todos los repositorios de autonomIA Lab.** Es idéntico en cada uno (`autonomialab`, `multibar-platform` y los que vengan). La **copia maestra** está en el repositorio `autonomialab`. Si cambias algo aquí, cópialo igual en todos los repositorios y avisa a Carlos. Lo propio de cada producto va en el `CLAUDE.md` de su repositorio, no aquí.
 
 ## Quién es Carlos y cómo se trabaja con él (en todos los repositorios)
@@ -19,6 +21,27 @@
 - Futuros productos: un repositorio cada uno, con su subdominio de `autonomialab.es` (GitHub Pages admite un dominio por repositorio; los subdominios se crean gratis en DonDominio). Nunca Cloudflare para lo que ve el cliente (bloqueos de LaLiga).
 - Correo de la plataforma: Resend, dominio `autonomialab.com` verificado, remitente `avisos@autonomialab.com`.
 - **Una sesión de Claude Code por repositorio.** Las sesiones no se ven entre sí: lo común está en este archivo; lo de cada producto, en su `CLAUDE.md`.
+- **Crecimiento de la base:** con muchos productos y clientes, vigilar el uso del plan de Supabase (tamaño, conexiones, cómputo) y subir de nivel cuando haga falta; un solo proyecto paga una vez. Antes de abrir un producto con clientes reales: plan Pro y copias.
+
+## Registro de productos (habrá muchos: mantener esta tabla al día)
+| Producto | Repositorio | Carpeta en la base | Dirección web | Prefijo de funciones | Estado |
+|---|---|---|---|---|---|
+| Plataforma (común) | `autonomialab` | `comun` | — | `personal_…`, `recuperar_…`, `plataforma_…` | login hoy en `multibar-platform` (paso 2 pendiente) |
+| autonomIA Lab (empresa) | `autonomialab` | `autonomialab` | `www.autonomialab.es` (+ `/plataforma/`) | `plataforma_…` | por empezar |
+| MultiBar (bares) | `multibar-platform` | `multibar` | `carta.autonomialab.es` | `carta_…`, `panel_…`, `admin_…` | en marcha (La Mar de Gambas) |
+
+- Un nombre de carpeta, un subdominio y un prefijo **no se repiten nunca**. Los nombres de producto en minúsculas y sin espacios (`multibar`, `gimnasio`…).
+- **Pensado para crecer:** cada producto es independiente (su repositorio, su sesión, su carpeta, su diseño); lo único compartido es `comun` (negocios, personas, login) y este archivo. Un mismo usuario puede trabajar en varios negocios y productos con un solo login. Si un producto crece mucho (carga o tamaño), su carpeta se puede sacar entera a otra base sin tocar a los demás: por eso nunca se cruzan tablas entre carpetas de productos.
+
+## Alta de un producto nuevo (siempre estos pasos, con el «sí» de Carlos)
+1. Elegir con Carlos el nombre del producto, de la carpeta, del subdominio y del prefijo; comprobar en el registro que no existen.
+2. Carlos crea el repositorio en GitHub (público para GitHub Pages; Claude no puede crearlos) y lo añade a la sesión.
+3. Copiar este `PLATAFORMA.md` tal cual y crear su `CLAUDE.md` (empieza con `@PLATAFORMA.md`; luego solo lo del producto: mercado, diseño, pantallas, roles). Añadir `.gitignore` de secretos.
+4. Crear su carpeta en la base (`create schema …`, cerrada a la web) con su archivo en `datos/cambios/` de su repositorio; sus funciones en `public` con su prefijo; sus roles y su personalización en su carpeta.
+5. Darle de alta en `comun` como producto contratable (cuando exista `comun.productos_contratados`).
+6. Subdominio en DonDominio (CNAME `nombre` → `carloswxht.github.io`) y GitHub Pages con dominio propio y HTTPS.
+7. Añadir la fila al registro de productos, subir la versión de este archivo y copiarlo a **todos** los repositorios.
+8. Desde entonces se trabaja en **su propia sesión** de Claude Code.
 
 ## La base de datos compartida
 - **Supabase, proyecto `multi-bar`** (ref `dorunbacwnkwdatfscri`, Frankfurt). Todas las webs llaman a `https://dorunbacwnkwdatfscri.supabase.co/rest/v1/rpc/NOMBRE` con la **clave publishable** (pública por diseño) en la cabecera `apikey`: `sb_publishable_PK12CcvGBEZsFT9lsLpSIA_IsP-v8iS`. **Nunca** poner en un repositorio ni en el HTML claves secretas (service_role, secret, contraseña de la base): las Edge Functions las toman de Supabase.
